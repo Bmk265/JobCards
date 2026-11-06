@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#3b82f6">
 <title>Job Cards</title>
 
-<!-- PWA Manifest embedded with New Blue Document Icon -->
+<!-- PWA Manifest embedded -->
 <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Job%20Cards%22%2C%22short_name%22%3A%22Job%20Cards%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f1f5f9%22%2C%22theme_color%22%3A%22%233b82f6%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIyIiBmaWxsPSIjM2I4MmY2Ii8%2BPHBhdGggZD0iTTMwIDIwaDMwIGwxNSAxNWgtNDV6IiBmaWxsPSIjZmZmIiBvcGFjaXR5PSIwLjMiLz48cGF0aCBkPSJNMzAgMzVoMjAgTTMwIDUwaDMwIE0zMCA2NWgyMCIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxjaXJjbGUgY3g9IjcwIiBjeT0iNzAiIHI9IjE4IiBmaWxsPSIjMTBiOTgxIi8%2BPHBhdGggZD0iTTYyIDcwbDYgNiAxMi0xMiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjQiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg%3D%3D%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%2C%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIyIiBmaWxsPSIjM2I4MmY2Ii8%2BPHBhdGggZD0iTTMwIDIwaDMwIGwxNSAxNWgtNDV6IiBmaWxsPSIjZmZmIiBvcGFjaXR5PSIwLjMiLz48cGF0aCBkPSJNMzAgMzVoMjAgTTMwIDUwaDMwIE0zMCA2NWgyMCIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxjaXJjbGUgY3g9IjcwIiBjeT0iNzAiIHI9IjE4IiBmaWxsPSIjMTBiOTgxIi8%2BPHBhdGggZD0iTTYyIDcwbDYgNiAxMi0xMiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjQiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg%3D%3D%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -77,8 +77,10 @@ body{
 
 /* ── Top bar ── */
 .topbar{
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
-  padding:16px 20px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  padding:20px 16px;
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -86,10 +88,22 @@ body{
   border-radius: 20px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   margin-bottom: 16px;
-  flex-wrap:wrap;
 }
+
+/* Center the Brand */
 .brand{
-  display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.1rem;letter-spacing:-.02em;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  gap:4px;
+}
+.brand-company{
+  font-size:.75rem; font-weight:700; color:#64748b; letter-spacing:.05em;
+  text-transform:uppercase;
+}
+.brand-title-row{
+  display:flex; align-items:center; justify-content:center; gap:8px;
 }
 .brand .dot{
   width:12px;height:12px;border-radius:50%;
@@ -97,26 +111,36 @@ body{
   box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
 }
 .brand span{
+  font-weight:800; font-size:1.3rem; letter-spacing:-.02em;
   background: linear-gradient(135deg, #1e293b, #475569);
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
 }
-.top-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+/* Center the Action Buttons */
+.top-actions{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
 .pill{
   display:flex;align-items:center;gap:6px;font-size:.75rem;font-weight:600;
-  color:#475569;background:#f8fafc;border:1px solid #e2e8f0;padding:6px 14px;border-radius:30px;
+  color:#475569;background:#f8fafc;border:1px solid #e2e8f0;padding:6px 12px;border-radius:30px;
 }
 .pill b{color:#3b82f6;font-weight:800}
 
-/* Admin-only buttons */
+/* Admin Buttons */
 .admin-only{display:none;}
-.btn-upload{
-  display:flex;align-items:center;gap:6px;font-size:.8rem;font-weight:700;
-  color:#fff; background: linear-gradient(135deg, #3b82f6, #2563eb);
-  border:none;padding:8px 16px;border-radius:30px;
-  cursor:pointer;transition:.2s;box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+.btn-upload, .btn-company{
+  display:flex;align-items:center;gap:6px;font-size:.75rem;font-weight:700;
+  color:#fff; border:none;padding:8px 14px;border-radius:30px;
+  cursor:pointer;transition:.2s;
 }
-.btn-upload:active{transform:scale(0.96);}
+.btn-upload{background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);}
+.btn-company{background: linear-gradient(135deg, #8b5cf6, #6d28d9); box-shadow: 0 4px 12px rgba(109, 40, 217, 0.3);}
+.btn-upload:active, .btn-company:active{transform:scale(0.96);}
 #fileInput{display:none}
 
 /* Logout Button */
@@ -322,18 +346,28 @@ body{
 <!-- MAIN APP -->
 <div class="app" id="mainApp">
 
-  <!-- Top bar -->
+  <!-- Top bar (Centered) -->
   <div class="topbar">
     <div class="brand">
-      <div class="dot"></div>
-      <span>JOB CARDS</span>
+      <!-- Company Name (Changed by Admin) -->
+      <div class="brand-company" id="companyName">YOUR COMPANY</div>
+      
+      <!-- Main Title Row -->
+      <div class="brand-title-row">
+        <div class="dot"></div>
+        <span>JOB CARDS</span>
+      </div>
     </div>
+    
     <div class="top-actions">
       <div class="pill" id="statsPill">📊 0 jobs</div>
       
       <!-- Admin Only Controls -->
       <label class="btn-upload admin-only" id="uploadLabel" for="fileInput">📂 Load Data</label>
       <input type="file" id="fileInput" accept=".csv,.json,.txt,.xlsx,.xls" class="admin-only">
+      
+      <button class="btn-company admin-only" id="editCompanyBtn">✏️ Change Name</button>
+      
       <button class="btn-clear admin-only" id="clearBtn">Clear Data</button>
       
       <button class="btn-logout" id="logoutBtn">Logout</button>
@@ -389,6 +423,7 @@ if ('serviceWorker' in navigator) {
 // Local storage keys
 const STORAGE_KEY = 'jobcard_app_data_v1';
 const AUTH_KEY = 'jobcard_auth_role';
+const COMPANY_KEY = 'jobcard_company_name';
 
 let DATA = [];
 let SUGGEST_INDEX = -1;
@@ -415,6 +450,10 @@ const resultCount= document.getElementById('resultCount');
 const statsPill  = document.getElementById('statsPill');
 const fileInput  = document.getElementById('fileInput');
 const clearBtn   = document.getElementById('clearBtn');
+
+// Company Name Elements
+const companyName = document.getElementById('companyName');
+const editCompanyBtn = document.getElementById('editCompanyBtn');
 
 /* ============================================================
    AUTHENTICATION LOGIC
@@ -452,7 +491,6 @@ loginBtn.addEventListener('click', () => {
   }
 });
 
-// Allow Enter key to submit login
 loginPass.addEventListener('keydown', e => {
   if(e.key === 'Enter') loginBtn.click();
 });
@@ -466,18 +504,41 @@ function startApp(role) {
   loginScreen.style.display = 'none';
   mainApp.style.display = 'block';
   
-  // Show admin controls only if role is 'admin'
-  const adminElements = document.querySelectorAll('.admin-only');
-  adminElements.forEach(el => {
-    if (role === 'admin') {
-      el.style.display = el.tagName === 'LABEL' ? 'flex' : (el.tagName === 'BUTTON' ? 'inline-block' : 'block');
-    } else {
-      el.style.display = 'none';
-    }
-  });
+  if (role === 'admin') {
+    document.querySelectorAll('.admin-only').forEach(el => {
+      if(el.tagName === 'LABEL') el.style.display = 'flex';
+      else if(el.tagName === 'BUTTON') el.style.display = 'inline-block';
+      else el.style.display = 'block';
+    });
+  } else {
+    document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+  }
 
+  loadCompanyName();
   loadDataFromStorage();
 }
+
+/* ============================================================
+   COMPANY NAME LOGIC
+   ============================================================ */
+function loadCompanyName() {
+  const savedName = localStorage.getItem(COMPANY_KEY);
+  if (savedName) {
+    companyName.textContent = savedName;
+  } else {
+    companyName.textContent = "JOB CARD SYSTEM"; // Default fallback
+  }
+}
+
+editCompanyBtn.addEventListener('click', () => {
+  const current = companyName.textContent;
+  const newName = prompt("Enter Company Name:", current);
+  if (newName !== null && newName.trim() !== "") {
+    const cleanName = newName.trim().toUpperCase();
+    localStorage.setItem(COMPANY_KEY, cleanName);
+    companyName.textContent = cleanName;
+  }
+});
 
 /* ============================================================
    CORE APP LOGIC
@@ -852,17 +913,16 @@ fileInput.addEventListener('change', e => {
       if(!existing.has(key)){ DATA.push(r); existing.add(key); added++; }
     });
     
-    // Save to browser local storage
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
     } catch(e) {
-      console.warn('Failed to save to local storage (file might be too large)', e);
+      console.warn('Failed to save to local storage', e);
       alert('Data loaded, but could not save to device memory. File may be too large.');
     }
 
     updateStats(); refreshOpSelect();
     if(suggestBox.classList.contains('open')) renderSuggestions(jobInput.value);
-    alert(`Successfully loaded ${added} operations. Data saved to this device for all users to see.`);
+    alert(`Successfully loaded ${added} operations. Data saved to this device.`);
   }
 
   if(ext === 'xlsx' || ext === 'xls'){

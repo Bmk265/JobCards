@@ -7,10 +7,8 @@
 <meta name="theme-color" content="#3b82f6">
 <title>Job Cards</title>
 
-<!-- SheetJS -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-<!-- Firebase Modules -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -19,7 +17,7 @@
     apiKey: "AIzaSyBreGUBGU8rvOam98erNe48OQghvYIrLiA",
     authDomain: "jobcards-6fa8a.firebaseapp.com",
     projectId: "jobcards-6fa8a",
-    storageBucket: "jobcards-6fa8a.appspot.com", // Fixed typo here
+    storageBucket: "jobcards-6fa8a.appspot.com",
     messagingSenderId: "608442052458",
     appId: "1:608442052458:web:723cf599ef57b0abaabf13"
   };
@@ -27,7 +25,6 @@
   try {
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    // Changed collection name to bypass automated Google blocks
     const docRef = doc(db, "system_data", "records");
 
     window.firebaseDB = { docRef, getDoc, setDoc };
@@ -39,7 +36,7 @@
 </script>
 
 <style>
-/* [Your exact CSS remains unchanged] */
+/* Same CSS as before */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 *{margin:0;padding:0;box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
 body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background: #f1f5f9;background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,0.05) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,0.05) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,0.05) 0, transparent 50%);color: #1e293b;min-height: 100vh;min-height: 100dvh;-webkit-font-smoothing: antialiased;font-size: 14px;line-height: 1.5;overscroll-behavior-y: none;}
@@ -233,9 +230,7 @@ const clearBtn   = document.getElementById('clearBtn');
 const companyName = document.getElementById('companyName');
 const editCompanyBtn = document.getElementById('editCompanyBtn');
 
-/* ============================================================
-   FIREBASE DATA HANDLER
-   ============================================================ */
+/* FIREBASE DATA HANDLER */
 let firebaseReady = false;
 
 window.addEventListener('firebaseLoaded', () => {
@@ -255,6 +250,14 @@ async function loadCloudData() {
     if (docSnap.exists()) {
       const cloudData = docSnap.data();
       DATA = cloudData.records || [];
+      
+      // CONVERT OBJECT BACK TO ARRAY
+      DATA.forEach(r => {
+        if (r.details && !Array.isArray(r.details)) {
+          r.details = Object.entries(r.details);
+        }
+      });
+
       if(cloudData.companyName) {
         companyName.textContent = cloudData.companyName;
       }
@@ -273,7 +276,6 @@ async function loadCloudData() {
   } catch(e) {
     console.error(e);
     resultTitle.textContent = 'Failed to sync with cloud.';
-    alert("Read Error: " + e.message); // Shows exact read error
   }
 }
 
@@ -452,7 +454,6 @@ function renderResults(){
   grid.innerHTML = html;
 }
 
-/* EVENTS */
 jobInput.addEventListener('input', () => { renderSuggestions(jobInput.value); refreshOpSelect(); });
 jobInput.addEventListener('focus', () => { if(!jobInput.value.trim()) renderSuggestions(''); else renderSuggestions(jobInput.value); });
 jobInput.addEventListener('keydown', e => {
@@ -544,18 +545,29 @@ fileInput.addEventListener('change', e => {
   }
 
   async function mergeRowsAndSave(newRows){
-    DATA = newRows; 
     try {
       resultTitle.textContent = 'Uploading to cloud...';
+      
+      // CONVERT ARRAY OF ARRAYS TO OBJECT TO FIX FIRESTORE ERROR
+      const safeData = newRows.map(r => {
+        const safeRow = { ...r };
+        if (Array.isArray(safeRow.details)) {
+          safeRow.details = Object.fromEntries(safeRow.details);
+        }
+        return safeRow;
+      });
+
       const { docRef, setDoc } = window.firebaseDB;
-      await setDoc(docRef, { records: DATA }, { merge: true });
+      await setDoc(docRef, { records: safeData }, { merge: true });
+      
+      DATA = newRows; // Keep local as arrays for the app to read
       updateStats(); refreshOpSelect();
       if(suggestBox.classList.contains('open')) renderSuggestions(jobInput.value);
       alert(`Successfully uploaded ${DATA.length} records to the cloud!`);
       resultTitle.textContent = 'Enter details above';
     } catch(e) {
       console.error(e);
-      alert('Failed to save to cloud: ' + e.message); // DISPLAYS EXACT FIREBASE ERROR
+      alert('Failed to save to cloud: ' + e.message);
       resultTitle.textContent = 'Upload failed';
     }
   }

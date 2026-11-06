@@ -8,10 +8,12 @@
 <title>Job Cards</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBreGUBGU8rvOam98erNe48OQghvYIrLiA",
@@ -25,13 +27,16 @@
   try {
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    // NEW VERSION PATH - This forces the database to ignore old broken data
-    const docRef = doc(db, "jobcards_v2", "main_database");
+    const storage = getStorage(app);
+    
+    // Settings document for Company Name
+    const settingsDocRef = doc(db, "app_settings", "config");
 
-    window.firebaseDB = { docRef, getDoc, setDoc };
+    window.firebaseDB = { settingsDocRef, getDoc, setDoc, storage, ref, uploadBytes, getDownloadURL };
     window.firebaseReady = true;
     window.dispatchEvent(new Event('firebaseLoaded'));
   } catch (error) {
+    console.error("Firebase Init Error: ", error);
     alert("Firebase Init Error: " + error.message);
   }
 </script>
@@ -158,10 +163,12 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans
     </div>
     <div class="top-actions">
       <div class="pill" id="statsPill">📊 0 jobs</div>
-      <label class="btn-upload admin-only" id="uploadLabel" for="fileInput">📂 Load Data</label>
-      <input type="file" id="fileInput" accept=".csv,.json,.txt,.xlsx,.xls" class="admin-only">
+      
+      <!-- Admin Controls -->
+      <label class="btn-upload admin-only" id="uploadLabel" for="fileInput">📂 Upload Data</label>
+      <input type="file" id="fileInput" accept=".csv" class="admin-only">
+      
       <button class="btn-company admin-only" id="editCompanyBtn">✏️ Change Name</button>
-      <button class="btn-clear admin-only" id="clearBtn">Clear Data</button>
       <button class="btn-logout" id="logoutBtn">Logout</button>
     </div>
   </div>
@@ -227,55 +234,147 @@ const resultTitle= document.getElementById('resultTitle');
 const resultCount= document.getElementById('resultCount');
 const statsPill  = document.getElementById('statsPill');
 const fileInput  = document.getElementById('fileInput');
-const clearBtn   = document.getElementById('clearBtn');
 const companyName = document.getElementById('companyName');
 const editCompanyBtn = document.getElementById('editCompanyBtn');
 
-/* FIREBASE DATA HANDLER */
+/* FIREBASE CLOUD HANDLER */
 let firebaseReady = false;
-
 window.addEventListener('firebaseLoaded', () => {
   firebaseReady = true;
   if (localStorage.getItem(AUTH_KEY)) {
-    loadCloudData();
+    loadCloudSettings();
+    loadCSVFromCloud();
   }
 });
 
-async function loadCloudData() {
+async function loadCloudSettings() {
   if(!firebaseReady) return;
   try {
-    resultTitle.textContent = 'Loading data from cloud...';
-    const { docRef, getDoc } = window.firebaseDB;
-    const docSnap = await getDoc(docRef);
-    
-    if (docSnap.exists()) {
-      const cloudData = docSnap.data();
-      // PARSE THE STRING BACK INTO AN ARRAY
-      if (cloudData.jsonRecords) {
-        DATA = JSON.parse(cloudData.jsonRecords);
-      } else {
-        DATA = [];
-      }
+    const { settingsDocRef, getDoc } = window.firebaseDB;
+    const docSnap = await getDoc(settingsDocRef);
+    if (docSnap.exists() && docSnap.data().companyName) {
+      companyName.textContent = docSnap.data().companyName;
+      localStorage.setItem(COMPANY_KEY, docSnap.data().companyName);
+    }
+  } catch(e) { console.error("Settings Load Error", e); }
+}
 
-      if(cloudData.companyName) {
-        companyName.textContent = cloudData.companyName;
-      }
-    } else {
-      DATA = [];
-    }
-    updateStats();
-    refreshOpSelect();
+async function loadCSVFromCloud() {
+  if(!firebaseReady) return;
+  try {
+    resultTitle.textContent = 'Syncing data from cloud...';
+    const { storage, ref, getDownloadURL } = window.firebaseDB;
     
-    if (DATA.length === 0) {
-      const isAdmin = localStorage.getItem(AUTH_KEY) === 'admin';
-      renderEmpty(isAdmin ? 'Tap <b>Load Data</b> to upload a file.' : 'No data available. Contact Admin.', '📂');
-    } else if(!jobInput.value) {
-      renderEmpty('Data synced. Start typing a <b>job number</b> above.', '🔎');
+    const fileRef = ref(storage, 'data/database.csv');
+    const url = await getDownloadURL(fileRef);
+    
+    const response = await fetch(url);
+    const csvText = await response.text();
+    
+    Papa.parse(csvText, {
+      header: true,
+      skipEmptyLines: true,
+      complete: function(results) {
+        processCSVData(results.data);
+        resultTitle.textContent = 'Data synced successfully.';
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    if(error.code === 'storage/object-not-found') {
+      resultTitle.textContent = 'No data uploaded yet.';
+      renderEmpty('Admin has not uploaded any data yet.', '📂');
+    } else {
+      resultTitle.textContent = 'Failed to sync data.';
+      renderEmpty('Could not load data. Check internet.', '⚠️');
     }
-  } catch(e) {
-    console.error(e);
-    resultTitle.textContent = 'Failed to sync with cloud.';
   }
+}
+
+/* UPLOAD CSV TO CLOUD */
+fileInput.addEventListener('change', async e => {
+  const file = e.target.files[0]; if(!file) return;
+  if(!firebaseReady) { alert("Cloud not connected. Please refresh."); return; }
+
+  try {
+    resultTitle.textContent = 'Uploading to cloud (this may take a moment)...';
+    const { storage, ref, uploadBytes } = window.firebaseDB;
+    
+    const fileRef = ref(storage, 'data/database.csv');
+    await uploadBytes(fileRef, file);
+    
+    alert('Data successfully uploaded to the cloud! It will now appear on all devices.');
+    loadCSVFromCloud();
+  } catch (error) {
+    console.error(error);
+    alert('Upload failed: ' + error.message);
+    resultTitle.textContent = 'Upload failed';
+  } finally {
+    fileInput.value = '';
+  }
+});
+
+function processCSVData(rows) {
+  const RESERVED = {
+    soItem: 'SO-ITEM', op: 'OPERATION DETAIL', qty: 'QTY', customer: 'CUSTOMER', 
+    size: 'SIZE', curOp: 'CURRENT OPERATION', nextOp: 'NEXT OPERATION', drum: 'DRUM'
+  };
+
+  const headers = Object.keys(rows[0] || {});
+  const findHeader = (name) => headers.find(h => h.toLowerCase().includes(name.toLowerCase()));
+
+  const soItemKey = findHeader('SO-ITEM') || findHeader('INDEX');
+  const opKey = findHeader('OPERATION DETAIL') || findHeader('OPERATION');
+
+  if (!soItemKey || !opKey) {
+    alert('CSV is missing required headers: "SO-ITEM" and "OPERATION DETAIL"');
+    return;
+  }
+
+  DATA = [];
+  rows.forEach((row, i) => {
+    const soItem = String(row[soItemKey] || '').trim();
+    const op = String(row[opKey] || '').trim();
+    if (!soItem || !op) return;
+
+    const details = [];
+    headers.forEach(h => {
+      if (h === soItemKey || h === opKey || Object.values(RESERVED).includes(h.toUpperCase())) return;
+      
+      const colName = h.trim();
+      if (/H$/i.test(colName)) {
+        const base = colName.replace(/H$/i, '');
+        const dColName = base + 'D';
+        const actualDCol = headers.find(h2 => h2.trim().toUpperCase() === dColName.toUpperCase());
+        
+        const label = String(row[h] || '').trim();
+        if (actualDCol) {
+          const val = String(row[actualDCol] || '').trim();
+          if (label !== '' || val !== '') details.push([label || colName, val || '—']);
+        } else if (label !== '') {
+          details.push([label, '—']);
+        }
+      } else if (!/D$/i.test(colName) && colName !== '') {
+        const val = String(row[h] || '').trim();
+        if (val !== '') details.push([colName, val]);
+      }
+    });
+
+    DATA.push({
+      order: i, soItem, so: soItem.split('#')[0].trim(), operation: op,
+      qty: row[findHeader('QTY')] || '',
+      customer: row[findHeader('CUSTOMER')] || '',
+      size: row[findHeader('SIZE')] || '',
+      currentOp: row[findHeader('CURRENT OPERATION')] || '',
+      nextOp: row[findHeader('NEXT OPERATION')] || '',
+      details,
+      drum: row[findHeader('DRUM')] || ''
+    });
+  });
+
+  updateStats();
+  refreshOpSelect();
+  if(!jobInput.value) renderEmpty('Data loaded. Start typing a <b>job number</b> above.', '🔎');
 }
 
 /* AUTHENTICATION */
@@ -306,7 +405,8 @@ loginBtn.addEventListener('click', () => {
     loginUser.value = '';
     loginPass.value = '';
     startApp(user.role);
-    loadCloudData(); 
+    loadCloudSettings();
+    loadCSVFromCloud();
   } else {
     loginError.style.display = 'block';
   }
@@ -341,8 +441,8 @@ editCompanyBtn.addEventListener('click', async () => {
     companyName.textContent = cleanName;
     if(firebaseReady) {
       try {
-        const { docRef, setDoc } = window.firebaseDB;
-        await setDoc(docRef, { companyName: cleanName }, { merge: true });
+        const { settingsDocRef, setDoc } = window.firebaseDB;
+        await setDoc(settingsDocRef, { companyName: cleanName }, { merge: true });
       } catch(e) { alert("Name saved locally, but failed to sync to cloud."); }
     }
   }
@@ -397,7 +497,6 @@ function refreshOpSelect(){
 
 function updateStats(){
   statsPill.innerHTML = `📊 <b>${buildJobIndex().size}</b> jobs`;
-  clearBtn.style.display = (DATA.length > 0 && localStorage.getItem(AUTH_KEY) === 'admin') ? 'inline-block' : 'none';
 }
 
 function highlightMatch(text, term){
@@ -469,144 +568,6 @@ jobInput.addEventListener('blur', () => { setTimeout(closeSuggestions, 150); });
 opSelect.addEventListener('change', () => { if(jobInput.value.trim() && opSelect.value) renderResults(); });
 searchBtn.addEventListener('click', () => { closeSuggestions(); if(!jobInput.value.trim()){ jobInput.focus(); return; } if(!opSelect.value){ opSelect.focus(); return; } renderResults(); });
 resetBtn.addEventListener('click', () => { jobInput.value = ''; opSelect.innerHTML = '<option value="">— Select Job First —</option>'; opSelect.disabled = true; closeSuggestions(); resultTitle.textContent = 'Enter details above'; resultCount.textContent = '0 records'; renderEmpty('Start typing a <b>job number</b> above.','🔎'); jobInput.focus(); });
-
-clearBtn.addEventListener('click', async () => {
-  if(confirm("Are you sure you want to clear all cloud data? This will delete the data for EVERYONE.")) {
-    if(!firebaseReady) return alert("Cloud not connected.");
-    try {
-      const { docRef, setDoc } = window.firebaseDB;
-      await setDoc(docRef, { jsonRecords: "[]" }, { merge: true });
-      DATA = []; updateStats(); resetBtn.click(); renderEmpty('Cloud data cleared.','📂');
-    } catch(e) { alert("Failed to clear cloud data. " + e.message); }
-  }
-});
-
-/* UPLOAD LOGIC */
-fileInput.addEventListener('change', e => {
-  const file = e.target.files[0]; if(!file) return;
-  if(!firebaseReady) { alert("Cloud database not loaded yet."); return; }
-  
-  const reader = new FileReader();
-  const ext = file.name.split('.').pop().toLowerCase();
-
-  function rowsToRecords(header, body){
-    const idx = p => header.findIndex(h => new RegExp(p,'i').test(String(h||'')));
-    const RESERVED = {
-      soItem: idx('SO-ITEM|INDEX'), op: idx('OPERATION DETAIL|^OPERATION$'),
-      qty: idx('QTY'), customer: idx('CUSTOMER'), size: idx('SIZE'),
-      curOp: idx('CURRENT OPERATION'), nextOp: idx('NEXT OPERATION'), drum: idx('DRUM')
-    };
-
-    if(RESERVED.soItem < 0 || RESERVED.op < 0){
-      throw new Error('Missing required headers: need "SO-ITEM" and "OPERATION DETAIL"');
-    }
-
-    const out = [];
-    body.forEach((c, i) => {
-      const soItem = String(c[RESERVED.soItem] ?? '').trim();
-      const op     = String(c[RESERVED.op]     ?? '').trim();
-      if(!soItem || !op) return;
-
-      const details = [];
-      header.forEach((h, colIdx) => {
-        const colName = String(h||'').trim();
-        if(Object.values(RESERVED).includes(colIdx)) return;
-        
-        if(/H$/i.test(colName)) {
-          const base = colName.replace(/H$/i, '');
-          const dColName = base + 'D';
-          const dColIdx = header.findIndex(h2 => String(h2||'').trim().toUpperCase() === dColName.toUpperCase());
-          const label = String(c[colIdx] ?? '').trim();
-          
-          if(dColIdx >= 0) {
-            const val = String(c[dColIdx] ?? '').trim();
-            if(label !== '' || val !== '') details.push([label || colName, val || '—']);
-          } else if(label !== '') {
-            details.push([label, '—']);
-          }
-        } else if(!/D$/i.test(colName) && colName !== '') {
-          const val = String(c[colIdx] ?? '').trim();
-          if(val !== '') details.push([colName, val]);
-        }
-      });
-
-      out.push({
-        order: 1000 + i, soItem, so: soItem.split('#')[0].trim(), operation: op,
-        qty: RESERVED.qty >= 0 ? String(c[RESERVED.qty] ?? '') : '',
-        customer: RESERVED.customer >= 0 ? String(c[RESERVED.customer] ?? '') : '',
-        size: RESERVED.size >= 0 ? String(c[RESERVED.size] ?? '') : '',
-        currentOp: RESERVED.curOp >= 0 ? String(c[RESERVED.curOp] ?? '') : '',
-        nextOp: RESERVED.nextOp >= 0 ? String(c[RESERVED.nextOp] ?? '') : '',
-        details, drum: RESERVED.drum >= 0 ? String(c[RESERVED.drum] ?? '') : ''
-      });
-    });
-    return out;
-  }
-
-  async function mergeRowsAndSave(newRows){
-    try {
-      resultTitle.textContent = 'Uploading to cloud...';
-      
-      // SAVE AS STRING TO BYPASS GOOGLE ARRAY LIMITS
-      const stringifiedData = JSON.stringify(newRows);
-
-      const { docRef, setDoc } = window.firebaseDB;
-      await setDoc(docRef, { jsonRecords: stringifiedData }, { merge: true });
-      
-      DATA = newRows; // Keep local as arrays for the app to read
-      updateStats(); refreshOpSelect();
-      if(suggestBox.classList.contains('open')) renderSuggestions(jobInput.value);
-      alert(`Successfully uploaded ${DATA.length} records to the cloud!`);
-      resultTitle.textContent = 'Enter details above';
-    } catch(e) {
-      console.error(e);
-      alert('Failed to save to cloud: ' + e.message);
-      resultTitle.textContent = 'Upload failed';
-    }
-  }
-
-  if(ext === 'xlsx' || ext === 'xls'){
-    reader.onload = ev => {
-      try{
-        const data = new Uint8Array(ev.target.result);
-        const wb = XLSX.read(data, { type:'array' });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const aoa = XLSX.utils.sheet_to_json(ws, { header:1, defval:'', blankrows:false });
-        if(aoa.length < 2) throw new Error('Sheet is empty');
-        mergeRowsAndSave(rowsToRecords(aoa[0].map(h => String(h||'').trim()), aoa.slice(1)));
-      }catch(err){ alert('Excel Error: ' + err.message); } 
-      finally { fileInput.value = ''; }
-    };
-    reader.readAsArrayBuffer(file);
-    return;
-  }
-
-  if(ext === 'csv' || ext === 'txt'){
-    reader.onload = ev => {
-      try{
-        const lines = ev.target.result.split(/\r?\n/).filter(l=>l.trim()!=='');
-        const parseLine = line => {
-          const out=[]; let q=false, cur='';
-          for(let i=0;i<line.length;i++){
-            const ch=line[i];
-            if(ch==='"'){ if(q && line[i+1]==='"'){cur+='"';i++;} else q=!q; }
-            else if(ch===',' && !q){ out.push(cur); cur=''; }
-            else cur+=ch;
-          }
-          out.push(cur); return out.map(s=>s.trim());
-        };
-        const header = parseLine(lines[0]);
-        const body = [];
-        for(let i=1;i<lines.length;i++) body.push(parseLine(lines[i]));
-        mergeRowsAndSave(rowsToRecords(header, body));
-      }catch(err){ alert('CSV Error: ' + err.message); }
-      finally { fileInput.value = ''; }
-    };
-    reader.readAsText(file);
-    return;
-  }
-  alert('Please upload .xlsx or .csv files.'); fileInput.value = '';
-});
 
 checkAuth();
 })();

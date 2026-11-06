@@ -25,7 +25,8 @@
   try {
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const docRef = doc(db, "system_data", "records");
+    // NEW VERSION PATH - This forces the database to ignore old broken data
+    const docRef = doc(db, "jobcards_v2", "main_database");
 
     window.firebaseDB = { docRef, getDoc, setDoc };
     window.firebaseReady = true;
@@ -36,7 +37,7 @@
 </script>
 
 <style>
-/* Same CSS as before */
+/* [Your exact CSS remains unchanged] */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 *{margin:0;padding:0;box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
 body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background: #f1f5f9;background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,0.05) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,0.05) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,0.05) 0, transparent 50%);color: #1e293b;min-height: 100vh;min-height: 100dvh;-webkit-font-smoothing: antialiased;font-size: 14px;line-height: 1.5;overscroll-behavior-y: none;}
@@ -249,14 +250,12 @@ async function loadCloudData() {
     
     if (docSnap.exists()) {
       const cloudData = docSnap.data();
-      DATA = cloudData.records || [];
-      
-      // CONVERT OBJECT BACK TO ARRAY
-      DATA.forEach(r => {
-        if (r.details && !Array.isArray(r.details)) {
-          r.details = Object.entries(r.details);
-        }
-      });
+      // PARSE THE STRING BACK INTO AN ARRAY
+      if (cloudData.jsonRecords) {
+        DATA = JSON.parse(cloudData.jsonRecords);
+      } else {
+        DATA = [];
+      }
 
       if(cloudData.companyName) {
         companyName.textContent = cloudData.companyName;
@@ -476,7 +475,7 @@ clearBtn.addEventListener('click', async () => {
     if(!firebaseReady) return alert("Cloud not connected.");
     try {
       const { docRef, setDoc } = window.firebaseDB;
-      await setDoc(docRef, { records: [] }, { merge: true });
+      await setDoc(docRef, { jsonRecords: "[]" }, { merge: true });
       DATA = []; updateStats(); resetBtn.click(); renderEmpty('Cloud data cleared.','📂');
     } catch(e) { alert("Failed to clear cloud data. " + e.message); }
   }
@@ -548,17 +547,11 @@ fileInput.addEventListener('change', e => {
     try {
       resultTitle.textContent = 'Uploading to cloud...';
       
-      // CONVERT ARRAY OF ARRAYS TO OBJECT TO FIX FIRESTORE ERROR
-      const safeData = newRows.map(r => {
-        const safeRow = { ...r };
-        if (Array.isArray(safeRow.details)) {
-          safeRow.details = Object.fromEntries(safeRow.details);
-        }
-        return safeRow;
-      });
+      // SAVE AS STRING TO BYPASS GOOGLE ARRAY LIMITS
+      const stringifiedData = JSON.stringify(newRows);
 
       const { docRef, setDoc } = window.firebaseDB;
-      await setDoc(docRef, { records: safeData }, { merge: true });
+      await setDoc(docRef, { jsonRecords: stringifiedData }, { merge: true });
       
       DATA = newRows; // Keep local as arrays for the app to read
       updateStats(); refreshOpSelect();

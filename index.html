@@ -12,40 +12,12 @@
 <!-- PWA Manifest embedded -->
 <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Job%20Cards%22%2C%22short_name%22%3A%22Job%20Cards%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f1f5f9%22%2C%22theme_color%22%3A%22%233b82f6%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIyIiBmaWxsPSIjM2I4MmY2Ii8%2BPHBhdGggZD0iTTMwIDIwaDMwIGwxNSAxNWgtNDV6IiBmaWxsPSIjZmZmIiBvcGFjaXR5PSIwLjMiLz48cGF0aCBkPSJNMzAgMzVoMjAgTTMwIDUwaDMwIE0zMCA2NWgyMCIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxjaXJjbGUgY3g9IjcwIiBjeT0iNzAiIHI9IjE4IiBmaWxsPSIjMTBiOTgxIi8%2BPHBhdGggZD0iTTYyIDcwbDYgNiAxMi0xMiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjQiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg%3D%3D%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%2C%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIyIiBmaWxsPSIjM2I4MmY2Ii8%2BPHBhdGggZD0iTTMwIDIwaDMwIGwxNSAxNWgtNDV6IiBmaWxsPSIjZmZmIiBvcGFjaXR5PSIwLjMiLz48cGF0aCBkPSJNMzAgMzVoMjAgTTMwIDUwaDMwIE0zMCA2NWgyMCIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxjaXJjbGUgY3g9IjcwIiBjeT0iNzAiIHI9IjE4IiBmaWxsPSIjMTBiOTgxIi8%2BPHBhdGggZD0iTTYyIDcwbDYgNiAxMi0xMiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjQiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg%3D%3D%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
 
-<!-- SheetJS & Firebase Scripts -->
+<!-- SheetJS -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script type="module">
-  // ==========================================
-  // 🔥 FIREBASE INITIALIZATION (Paste your config here)
-  // ==========================================
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyBreGUBGU8rvOam98erNe48OQghvYIrLiA",
-  authDomain: "jobcards-6fa8a.firebaseapp.com",
-  projectId: "jobcards-6fa8a",
-  storageBucket: "jobcards-6fa8a.firebasestorage.app",
-  messagingSenderId: "608442052458",
-  appId: "1:608442052458:web:723cf599ef57b0abaabf13"
-};
-
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const docRef = doc(db, "jobcards", "database");
-
-  // Expose Firebase functions to the main script
-  window.firebaseDB = { docRef, getDoc, setDoc };
-  window.firebaseReady = true;
-  window.dispatchEvent(new Event('firebaseLoaded'));
-</script>
+<!-- Firebase SDK (Standard version, not module) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <style>
 /* ============================================================
@@ -104,6 +76,7 @@ body{
   margin-top:8px;
 }
 .login-btn:active{transform:scale(0.98);}
+.login-btn:disabled{opacity:0.5; cursor:wait;}
 .login-error{color:#ef4444; font-size:.85rem; font-weight:600; margin-top:10px; display:none;}
 
 /* ── Main App (Hidden initially) ── */
@@ -454,6 +427,34 @@ const COMPANY_KEY = 'jobcard_company_name';
 let DATA = [];
 let SUGGEST_INDEX = -1;
 let SUGGEST_ITEMS = [];
+let isCloudReady = false;
+
+/* ============================================================
+   🔥 FIREBASE INITIALIZATION (Paste your config here)
+   ============================================================ */
+try {
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY_HERE",       // <--- Change this
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",      // <--- Change this
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const docRef = db.collection("jobcards").doc("database");
+  
+  // Expose to global so our functions can use it
+  window.cloudDB = { docRef };
+  isCloudReady = true;
+  console.log("Cloud connected successfully.");
+
+} catch(e) {
+  console.error("Firebase initialization failed. Did you paste your config?", e);
+  isCloudReady = false;
+}
 
 /* DOM Elements */
 const loginScreen = document.getElementById('loginScreen');
@@ -476,52 +477,50 @@ const resultCount= document.getElementById('resultCount');
 const statsPill  = document.getElementById('statsPill');
 const fileInput  = document.getElementById('fileInput');
 const clearBtn   = document.getElementById('clearBtn');
-
-// Company Name Elements
 const companyName = document.getElementById('companyName');
 const editCompanyBtn = document.getElementById('editCompanyBtn');
 
 /* ============================================================
-   FIREBASE DATA HANDLER
+   CLOUD DATA FETCHING
    ============================================================ */
-let firebaseReady = false;
-
-// Listen for the Firebase module to finish loading
-window.addEventListener('firebaseLoaded', () => {
-  firebaseReady = true;
-  if (localStorage.getItem(AUTH_KEY)) {
-    loadCloudData();
-  }
-});
-
 async function loadCloudData() {
-  if(!firebaseReady) return;
+  if(!isCloudReady) {
+    resultTitle.textContent = 'Cloud error: Check config.';
+    return;
+  }
+  
   try {
-    resultTitle.textContent = 'Loading data from cloud...';
-    const { docRef, getDoc } = window.firebaseDB;
-    const docSnap = await getDoc(docRef);
+    resultTitle.textContent = 'Syncing with cloud...';
+    const docSnap = await window.cloudDB.docRef.get();
     
-    if (docSnap.exists()) {
+    if (docSnap.exists) {
       const cloudData = docSnap.data();
       DATA = cloudData.records || [];
+      
       if(cloudData.companyName) {
         companyName.textContent = cloudData.companyName;
+        localStorage.setItem(COMPANY_KEY, cloudData.companyName);
+      }
+      
+      if(DATA.length > 0) {
+        resultTitle.textContent = 'Data synced from cloud.';
       }
     } else {
       DATA = [];
+      resultTitle.textContent = 'No data in cloud yet.';
     }
+    
     updateStats();
     refreshOpSelect();
     
     if (DATA.length === 0) {
       const isAdmin = localStorage.getItem(AUTH_KEY) === 'admin';
       renderEmpty(isAdmin ? 'Tap <b>Load Data</b> to upload a file.' : 'No data available. Contact Admin.', '📂');
-    } else if(!jobInput.value) {
-      renderEmpty('Data synced. Start typing a <b>job number</b> above.', '🔎');
     }
   } catch(e) {
-    console.error(e);
-    resultTitle.textContent = 'Failed to sync with cloud.';
+    console.error("Cloud read error:", e);
+    resultTitle.textContent = 'Failed to read from cloud.';
+    alert("Cloud Error: Could not read data. Check your internet and Firebase rules.");
   }
 }
 
@@ -538,6 +537,7 @@ function checkAuth() {
   const savedRole = localStorage.getItem(AUTH_KEY);
   if (savedRole) {
     startApp(savedRole);
+    loadCloudData();
   } else {
     loginScreen.style.display = 'flex';
     mainApp.style.display = 'none';
@@ -556,7 +556,7 @@ loginBtn.addEventListener('click', () => {
     loginUser.value = '';
     loginPass.value = '';
     startApp(user.role);
-    loadCloudData(); // Fetch latest from cloud on login
+    loadCloudData();
   } else {
     loginError.style.display = 'block';
   }
@@ -585,13 +585,12 @@ function startApp(role) {
     document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
   }
 
-  // Load Company Name from LocalStorage as instant fallback
   const savedName = localStorage.getItem(COMPANY_KEY);
   if (savedName) companyName.textContent = savedName;
 }
 
 /* ============================================================
-   COMPANY NAME LOGIC
+   COMPANY NAME UPDATE
    ============================================================ */
 editCompanyBtn.addEventListener('click', async () => {
   const current = companyName.textContent;
@@ -602,12 +601,13 @@ editCompanyBtn.addEventListener('click', async () => {
     localStorage.setItem(COMPANY_KEY, cleanName);
     companyName.textContent = cleanName;
     
-    // Save to Cloud
-    if(firebaseReady) {
+    if(isCloudReady) {
       try {
-        const { docRef, setDoc } = window.firebaseDB;
-        await setDoc(docRef, { companyName: cleanName }, { merge: true });
-      } catch(e) { console.log("Cloud update failed", e); }
+        await window.cloudDB.docRef.set({ companyName: cleanName }, { merge: true });
+      } catch(e) { 
+        console.log("Cloud update failed", e); 
+        alert("Name changed locally, but failed to save to cloud.");
+      }
     }
   }
 });
@@ -890,11 +890,10 @@ resetBtn.addEventListener('click', () => {
 });
 
 clearBtn.addEventListener('click', async () => {
-  if(confirm("Are you sure you want to clear all cloud data? This will delete the data for EVERYONE.")) {
-    if(!firebaseReady) return alert("Cloud not connected.");
+  if(confirm("Are you sure you want to clear all cloud data? This deletes data for EVERYONE.")) {
+    if(!isCloudReady) return alert("Cloud not connected.");
     try {
-      const { docRef, setDoc } = window.firebaseDB;
-      await setDoc(docRef, { records: [] }, { merge: true });
+      await window.cloudDB.docRef.set({ records: [] }, { merge: true });
       DATA = [];
       updateStats();
       resetBtn.click();
@@ -908,7 +907,11 @@ clearBtn.addEventListener('click', async () => {
 /* UPLOAD LOGIC */
 fileInput.addEventListener('change', e => {
   const file = e.target.files[0]; if(!file) return;
-  if(!firebaseReady) { alert("Cloud database not loaded yet. Please wait a second and try again."); return; }
+  
+  if(!isCloudReady) { 
+    alert("Cloud database not ready. Please refresh the page and try again."); 
+    return; 
+  }
   
   const reader = new FileReader();
   const ext = file.name.split('.').pop().toLowerCase();
@@ -968,13 +971,11 @@ fileInput.addEventListener('change', e => {
   }
 
   async function mergeRowsAndSave(newRows){
-    // Overwrite existing data instead of merging if you want a clean upload
     DATA = newRows; 
     
     try {
       resultTitle.textContent = 'Uploading to cloud...';
-      const { docRef, setDoc } = window.firebaseDB;
-      await setDoc(docRef, { records: DATA }, { merge: true });
+      await window.cloudDB.docRef.set({ records: DATA }, { merge: true });
       
       updateStats(); refreshOpSelect();
       if(suggestBox.classList.contains('open')) renderSuggestions(jobInput.value);

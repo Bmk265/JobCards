@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f1f5f9">
+<title>Job Card App</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+/* ============================================================
+   LIGHT & SUPER COOL UI THEME (Mobile App Optimized)
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background: #f1f5f9;
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(253,16%,7%,0.05) 0, transparent 50%), 
+    radial-gradient(at 50% 0%, hsla(225,39%,30%,0.05) 0, transparent 50%), 
+    radial-gradient(at 100% 0%, hsla(339,49%,30%,0.05) 0, transparent 50%);
+  color: #1e293b;
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  font-size: 14px;
+  line-height: 1.5;
+  overscroll-behavior-y: none; /* Prevents pull-to-refresh on mobile */
+}
+
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+
+.app{max-width:1500px;margin:0 auto;padding:16px; padding-bottom: env(safe-area-inset-bottom);}
+
+/* ── Top bar ── */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:16px 20px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  margin-bottom: 16px;
+  flex-wrap:wrap;
+}
+.brand{
+  display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.1rem;letter-spacing:-.02em;
+}
+.brand .dot{
+  width:12px;height:12px;border-radius:50%;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
+}
+.brand span{
+  background: linear-gradient(135deg, #1e293b, #475569);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.top-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pill{
+  display:flex;align-items:center;gap:6px;font-size:.75rem;font-weight:600;
+  color:#475569;background:#f8fafc;border:1px solid #e2e8f0;padding:6px 14px;border-radius:30px;
+}
+.pill b{color:#3b82f6;font-weight:800}
+.btn-upload{
+  display:flex;align-items:center;gap:6px;font-size:.8rem;font-weight:700;
+  color:#fff; background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border:none;padding:8px 16px;border-radius:30px;
+  cursor:pointer;transition:.2s;box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+.btn-upload:active{transform:scale(0.96);}
+#fileInput{display:none}
+
+/* ── Search panel ── */
+.search-panel{
+  display:grid;grid-template-columns:1fr;gap:12px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid #fff;
+  border-radius: 20px;
+  padding:16px;
+  margin-bottom: 16px;
+  position:relative;
+  z-index:20;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0;position:relative}
+.field label{
+  font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;
+  font-weight:800;color:#64748b;
+}
+.field input,.field select{
+  width:100%;padding:12px 16px;border-radius:12px;border:1px solid #e2e8f0;
+  background:#fff;color:#1e293b;font-size:.9rem;font-weight:500;outline:none;
+  transition:.2s;font-family:inherit; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+  -webkit-appearance: none;
+}
+.field input::placeholder{color:#94a3b8}
+.field input:focus,.field select:focus{
+  border-color:#3b82f6;box-shadow: 0 0 0 4px rgba(59,130,246,.15);
+}
+.field select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 16px center;padding-right:40px;cursor:pointer;
+}
+.field select:disabled{opacity:.5;cursor:not-allowed; background:#f8fafc;}
+
+/* Buttons for search */
+.search-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;}
+.btn-search,.btn-reset{
+  height:44px;border-radius:12px;border:none;cursor:pointer;
+  font-size:.85rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:.2s;
+}
+.btn-search{
+  color:#fff; background:linear-gradient(135deg,#3b82f6,#2563eb);
+  box-shadow:0 4px 12px -2px rgba(37,99,235,.4);
+}
+.btn-reset{
+  background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;
+}
+.btn-search:active,.btn-reset:active{transform:scale(0.96);}
+
+/* ── Live suggestion dropdown ── */
+.suggest{
+  position:absolute;top:calc(100% + 8px);left:0;right:0;
+  background:#fff;border:1px solid #e2e8f0;border-radius:16px;
+  box-shadow:0 20px 40px -8px rgba(0,0,0,.15);
+  max-height:250px;overflow-y:auto;z-index:100;display:none;
+  padding:8px;
+}
+.suggest.open{display:block}
+.suggest-item{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:12px 14px;border-radius:10px;cursor:pointer;
+  font-size:.9rem;font-weight:600;color:#334155;
+  transition:.15s;
+}
+.suggest-item:active,.suggest-item:hover{background:#eff6ff;color:#1d4ed8;}
+.suggest-item .jn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.suggest-item .jn mark{background:#fef08a;color:#854d0e;padding:0 2px;border-radius:3px;font-weight:800;}
+.suggest-item .meta{
+  font-size:.65rem;font-weight:700;color:#2563eb;
+  background:#dbeafe;padding:4px 10px;border-radius:20px;flex-shrink:0;
+}
+.suggest-empty{padding:20px;text-align:center;font-size:.9rem;color:#94a3b8;}
+.suggest-hint{padding:8px 14px;font-size:.65rem;font-weight:800;text-transform:uppercase;color:#94a3b8;border-bottom:1px solid #f1f5f9;margin-bottom:8px;}
+
+/* ── Result bar ── */
+.result-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:0 4px 12px;flex-wrap:wrap;
+}
+.result-title{font-size:.95rem;font-weight:700;color:#334155}
+.result-title .hl{color:#2563eb}
+.result-title .sep{color:#cbd5e1;margin:0 6px}
+.counter{
+  font-size:.75rem;font-weight:800;padding:4px 14px;border-radius:20px;
+  background:#e0e7ff;color:#4338ca;
+}
+
+/* ── Cards grid ── */
+.grid{
+  display:grid;grid-template-columns:1fr; gap:16px;
+}
+.card{
+  background:#fff;display:flex;flex-direction:column;
+  border-radius:20px;overflow:hidden;
+  box-shadow:0 4px 20px rgba(0,0,0,0.04);
+  border:1px solid #f1f5f9;
+}
+.card-head{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:16px;border-bottom:1px solid #f1f5f9;background:#fafbfc;
+}
+.card-head h3{
+  font-size:1rem;font-weight:800;color:#0f172a;
+  display:flex;align-items:center;gap:8px;min-width:0;word-break:break-all;
+}
+.card-head h3 .bullet{
+  width:8px;height:8px;border-radius:50%;background:#3b82f6;flex-shrink:0;
+  box-shadow:0 0 8px rgba(59,130,246,.6);
+}
+.op-tag{
+  font-size:.65rem;font-weight:800;text-transform:uppercase;
+  padding:6px 12px;border-radius:20px;white-space:nowrap;
+  background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe;
+}
+
+/* ── Spec rows: LABEL LEFT / VALUE RIGHT ── */
+.specs{display:flex;flex-direction:column;}
+.spec{
+  display:grid;grid-template-columns:120px 1fr;
+  border-bottom:1px solid #f1f5f9;
+}
+.spec:last-child{border-bottom:none}
+.spec .k{
+  padding:12px 16px;font-size:.65rem;font-weight:800;text-transform:uppercase;
+  color:#64748b;background:#f8fafc;border-right:1px solid #f1f5f9;
+  display:flex;align-items:center;word-break:break-word;line-height:1.4;
+}
+.spec .v{
+  padding:12px 16px;font-size:.85rem;font-weight:500;color:#1e293b;
+  display:flex;align-items:center;word-break:break-word;line-height:1.45;
+}
+.spec .v .chip-val{
+  background:#eff6ff;color:#2563eb;font-weight:800;padding:2px 8px;
+  border-radius:6px;font-size:.8rem;display:inline-block;
+}
+.spec.accent .k{color:#2563eb;background:#eff6ff;}
+.spec.accent .v{color:#1e3a8a;font-weight:700;}
+
+.card-foot{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:12px 16px;background:#f8fafc;border-top:1px solid #f1f5f9;
+  font-size:.75rem;font-weight:600;color:#64748b;flex-wrap:wrap;
+}
+.card-foot span{display:flex;align-items:center;gap:6px}
+.card-foot .drum{color:#475569;word-break:break-word;font-weight:600;}
+
+/* ── Empty state ── */
+.empty{
+  grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;padding:60px 20px;text-align:center;
+  background:#fff;border-radius:20px;border:2px dashed #e2e8f0;
+}
+.empty .icon{font-size:3rem;opacity:.5}
+.empty p{font-size:.95rem;color:#64748b;max-width:320px;line-height:1.6;}
+.empty b{color:#3b82f6;font-weight:700}
+
+/* ── Desktop / Tablet Overrides ── */
+@media(min-width:768px){
+  .app{padding:24px;}
+  .search-panel{grid-template-columns:1.2fr 1.6fr auto auto; align-items:end;}
+  .search-buttons{display:flex; flex-direction:row; gap:12px;}
+  .btn-search,.btn-reset{padding:0 24px;}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(440px,1fr));}
+  .spec{grid-template-columns:180px 1fr;}
+  .spec .k{padding:12px 20px; font-size:.7rem;}
+  .spec .v{padding:12px 20px; font-size:.9rem;}
+  .card-head h3{font-size:1.1rem;}
+  .card-head, .card-foot { padding: 16px 20px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="dot"></div>
+      <span>JOB CARDS</span>
+    </div>
+    <div class="top-actions">
+      <div class="pill" id="statsPill">📊 0 jobs</div>
+      <label class="btn-upload" for="fileInput">📂 Load Data</label>
+      <input type="file" id="fileInput" accept=".csv,.json,.txt,.xlsx,.xls">
+    </div>
+  </div>
+
+  <!-- Search panel -->
+  <div class="search-panel">
+    <div class="field" id="jobField">
+      <label for="jobInput">Job Number</label>
+      <input type="text" id="jobInput" placeholder="Type job no..." autocomplete="off" spellcheck="false">
+      <div class="suggest" id="suggestBox"></div>
+    </div>
+    <div class="field">
+      <label for="opSelect">Operation</label>
+      <select id="opSelect" disabled>
+        <option value="">— Select Job First —</option>
+      </select>
+    </div>
+    <div class="search-buttons">
+      <button class="btn-search" id="searchBtn">🔍 Show</button>
+      <button class="btn-reset" id="resetBtn">Reset</button>
+    </div>
+  </div>
+
+  <!-- Result bar -->
+  <div class="result-bar">
+    <div class="result-title" id="resultTitle">Enter details above</div>
+    <div class="counter" id="resultCount">0 records</div>
+  </div>
+
+  <!-- Cards grid -->
+  <div class="grid" id="grid">
+    <div class="empty">
+      <div class="icon">📱</div>
+      <p>Tap <b>Load Data</b> to upload your Excel or CSV file and start viewing job cards.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+
+let DATA = [];
+let SUGGEST_INDEX = -1;
+let SUGGEST_ITEMS = [];
+
+/* DOM */
+const jobInput   = document.getElementById('jobInput');
+const jobField   = document.getElementById('jobField');
+const suggestBox = document.getElementById('suggestBox');
+const opSelect   = document.getElementById('opSelect');
+const searchBtn  = document.getElementById('searchBtn');
+const resetBtn   = document.getElementById('resetBtn');
+const grid       = document.getElementById('grid');
+const resultTitle= document.getElementById('resultTitle');
+const resultCount= document.getElementById('resultCount');
+const statsPill  = document.getElementById('statsPill');
+const fileInput  = document.getElementById('fileInput');
+
+/* HELPERS */
+function jobNumberOf(row){
+  if(!row.soItem) return '';
+  return row.soItem.split('#')[0].trim();
+}
+
+const esc = s => (s==null?'':String(s))
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+
+function buildJobIndex(){
+  const map = new Map();
+  DATA.forEach(r => {
+    const j = jobNumberOf(r);
+    if(!j) return;
+    if(!map.has(j)) map.set(j, {opCount:0, ops:new Set()});
+    const rec = map.get(j);
+    if(r.operation) rec.ops.add(r.operation);
+  });
+  map.forEach(v => v.opCount = v.ops.size);
+  return map;
+}
+
+function allJobNumbers(){
+  return Array.from(buildJobIndex().keys())
+    .sort((a,b)=> a.localeCompare(b, undefined, {numeric:true, sensitivity:'base'}));
+}
+
+function filterJobs(term){
+  const q = term.trim().toLowerCase();
+  const jobs = allJobNumbers();
+  if(!q) return jobs;
+  return jobs.filter(j => j.toLowerCase().includes(q));
+}
+
+function opsForJob(jobNo){
+  if(!jobNo) return [];
+  const jn = jobNo.trim().toLowerCase();
+  const seen = new Set();
+  const list = [];
+  DATA.forEach(r => {
+    if(!r.soItem || !r.operation) return;
+    if(jobNumberOf(r).toLowerCase() === jn){
+      const op = r.operation.trim();
+      if(!seen.has(op)){ seen.add(op); list.push(op); }
+    }
+  });
+  return list;
+}
+
+function refreshOpSelect(){
+  const job = jobInput.value.trim();
+  opSelect.innerHTML = '';
+  if(!job){
+    opSelect.innerHTML = '<option value="">— Select Job First —</option>';
+    opSelect.disabled = true;
+    return;
+  }
+  const ops = opsForJob(job);
+  if(ops.length === 0){
+    opSelect.innerHTML = '<option value="">— No Operations —</option>';
+    opSelect.disabled = true;
+    return;
+  }
+  const ph = document.createElement('option');
+  ph.value = ''; ph.textContent = '— Select Op —';
+  opSelect.appendChild(ph);
+  ops.forEach(op => {
+    const o = document.createElement('option');
+    o.value = op; o.textContent = op;
+    opSelect.appendChild(o);
+  });
+  opSelect.disabled = false;
+  if(ops.length === 1) opSelect.value = ops[0];
+}
+
+function updateStats(){
+  const idx = buildJobIndex();
+  statsPill.innerHTML = `📊 <b>${idx.size}</b> jobs`;
+}
+
+function highlightMatch(text, term){
+  const t = term.trim();
+  if(!t) return esc(text);
+  const i = text.toLowerCase().indexOf(t.toLowerCase());
+  if(i < 0) return esc(text);
+  return esc(text.slice(0,i)) + '<mark>' + esc(text.slice(i, i+t.length)) + '</mark>' + esc(text.slice(i+t.length));
+}
+
+/* SUGGESTIONS */
+function renderSuggestions(term){
+  const matches = filterJobs(term);
+  const idx = buildJobIndex();
+  SUGGEST_INDEX = -1;
+
+  if(matches.length === 0){
+    SUGGEST_ITEMS = [];
+    suggestBox.innerHTML = `<div class="suggest-empty">No jobs match <b>“${esc(term)}”</b></div>`;
+    suggestBox.classList.add('open');
+    return;
+  }
+
+  SUGGEST_ITEMS = matches;
+  let html = `<div class="suggest-hint">${matches.length} jobs found</div>`;
+  matches.forEach((j, i) => {
+    const rec = idx.get(j) || {opCount:0};
+    html += `
+      <div class="suggest-item" data-job="${esc(j)}" data-idx="${i}">
+        <span class="jn">${highlightMatch(j, term)}</span>
+        <span class="meta">${rec.opCount} op${rec.opCount!==1?'s':''}</span>
+      </div>`;
+  });
+  suggestBox.innerHTML = html;
+  suggestBox.classList.add('open');
+}
+
+function closeSuggestions(){
+  suggestBox.classList.remove('open');
+  SUGGEST_INDEX = -1;
+}
+
+function pickSuggestion(jobNo){
+  jobInput.value = jobNo;
+  closeSuggestions();
+  refreshOpSelect();
+  if(!opSelect.disabled && opSelect.options.length > 2){
+    opSelect.focus();
+  } else if(opSelect.value){
+    renderResults();
+  }
+}
+
+function moveSuggestion(dir){
+  if(!SUGGEST_ITEMS.length) return;
+  SUGGEST_INDEX += dir;
+  if(SUGGEST_INDEX < 0) SUGGEST_INDEX = SUGGEST_ITEMS.length - 1;
+  if(SUGGEST_INDEX >= SUGGEST_ITEMS.length) SUGGEST_INDEX = 0;
+
+  Array.from(suggestBox.querySelectorAll('.suggest-item')).forEach((el,i)=>{
+    el.classList.toggle('active', i === SUGGEST_INDEX);
+    if(i === SUGGEST_INDEX) el.scrollIntoView({block:'nearest'});
+  });
+}
+
+/* RENDER */
+function renderEmpty(msg, icon='🔎'){
+  grid.innerHTML = `<div class="empty"><div class="icon">${icon}</div><p>${msg}</p></div>`;
+}
+
+function renderResults(){
+  const job = jobInput.value.trim();
+  const op  = opSelect.value;
+
+  if(!job){ renderEmpty('Please enter a <b>job number</b> first.','⌨️'); resultTitle.textContent='Enter a job number'; resultCount.textContent='0 records'; return; }
+  if(!op){  renderEmpty('Please choose an <b>operation</b>.','📋'); resultTitle.textContent=`Job ${esc(job)} · Select Op`; resultCount.textContent='0 records'; return; }
+
+  const jn = job.toLowerCase();
+  const matches = DATA.filter(r => {
+    if(!r.soItem || !r.operation) return false;
+    return jobNumberOf(r).toLowerCase() === jn && r.operation === op;
+  });
+
+  resultTitle.innerHTML = `<span class="hl">${esc(job)}</span> <span class="sep">|</span> ${esc(op)}`;
+  resultCount.textContent = `${matches.length} record${matches.length!==1?'s':''}`;
+
+  if(matches.length === 0){
+    renderEmpty(`No job card found for <b>${esc(job)}</b>.`,'🗂️');
+    return;
+  }
+
+  let html = '';
+  matches.forEach(row => {
+    let specs = '';
+    specs += `<div class="spec accent"><div class="k">JOB NO</div><div class="v"><span class="chip-val">${esc(jobNumberOf(row))}</span></div></div>`;
+    specs += `<div class="spec"><div class="k">INDEX</div><div class="v">${esc(row.soItem)}</div></div>`;
+    specs += `<div class="spec"><div class="k">QTY</div><div class="v">${esc(row.qty||'—')}</div></div>`;
+    specs += `<div class="spec"><div class="k">CUSTOMER</div><div class="v">${esc(row.customer||'—')}</div></div>`;
+    specs += `<div class="spec"><div class="k">SIZE</div><div class="v">${esc(row.size||'—')}</div></div>`;
+    specs += `<div class="spec"><div class="k">CURR OP</div><div class="v">${esc(row.currentOp||'—')}</div></div>`;
+    specs += `<div class="spec"><div class="k">NEXT OP</div><div class="v">${esc(row.nextOp||'—')}</div></div>`;
+
+    (row.details||[]).forEach(([k,v])=>{
+      specs += `<div class="spec"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div></div>`;
+    });
+
+    html += `
+      <div class="card">
+        <div class="card-head">
+          <h3><span class="bullet"></span>${esc(row.soItem)}</h3>
+          <span class="op-tag">${esc(row.operation)}</span>
+        </div>
+        <div class="specs">${specs}</div>
+        <div class="card-foot">
+          <span>🏷️ ${esc(row.so)}</span>
+          <span class="drum">🥁 ${esc(row.drum||'—')}</span>
+        </div>
+      </div>`;
+  });
+
+  grid.innerHTML = html;
+}
+
+/* EVENTS */
+jobInput.addEventListener('input', () => {
+  renderSuggestions(jobInput.value);
+  refreshOpSelect();
+});
+
+jobInput.addEventListener('focus', () => {
+  if(!jobInput.value.trim()) renderSuggestions('');
+  else renderSuggestions(jobInput.value);
+});
+
+jobInput.addEventListener('keydown', e => {
+  const open = suggestBox.classList.contains('open');
+  if(e.key === 'ArrowDown'){
+    if(!open){ renderSuggestions(jobInput.value); return; }
+    e.preventDefault(); moveSuggestion(1);
+  } else if(e.key === 'ArrowUp'){
+    if(!open) return;
+    e.preventDefault(); moveSuggestion(-1);
+  } else if(e.key === 'Enter'){
+    e.preventDefault();
+    if(open && SUGGEST_INDEX >= 0) pickSuggestion(SUGGEST_ITEMS[SUGGEST_INDEX]);
+    else if(open && SUGGEST_ITEMS.length === 1) pickSuggestion(SUGGEST_ITEMS[0]);
+    else if(opSelect.value) renderResults();
+    else opSelect.focus();
+  } else if(e.key === 'Escape'){
+    closeSuggestions();
+  }
+});
+
+suggestBox.addEventListener('mousedown', e => {
+  const item = e.target.closest('.suggest-item');
+  if(!item) return;
+  e.preventDefault();
+  pickSuggestion(item.dataset.job);
+});
+
+document.addEventListener('click', e => {
+  if(!jobField.contains(e.target)) closeSuggestions();
+});
+
+jobInput.addEventListener('blur', () => {
+  setTimeout(closeSuggestions, 150);
+});
+
+opSelect.addEventListener('change', () => {
+  if(jobInput.value.trim() && opSelect.value) renderResults();
+});
+
+searchBtn.addEventListener('click', () => {
+  closeSuggestions();
+  if(!jobInput.value.trim()){ jobInput.focus(); return; }
+  if(!opSelect.value){ opSelect.focus(); return; }
+  renderResults();
+});
+
+resetBtn.addEventListener('click', () => {
+  jobInput.value = '';
+  opSelect.innerHTML = '<option value="">— Select Job First —</option>';
+  opSelect.disabled = true;
+  closeSuggestions();
+  resultTitle.textContent = 'Enter details above';
+  resultCount.textContent = '0 records';
+  renderEmpty('Start typing a <b>job number</b> above.','🔎');
+  jobInput.focus();
+});
+
+/* UPLOAD LOGIC */
+fileInput.addEventListener('change', e => {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  const ext = file.name.split('.').pop().toLowerCase();
+
+  function rowsToRecords(header, body){
+    const idx = p => header.findIndex(h => new RegExp(p,'i').test(String(h||'')));
+    const RESERVED = {
+      soItem: idx('SO-ITEM|INDEX'), op: idx('OPERATION DETAIL|^OPERATION$'),
+      qty: idx('QTY'), customer: idx('CUSTOMER'), size: idx('SIZE'),
+      curOp: idx('CURRENT OPERATION'), nextOp: idx('NEXT OPERATION'), drum: idx('DRUM')
+    };
+
+    if(RESERVED.soItem < 0 || RESERVED.op < 0){
+      throw new Error('Missing required headers: need "SO-ITEM" and "OPERATION DETAIL"');
+    }
+
+    const out = [];
+    body.forEach((c, i) => {
+      const soItem = String(c[RESERVED.soItem] ?? '').trim();
+      const op     = String(c[RESERVED.op]     ?? '').trim();
+      if(!soItem || !op) return;
+
+      const details = [];
+      header.forEach((h, colIdx) => {
+        const colName = String(h||'').trim();
+        if(Object.values(RESERVED).includes(colIdx)) return;
+        
+        if(/H$/i.test(colName)) {
+          const base = colName.replace(/H$/i, '');
+          const dColName = base + 'D';
+          const dColIdx = header.findIndex(h2 => String(h2||'').trim().toUpperCase() === dColName.toUpperCase());
+          const label = String(c[colIdx] ?? '').trim();
+          
+          if(dColIdx >= 0) {
+            const val = String(c[dColIdx] ?? '').trim();
+            if(label !== '' || val !== '') details.push([label || colName, val || '—']);
+          } else if(label !== '') {
+            details.push([label, '—']);
+          }
+        } else if(!/D$/i.test(colName) && colName !== '') {
+          const val = String(c[colIdx] ?? '').trim();
+          if(val !== '') details.push([colName, val]);
+        }
+      });
+
+      out.push({
+        order: 1000 + i, soItem, so: soItem.split('#')[0].trim(), operation: op,
+        qty: RESERVED.qty >= 0 ? String(c[RESERVED.qty] ?? '') : '',
+        customer: RESERVED.customer >= 0 ? String(c[RESERVED.customer] ?? '') : '',
+        size: RESERVED.size >= 0 ? String(c[RESERVED.size] ?? '') : '',
+        currentOp: RESERVED.curOp >= 0 ? String(c[RESERVED.curOp] ?? '') : '',
+        nextOp: RESERVED.nextOp >= 0 ? String(c[RESERVED.nextOp] ?? '') : '',
+        details, drum: RESERVED.drum >= 0 ? String(c[RESERVED.drum] ?? '') : ''
+      });
+    });
+    return out;
+  }
+
+  function mergeRows(newRows){
+    const existing = new Set(DATA.map(r=>`${r.soItem}|${r.operation}`));
+    let added = 0;
+    newRows.forEach(r=>{
+      const key = `${r.soItem}|${r.operation}`;
+      if(!existing.has(key)){ DATA.push(r); existing.add(key); added++; }
+    });
+    updateStats(); refreshOpSelect();
+    if(suggestBox.classList.contains('open')) renderSuggestions(jobInput.value);
+    alert(`Successfully loaded ${added} operations.`);
+  }
+
+  if(ext === 'xlsx' || ext === 'xls'){
+    reader.onload = ev => {
+      try{
+        const data = new Uint8Array(ev.target.result);
+        const wb = XLSX.read(data, { type:'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const aoa = XLSX.utils.sheet_to_json(ws, { header:1, defval:'', blankrows:false });
+        if(aoa.length < 2) throw new Error('Sheet is empty');
+        mergeRows(rowsToRecords(aoa[0].map(h => String(h||'').trim()), aoa.slice(1)));
+      }catch(err){ alert('Excel Error: ' + err.message); } 
+      finally { fileInput.value = ''; }
+    };
+    reader.readAsArrayBuffer(file);
+    return;
+  }
+
+  if(ext === 'csv' || ext === 'txt'){
+    reader.onload = ev => {
+      try{
+        const lines = ev.target.result.split(/\r?\n/).filter(l=>l.trim()!=='');
+        const parseLine = line => {
+          const out=[]; let q=false, cur='';
+          for(let i=0;i<line.length;i++){
+            const ch=line[i];
+            if(ch==='"'){ if(q && line[i+1]==='"'){cur+='"';i++;} else q=!q; }
+            else if(ch===',' && !q){ out.push(cur); cur=''; }
+            else cur+=ch;
+          }
+          out.push(cur); return out.map(s=>s.trim());
+        };
+        const header = parseLine(lines[0]);
+        const body = [];
+        for(let i=1;i<lines.length;i++) body.push(parseLine(lines[i]));
+        mergeRows(rowsToRecords(header, body));
+      }catch(err){ alert('CSV Error: ' + err.message); }
+      finally { fileInput.value = ''; }
+    };
+    reader.readAsText(file);
+    return;
+  }
+
+  alert('Please upload .xlsx or .csv files.');
+  fileInput.value = '';
+});
+
+/* INIT */
+updateStats();
+jobInput.focus();
+
+})();
+</script>
+</body>
+</html>

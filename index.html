@@ -29,14 +29,12 @@
     const db = getFirestore(app);
     const storage = getStorage(app);
     
-    // Settings document for Company Name
     const settingsDocRef = doc(db, "app_settings", "config");
 
     window.firebaseDB = { settingsDocRef, getDoc, setDoc, storage, ref, uploadBytes, getDownloadURL };
     window.firebaseReady = true;
     window.dispatchEvent(new Event('firebaseLoaded'));
   } catch (error) {
-    console.error("Firebase Init Error: ", error);
     alert("Firebase Init Error: " + error.message);
   }
 </script>
@@ -163,11 +161,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans
     </div>
     <div class="top-actions">
       <div class="pill" id="statsPill">📊 0 jobs</div>
-      
-      <!-- Admin Controls -->
       <label class="btn-upload admin-only" id="uploadLabel" for="fileInput">📂 Upload Data</label>
       <input type="file" id="fileInput" accept=".csv" class="admin-only">
-      
       <button class="btn-company admin-only" id="editCompanyBtn">✏️ Change Name</button>
       <button class="btn-logout" id="logoutBtn">Logout</button>
     </div>
@@ -265,10 +260,14 @@ async function loadCSVFromCloud() {
     resultTitle.textContent = 'Syncing data from cloud...';
     const { storage, ref, getDownloadURL } = window.firebaseDB;
     
+    // Get the download URL for the file
     const fileRef = ref(storage, 'data/database.csv');
     const url = await getDownloadURL(fileRef);
     
+    // Fetch the actual file from the URL
     const response = await fetch(url);
+    if(!response.ok) throw new Error("Network response was not ok");
+    
     const csvText = await response.text();
     
     Papa.parse(csvText, {
@@ -280,13 +279,15 @@ async function loadCSVFromCloud() {
       }
     });
   } catch (error) {
-    console.error(error);
+    console.error("Download Error Details:", error);
     if(error.code === 'storage/object-not-found') {
       resultTitle.textContent = 'No data uploaded yet.';
       renderEmpty('Admin has not uploaded any data yet.', '📂');
     } else {
-      resultTitle.textContent = 'Failed to sync data.';
-      renderEmpty('Could not load data. Check internet.', '⚠️');
+      // Show the exact error to the user
+      resultTitle.textContent = 'Failed to load data.';
+      renderEmpty(`<b>Error:</b> ${error.message}`, '⚠️');
+      alert("Load Error: " + error.message);
     }
   }
 }

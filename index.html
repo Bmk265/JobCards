@@ -12,7 +12,41 @@
 <!-- PWA Manifest embedded -->
 <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Job%20Cards%22%2C%22short_name%22%3A%22Job%20Cards%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f1f5f9%22%2C%22theme_color%22%3A%22%233b82f6%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIyIiBmaWxsPSIjM2I4MmY2Ii8%2BPHBhdGggZD0iTTMwIDIwaDMwIGwxNSAxNWgtNDV6IiBmaWxsPSIjZmZmIiBvcGFjaXR5PSIwLjMiLz48cGF0aCBkPSJNMzAgMzVoMjAgTTMwIDUwaDMwIE0zMCA2NWgyMCIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxjaXJjbGUgY3g9IjcwIiBjeT0iNzAiIHI9IjE4IiBmaWxsPSIjMTBiOTgxIi8%2BPHBhdGggZD0iTTYyIDcwbDYgNiAxMi0xMiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjQiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg%3D%3D%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%2C%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIyIiBmaWxsPSIjM2I4MmY2Ii8%2BPHBhdGggZD0iTTMwIDIwaDMwIGwxNSAxNWgtNDV6IiBmaWxsPSIjZmZmIiBvcGFjaXR5PSIwLjMiLz48cGF0aCBkPSJNMzAgMzVoMjAgTTMwIDUwaDMwIE0zMCA2NWgyMCIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxjaXJjbGUgY3g9IjcwIiBjeT0iNzAiIHI9IjE4IiBmaWxsPSIjMTBiOTgxIi8%2BPHBhdGggZD0iTTYyIDcwbDYgNiAxMi0xMiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjQiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg%3D%3D%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
 
+<!-- SheetJS & Firebase Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script type="module">
+  // ==========================================
+  // 🔥 FIREBASE INITIALIZATION (Paste your config here)
+  // ==========================================
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBreGUBGU8rvOam98erNe48OQghvYIrLiA",
+  authDomain: "jobcards-6fa8a.firebaseapp.com",
+  projectId: "jobcards-6fa8a",
+  storageBucket: "jobcards-6fa8a.firebasestorage.app",
+  messagingSenderId: "608442052458",
+  appId: "1:608442052458:web:723cf599ef57b0abaabf13"
+};
+
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const docRef = doc(db, "jobcards", "database");
+
+  // Expose Firebase functions to the main script
+  window.firebaseDB = { docRef, getDoc, setDoc };
+  window.firebaseReady = true;
+  window.dispatchEvent(new Event('firebaseLoaded'));
+</script>
+
 <style>
 /* ============================================================
    LIGHT & SUPER COOL UI THEME (Mobile App Optimized)
@@ -413,15 +447,7 @@ body{
 (function(){
 "use strict";
 
-// Register Service Worker for PWA installability
-if ('serviceWorker' in navigator) {
-  const swCode = `self.addEventListener('install', (e) => self.skipWaiting()); self.addEventListener('activate', (e) => e.waitUntil(clients.claim()));`;
-  const blob = new Blob([swCode], {type: 'application/javascript'});
-  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(err => console.log('SW failed:', err));
-}
-
 // Local storage keys
-const STORAGE_KEY = 'jobcard_app_data_v1';
 const AUTH_KEY = 'jobcard_auth_role';
 const COMPANY_KEY = 'jobcard_company_name';
 
@@ -456,6 +482,50 @@ const companyName = document.getElementById('companyName');
 const editCompanyBtn = document.getElementById('editCompanyBtn');
 
 /* ============================================================
+   FIREBASE DATA HANDLER
+   ============================================================ */
+let firebaseReady = false;
+
+// Listen for the Firebase module to finish loading
+window.addEventListener('firebaseLoaded', () => {
+  firebaseReady = true;
+  if (localStorage.getItem(AUTH_KEY)) {
+    loadCloudData();
+  }
+});
+
+async function loadCloudData() {
+  if(!firebaseReady) return;
+  try {
+    resultTitle.textContent = 'Loading data from cloud...';
+    const { docRef, getDoc } = window.firebaseDB;
+    const docSnap = await getDoc(docRef);
+    
+    if (docSnap.exists()) {
+      const cloudData = docSnap.data();
+      DATA = cloudData.records || [];
+      if(cloudData.companyName) {
+        companyName.textContent = cloudData.companyName;
+      }
+    } else {
+      DATA = [];
+    }
+    updateStats();
+    refreshOpSelect();
+    
+    if (DATA.length === 0) {
+      const isAdmin = localStorage.getItem(AUTH_KEY) === 'admin';
+      renderEmpty(isAdmin ? 'Tap <b>Load Data</b> to upload a file.' : 'No data available. Contact Admin.', '📂');
+    } else if(!jobInput.value) {
+      renderEmpty('Data synced. Start typing a <b>job number</b> above.', '🔎');
+    }
+  } catch(e) {
+    console.error(e);
+    resultTitle.textContent = 'Failed to sync with cloud.';
+  }
+}
+
+/* ============================================================
    AUTHENTICATION LOGIC
    ============================================================ */
 const USERS = [
@@ -486,6 +556,7 @@ loginBtn.addEventListener('click', () => {
     loginUser.value = '';
     loginPass.value = '';
     startApp(user.role);
+    loadCloudData(); // Fetch latest from cloud on login
   } else {
     loginError.style.display = 'block';
   }
@@ -514,53 +585,36 @@ function startApp(role) {
     document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
   }
 
-  loadCompanyName();
-  loadDataFromStorage();
+  // Load Company Name from LocalStorage as instant fallback
+  const savedName = localStorage.getItem(COMPANY_KEY);
+  if (savedName) companyName.textContent = savedName;
 }
 
 /* ============================================================
    COMPANY NAME LOGIC
    ============================================================ */
-function loadCompanyName() {
-  const savedName = localStorage.getItem(COMPANY_KEY);
-  if (savedName) {
-    companyName.textContent = savedName;
-  } else {
-    companyName.textContent = "JOB CARD SYSTEM"; // Default fallback
-  }
-}
-
-editCompanyBtn.addEventListener('click', () => {
+editCompanyBtn.addEventListener('click', async () => {
   const current = companyName.textContent;
   const newName = prompt("Enter Company Name:", current);
+  
   if (newName !== null && newName.trim() !== "") {
     const cleanName = newName.trim().toUpperCase();
     localStorage.setItem(COMPANY_KEY, cleanName);
     companyName.textContent = cleanName;
+    
+    // Save to Cloud
+    if(firebaseReady) {
+      try {
+        const { docRef, setDoc } = window.firebaseDB;
+        await setDoc(docRef, { companyName: cleanName }, { merge: true });
+      } catch(e) { console.log("Cloud update failed", e); }
+    }
   }
 });
 
 /* ============================================================
    CORE APP LOGIC
    ============================================================ */
-function loadDataFromStorage() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      DATA = JSON.parse(saved);
-    }
-  } catch(e) {
-    console.warn("Could not load data", e);
-  }
-  updateStats();
-  refreshOpSelect();
-  
-  if (DATA.length === 0) {
-    const isAdmin = localStorage.getItem(AUTH_KEY) === 'admin';
-    renderEmpty(isAdmin ? 'Tap <b>Load Data</b> to upload a file.' : 'No data available. Contact Admin.', '📂');
-  }
-}
-
 function jobNumberOf(row){
   if(!row.soItem) return '';
   return row.soItem.split('#')[0].trim();
@@ -835,19 +889,27 @@ resetBtn.addEventListener('click', () => {
   jobInput.focus();
 });
 
-clearBtn.addEventListener('click', () => {
-  if(confirm("Are you sure you want to clear all saved data from this device? Users will lose access to these cards.")) {
-    localStorage.removeItem(STORAGE_KEY);
-    DATA = [];
-    updateStats();
-    resetBtn.click();
-    renderEmpty('Data cleared. Tap <b>Load Data</b> to upload a new file.','📂');
+clearBtn.addEventListener('click', async () => {
+  if(confirm("Are you sure you want to clear all cloud data? This will delete the data for EVERYONE.")) {
+    if(!firebaseReady) return alert("Cloud not connected.");
+    try {
+      const { docRef, setDoc } = window.firebaseDB;
+      await setDoc(docRef, { records: [] }, { merge: true });
+      DATA = [];
+      updateStats();
+      resetBtn.click();
+      renderEmpty('Cloud data cleared.','📂');
+    } catch(e) {
+      alert("Failed to clear cloud data. Check internet.");
+    }
   }
 });
 
 /* UPLOAD LOGIC */
 fileInput.addEventListener('change', e => {
   const file = e.target.files[0]; if(!file) return;
+  if(!firebaseReady) { alert("Cloud database not loaded yet. Please wait a second and try again."); return; }
+  
   const reader = new FileReader();
   const ext = file.name.split('.').pop().toLowerCase();
 
@@ -905,24 +967,24 @@ fileInput.addEventListener('change', e => {
     return out;
   }
 
-  function mergeRows(newRows){
-    const existing = new Set(DATA.map(r=>`${r.soItem}|${r.operation}`));
-    let added = 0;
-    newRows.forEach(r=>{
-      const key = `${r.soItem}|${r.operation}`;
-      if(!existing.has(key)){ DATA.push(r); existing.add(key); added++; }
-    });
+  async function mergeRowsAndSave(newRows){
+    // Overwrite existing data instead of merging if you want a clean upload
+    DATA = newRows; 
     
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
+      resultTitle.textContent = 'Uploading to cloud...';
+      const { docRef, setDoc } = window.firebaseDB;
+      await setDoc(docRef, { records: DATA }, { merge: true });
+      
+      updateStats(); refreshOpSelect();
+      if(suggestBox.classList.contains('open')) renderSuggestions(jobInput.value);
+      alert(`Successfully uploaded ${DATA.length} records to the cloud! Everyone will see this now.`);
+      resultTitle.textContent = 'Enter details above';
     } catch(e) {
-      console.warn('Failed to save to local storage', e);
-      alert('Data loaded, but could not save to device memory. File may be too large.');
+      console.error(e);
+      alert('Failed to save to cloud. Check your internet connection.');
+      resultTitle.textContent = 'Upload failed';
     }
-
-    updateStats(); refreshOpSelect();
-    if(suggestBox.classList.contains('open')) renderSuggestions(jobInput.value);
-    alert(`Successfully loaded ${added} operations. Data saved to this device.`);
   }
 
   if(ext === 'xlsx' || ext === 'xls'){
@@ -933,7 +995,7 @@ fileInput.addEventListener('change', e => {
         const ws = wb.Sheets[wb.SheetNames[0]];
         const aoa = XLSX.utils.sheet_to_json(ws, { header:1, defval:'', blankrows:false });
         if(aoa.length < 2) throw new Error('Sheet is empty');
-        mergeRows(rowsToRecords(aoa[0].map(h => String(h||'').trim()), aoa.slice(1)));
+        mergeRowsAndSave(rowsToRecords(aoa[0].map(h => String(h||'').trim()), aoa.slice(1)));
       }catch(err){ alert('Excel Error: ' + err.message); } 
       finally { fileInput.value = ''; }
     };
@@ -958,7 +1020,7 @@ fileInput.addEventListener('change', e => {
         const header = parseLine(lines[0]);
         const body = [];
         for(let i=1;i<lines.length;i++) body.push(parseLine(lines[i]));
-        mergeRows(rowsToRecords(header, body));
+        mergeRowsAndSave(rowsToRecords(header, body));
       }catch(err){ alert('CSV Error: ' + err.message); }
       finally { fileInput.value = ''; }
     };

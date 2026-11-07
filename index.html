@@ -11,35 +11,6 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
-<!-- Firebase for syncing the Company Name -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyBreGUBGU8rvOam98erNe48OQghvYIrLiA",
-    authDomain: "jobcards-6fa8a.firebaseapp.com",
-    projectId: "jobcards-6fa8a",
-    storageBucket: "jobcards-6fa8a.appspot.com",
-    messagingSenderId: "608442052458",
-    appId: "1:608442052458:web:723cf599ef57b0abaabf13"
-  };
-
-  try {
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    
-    // Settings document for Company Name
-    const settingsDocRef = doc(db, "app_settings", "config");
-
-    window.firebaseDB = { settingsDocRef, getDoc, setDoc };
-    window.firebaseReady = true;
-    window.dispatchEvent(new Event('firebaseLoaded'));
-  } catch (error) {
-    console.error("Firebase Init Error: ", error);
-  }
-</script>
-
 <style>
 /* ============================================================
    LIGHT & SUPER COOL UI THEME (Mobile App Optimized)
@@ -157,16 +128,6 @@ body{
   color:#475569;background:#f8fafc;border:1px solid #e2e8f0;padding:6px 12px;border-radius:30px;
 }
 .pill b{color:#3b82f6;font-weight:800}
-
-/* Admin Buttons */
-.admin-only{display:none;}
-.btn-company{
-  display:flex;align-items:center;gap:6px;font-size:.75rem;font-weight:700;
-  color:#fff; border:none;padding:8px 14px;border-radius:30px;
-  cursor:pointer;transition:.2s;
-}
-.btn-company{background: linear-gradient(135deg, #8b5cf6, #6d28d9); box-shadow: 0 4px 12px rgba(109, 40, 217, 0.3);}
-.btn-company:active{transform:scale(0.96);}
 
 /* Logout Button */
 .btn-logout{
@@ -363,7 +324,9 @@ body{
 <div class="app" id="mainApp">
   <div class="topbar">
     <div class="brand">
-      <div class="brand-company" id="companyName">YOUR COMPANY</div>
+      <!-- CHANGE YOUR COMPANY NAME HERE -->
+      <div class="brand-company">THERMOCABLES LTD.</div>
+      
       <div class="brand-title-row">
         <div class="dot"></div>
         <span>JOB CARDS</span>
@@ -371,7 +334,6 @@ body{
     </div>
     <div class="top-actions">
       <div class="pill" id="statsPill">📊 Loading...</div>
-      <button class="btn-company admin-only" id="editCompanyBtn">✏️ Change Name</button>
       <button class="btn-logout" id="logoutBtn">Logout</button>
     </div>
   </div>
@@ -402,7 +364,7 @@ body{
   <div class="grid" id="grid">
     <div class="empty">
       <div class="icon">⏳</div>
-      <p>Fetching job cards from GitHub...</p>
+      <p>Fetching job cards...</p>
     </div>
   </div>
 </div>
@@ -412,7 +374,6 @@ body{
 "use strict";
 
 const AUTH_KEY = 'jobcard_auth_role';
-const COMPANY_KEY = 'jobcard_company_name';
 let DATA = [];
 let SUGGEST_INDEX = -1;
 let SUGGEST_ITEMS = [];
@@ -436,29 +397,6 @@ const grid       = document.getElementById('grid');
 const resultTitle= document.getElementById('resultTitle');
 const resultCount= document.getElementById('resultCount');
 const statsPill  = document.getElementById('statsPill');
-const companyName = document.getElementById('companyName');
-const editCompanyBtn = document.getElementById('editCompanyBtn');
-
-/* FIREBASE SETTINGS HANDLER (Only for Company Name) */
-let firebaseReady = false;
-window.addEventListener('firebaseLoaded', () => {
-  firebaseReady = true;
-  if (localStorage.getItem(AUTH_KEY)) {
-    loadCompanyNameFromCloud();
-  }
-});
-
-async function loadCompanyNameFromCloud() {
-  if(!firebaseReady) return;
-  try {
-    const { settingsDocRef, getDoc } = window.firebaseDB;
-    const docSnap = await getDoc(settingsDocRef);
-    if (docSnap.exists() && docSnap.data().companyName) {
-      companyName.textContent = docSnap.data().companyName;
-      localStorage.setItem(COMPANY_KEY, docSnap.data().companyName);
-    }
-  } catch(e) { console.error("Settings Load Error", e); }
-}
 
 /* LOAD DATA FROM GITHUB CSV */
 async function loadDataFromCSV() {
@@ -551,16 +489,15 @@ function processCSVData(rows) {
 
 /* AUTHENTICATION */
 const USERS = [
-  { id: 'Outer', pass: 'Outer', role: 'viewer' },
-  { id: 'Insulation', pass: 'Insulation', role: 'viewer' },
-  { id: 'Admin', pass: 'Swami@265', role: 'admin' }
+  { id: 'Outer', pass: 'Outer' },
+  { id: 'Insulation', pass: 'Insulation' },
+  { id: 'Admin', pass: 'Swami@265' }
 ];
 
 function checkAuth() {
   const savedRole = localStorage.getItem(AUTH_KEY);
   if (savedRole) {
-    startApp(savedRole);
-    loadDataFromCSV(); 
+    startApp(); 
   } else {
     loginScreen.style.display = 'flex';
     mainApp.style.display = 'none';
@@ -573,13 +510,12 @@ loginBtn.addEventListener('click', () => {
   const user = USERS.find(x => x.id.toLowerCase() === u.toLowerCase() && x.pass === p);
   
   if (user) {
-    localStorage.setItem(AUTH_KEY, user.role);
+    localStorage.setItem(AUTH_KEY, user.id);
     loginError.style.display = 'none';
     loginUser.value = '';
     loginPass.value = '';
-    startApp(user.role);
+    startApp();
     loadDataFromCSV();
-    loadCompanyNameFromCloud();
   } else {
     loginError.style.display = 'block';
   }
@@ -588,36 +524,11 @@ loginBtn.addEventListener('click', () => {
 loginPass.addEventListener('keydown', e => { if(e.key === 'Enter') loginBtn.click(); });
 logoutBtn.addEventListener('click', () => { localStorage.removeItem(AUTH_KEY); location.reload(); });
 
-function startApp(role) {
+function startApp() {
   loginScreen.style.display = 'none';
   mainApp.style.display = 'block';
-  
-  if (role === 'admin') {
-    document.querySelectorAll('.admin-only').forEach(el => {
-      if(el.tagName === 'BUTTON') el.style.display = 'inline-block';
-    });
-  } else {
-    document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-  }
-  const savedName = localStorage.getItem(COMPANY_KEY);
-  if (savedName) companyName.textContent = savedName;
+  loadDataFromCSV();
 }
-
-editCompanyBtn.addEventListener('click', async () => {
-  const current = companyName.textContent;
-  const newName = prompt("Enter Company Name:", current);
-  if (newName !== null && newName.trim() !== "") {
-    const cleanName = newName.trim().toUpperCase();
-    localStorage.setItem(COMPANY_KEY, cleanName);
-    companyName.textContent = cleanName;
-    if(firebaseReady) {
-      try {
-        const { settingsDocRef, setDoc } = window.firebaseDB;
-        await setDoc(settingsDocRef, { companyName: cleanName }, { merge: true });
-      } catch(e) { alert("Name saved locally, but failed to sync to cloud."); }
-    }
-  }
-});
 
 /* APP LOGIC */
 function jobNumberOf(row){

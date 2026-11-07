@@ -255,9 +255,9 @@ body{
 // ==========================================
 // GITHUB API CONFIGURATION
 // ==========================================
-const GITHUB_TOKEN = "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";       // e.g., "ghp_xxxxxxxxxxxx"
-const GITHUB_USERNAME = "Bmk265";      // e.g., "bmk265"
-const GITHUB_REPO_NAME = "JobCards";           // e.g., "JobCards"
+const GITHUB_TOKEN = "YOUR_GITHUB_TOKEN_HERE";       // e.g., "ghp_xxxxxxxxxxxx"
+const GITHUB_USERNAME = "YOUR_GITHUB_USERNAME";      // e.g., "bmk265"
+const GITHUB_REPO_NAME = "YOUR_REPO_NAME";           // e.g., "JobCards"
 const USERS_FILE_PATH = "users.json";                // Path to the file in your repo
 // ==========================================
 
@@ -560,10 +560,33 @@ async function loadBomDataFromCSV() {
     Papa.parse(csvText, { header: false, skipEmptyLines: false, complete: function(results) {
       const allRows = results.data;
       if(!allRows || allRows.length < 2) return;
-      const headerRow = allRows[0].map(h => String(h||'').trim());
-      const dataRows = allRows.slice(1).filter(r => r.some(c => String(c||'').trim() !== ''));
-      const rows = dataRows.map(r => { const obj = {}; headerRow.forEach((h, i) => { obj[h] = r[i] !== undefined ? r[i] : ''; }); return obj; });
-      processBomCSVData(rows); updateStatsPill();
+      
+      // --- RESTORED HEADER DETECTION LOGIC ---
+      function rowHasHeader(row){
+        if(!row || !row.length) return false;
+        return row.some(cell => {
+          const n = normalizeHeader(cell);
+          return n === 'soitemno' || n === 'soitem';
+        });
+      }
+      
+      let headerRowIndex = 0;
+      // If row 0 doesn't have the header, but row 1 does, use row 1
+      if(!rowHasHeader(allRows[0]) && rowHasHeader(allRows[1])){
+        headerRowIndex = 1;
+      }
+      
+      const headerRow = allRows[headerRowIndex].map(h => String(h||'').trim());
+      const dataRows = allRows.slice(headerRowIndex + 1).filter(r => r.some(c => String(c||'').trim() !== ''));
+      
+      const rows = dataRows.map(r => { 
+        const obj = {}; 
+        headerRow.forEach((h, i) => { obj[h] = r[i] !== undefined ? r[i] : ''; }); 
+        return obj; 
+      });
+      
+      processBomCSVData(rows); 
+      updateStatsPill();
     }});
   } catch (error) { if(CURRENT_MODE === 'bom') renderEmpty('Could not find <b>bom.csv</b>.', '⚠️'); }
 }

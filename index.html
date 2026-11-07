@@ -8,8 +8,6 @@
 <title>Job Cards & BOM</title>
 
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIyIiBmaWxsPSIjM2I4MmY2Ii8+PHBhdGggZD0iTTMwIDY1VjM1aDh2MjJoMjB2OEgzMHptMjgtMzBoMTJ2MzBINTgvMzV6IiBmaWxsPSJ3aGl0ZSIvPjxjaXJjbGUgY3g9IjQ2IiBjeT0iNDIiIHI9IjYiIGZpbGw9IiNmYmJmMjQiLz48L3N2Zz4=">
-
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
@@ -21,13 +19,8 @@
 body{
   font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   background: #f1f5f9;
-  background-image: 
-    radial-gradient(at 0% 0%, hsla(253,16%,7%,0.05) 0, transparent 50%), 
-    radial-gradient(at 50% 0%, hsla(225,39%,30%,0.05) 0, transparent 50%), 
-    radial-gradient(at 100% 0%, hsla(339,49%,30%,0.05) 0, transparent 50%);
   color: #1e293b;
   min-height: 100vh;
-  min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
   font-size: 14px;
   line-height: 1.5;
@@ -40,29 +33,30 @@ body{
 
 .app{max-width:1500px;margin:0 auto;padding:16px; padding-bottom: env(safe-area-inset-bottom);}
 
-#loginScreen{position:fixed; top:0; left:0; width:100%; height:100%;background: #f1f5f9; z-index:9999;display:flex; align-items:center; justify-content:center;padding: 20px;}
-.login-box{background:#fff; padding:32px 24px; border-radius:24px;box-shadow:0 10px 40px rgba(0,0,0,0.08); width:100%; max-width:380px;text-align:center;}
-.login-box .icon{font-size:3rem; margin-bottom:12px;}
-.login-box h2{font-size:1.4rem; font-weight:800; color:#0f172a; margin-bottom:24px;}
+/* LOGIN & APPROVAL SCREENS */
+#loginScreen, #approvalScreen{position:fixed; top:0; left:0; width:100%; height:100%;background: #f1f5f9; z-index:9999;display:flex; flex-direction:column; align-items:center; justify-content:center;padding: 20px; text-align:center;}
+.login-box, .approval-box{background:#fff; padding:32px 24px; border-radius:24px;box-shadow:0 10px 40px rgba(0,0,0,0.08); width:100%; max-width:400px;}
+.login-box .icon, .approval-box .icon{font-size:3rem; margin-bottom:12px;}
+.login-box h2, .approval-box h2{font-size:1.4rem; font-weight:800; color:#0f172a; margin-bottom:24px;}
 .login-box input{width:100%; padding:14px 16px; border-radius:12px; border:1px solid #e2e8f0;font-size:1rem; margin-bottom:12px; outline:none; transition:.2s;font-family:inherit;}
 .login-box input:focus{border-color:#3b82f6; box-shadow:0 0 0 4px rgba(59,130,246,.15);}
-.login-btn{width:100%; padding:14px; border-radius:12px; border:none;background:linear-gradient(135deg,#3b82f6,#2563eb); color:#fff;font-size:1rem; font-weight:700; cursor:pointer; transition:.2s;margin-top:8px;}
-.login-btn:active{transform:scale(0.98);}
+.login-btn, .btn-refresh{width:100%; padding:14px; border-radius:12px; border:none;background:linear-gradient(135deg,#3b82f6,#2563eb); color:#fff;font-size:1rem; font-weight:700; cursor:pointer; transition:.2s;margin-top:8px;}
+.login-btn:active, .btn-refresh:active{transform:scale(0.98);}
 .login-error{color:#ef4444; font-size:.85rem; font-weight:600; margin-top:10px; display:none;}
+.btn-cancel{background:transparent; color:#ef4444; border:none; font-weight:600; font-size:.85rem; cursor:pointer; text-decoration:underline; margin-top:12px;}
 
+/* APP UI */
 #mainApp{display:none;}
-.topbar{display:flex;flex-direction:column;gap:16px;padding:20px 16px;background: rgba(255, 255, 255, 0.85);backdrop-filter: blur(16px);-webkit-backdrop-filter: blur(16px);border: 1px solid rgba(255, 255, 255, 0.9);border-radius: 20px;box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);margin-bottom: 16px;}
-.brand{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;}
+.topbar{display:flex;flex-direction:column;gap:16px;padding:20px 16px;background: rgba(255, 255, 255, 0.85);backdrop-filter: blur(16px);border: 1px solid rgba(255, 255, 255, 0.9);border-radius: 20px;box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);margin-bottom: 16px;}
+.brand{display:flex;flex-direction:column;align-items:center;gap:4px;}
 .brand-company{font-size:.75rem; font-weight:700; color:#64748b; letter-spacing:.05em;text-transform:uppercase;}
-.brand-title-row{display:flex; align-items:center; justify-content:center; gap:8px;}
+.brand-title-row{display:flex; align-items:center; gap:8px;}
 .brand .dot{width:12px;height:12px;border-radius:50%;background: linear-gradient(135deg, #3b82f6, #8b5cf6);box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);}
 .brand span{font-weight:800; font-size:1.3rem; letter-spacing:-.02em;background: linear-gradient(135deg, #1e293b, #475569);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 
 .toggle-container{display:flex;justify-content:center;align-items:center;gap:6px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:30px;padding:4px;width:fit-content;margin:0 auto;}
-.toggle-btn{padding:8px 22px;border-radius:24px;border:none;background:transparent;color:#64748b;font-weight:700;font-size:.8rem;cursor:pointer;transition:.2s;font-family:inherit;letter-spacing:.02em;}
+.toggle-btn{padding:8px 22px;border-radius:24px;border:none;background:transparent;color:#64748b;font-weight:700;font-size:.8rem;cursor:pointer;transition:.2s;font-family:inherit;}
 .toggle-btn.active{background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;box-shadow:0 4px 12px -2px rgba(37,99,235,.4);}
-.toggle-btn:not(.active):active{transform:scale(0.96);}
-.toggle-container.hidden{display:none !important;}
 
 .top-actions{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;}
 .pill{display:flex;align-items:center;gap:6px;font-size:.75rem;font-weight:600;color:#475569;background:#f8fafc;border:1px solid #e2e8f0;padding:6px 12px;border-radius:30px;}
@@ -71,78 +65,64 @@ body{
 .pill.role-pill b{color:#b45309;}
 .btn-logout{background:none; border:none; color:#ef4444; font-weight:700; font-size:.75rem;cursor:pointer; text-decoration:underline; padding:4px;}
 
-/* ADD TO HOME SCREEN BUTTON */
-.btn-install{background:linear-gradient(135deg,#8b5cf6,#6366f1); border:none; color:#fff; font-weight:700; font-size:.75rem; padding:6px 14px; border-radius:30px; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 4px 12px -2px rgba(99,102,241,.4); transition:.2s;}
-.btn-install:active{transform:scale(0.95);}
+/* ADMIN MANAGER */
+.admin-panel{background:#fff; border-radius:20px; padding:16px; margin-bottom:16px; border:1px solid #e2e8f0; display:none;}
+.admin-panel.active{display:block;}
+.user-row{display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f1f5f9;}
+.user-info{display:flex; flex-direction:column; gap:2px;}
+.user-info .name{font-weight:700; font-size:.9rem; color:#0f172a;}
+.user-info .status{font-size:.7rem; font-weight:700; text-transform:uppercase;}
+.user-info .status.pending{color:#d97706;}
+.user-info .status.approved{color:#10b981;}
+.action-btns{display:flex; gap:8px;}
+.btn-approve{background:#d1fae5; color:#065f46; border:1px solid #6ee7b7; padding:6px 12px; border-radius:8px; font-size:.75rem; font-weight:700; cursor:pointer;}
+.btn-reject{background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; padding:6px 12px; border-radius:8px; font-size:.75rem; font-weight:700; cursor:pointer;}
+.btn-delete{background:transparent; color:#ef4444; border:none; font-size:.75rem; text-decoration:underline; cursor:pointer; padding:6px;}
 
-/* iOS install modal */
-.ios-modal-overlay{position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.45); backdrop-filter:blur(4px); z-index:10000; display:none; align-items:flex-end; justify-content:center; padding:20px;}
-.ios-modal-overlay.open{display:flex;}
-.ios-modal{background:#fff; border-radius:24px 24px 20px 20px; padding:24px 20px 30px; width:100%; max-width:420px; text-align:center; box-shadow:0 -10px 40px rgba(0,0,0,0.2); animation:slideUp .3s ease;}
-@keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
-.ios-modal .share-icon{font-size:2.5rem; margin-bottom:12px;}
-.ios-modal h3{font-size:1.1rem; font-weight:800; color:#0f172a; margin-bottom:8px;}
-.ios-modal p{font-size:.85rem; color:#64748b; margin-bottom:16px; line-height:1.6;}
-.ios-modal .step-row{display:flex; align-items:center; gap:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:10px 14px; margin-bottom:8px; font-size:.8rem; font-weight:600; color:#334155; text-align:left;}
-.ios-modal .step-row .num{background:#3b82f6; color:#fff; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.7rem; font-weight:800; flex-shrink:0;}
-.ios-modal .close-btn{margin-top:12px; width:100%; padding:12px; border-radius:12px; border:none; background:#f1f5f9; color:#475569; font-weight:700; font-size:.9rem; cursor:pointer; font-family:inherit;}
-
-.search-panel{display:grid;grid-template-columns:1fr;gap:12px;background: rgba(255, 255, 255, 0.9);backdrop-filter: blur(16px);-webkit-backdrop-filter: blur(16px);border: 1px solid #fff;border-radius: 20px;padding:16px;margin-bottom: 16px;position:relative;z-index:20;box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);}
-.field{display:flex;flex-direction:column;gap:6px;min-width:0;position:relative}
-.field label{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;font-weight:800;color:#64748b;}
-.field input,.field select{width:100%;padding:12px 16px;border-radius:12px;border:1px solid #e2e8f0;background:#fff;color:#1e293b;font-size:.9rem;font-weight:500;outline:none;transition:.2s;font-family:inherit; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);-webkit-appearance: none;}
-.field input::placeholder{color:#94a3b8}
+/* SEARCH & CARDS */
+.search-panel{display:grid;grid-template-columns:1fr;gap:12px;background: #fff;border-radius: 20px;padding:16px;margin-bottom: 16px;box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);}
+.field{display:flex;flex-direction:column;gap:6px;position:relative}
+.field label{font-size:.65rem;text-transform:uppercase;font-weight:800;color:#64748b;}
+.field input,.field select{width:100%;padding:12px 16px;border-radius:12px;border:1px solid #e2e8f0;background:#fff;color:#1e293b;font-size:.9rem;outline:none;transition:.2s;font-family:inherit;}
 .field input:focus,.field select:focus{border-color:#3b82f6;box-shadow: 0 0 0 4px rgba(59,130,246,.15);}
-.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;padding-right:40px;cursor:pointer;}
-.field select:disabled{opacity:.5;cursor:not-allowed; background:#f8fafc;}
-.search-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;}
-.btn-search,.btn-reset{height:44px;border-radius:12px;border:none;cursor:pointer;font-size:.85rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;transition:.2s;}
-.btn-search{color:#fff; background:linear-gradient(135deg,#3b82f6,#2563eb);box-shadow:0 4px 12px -2px rgba(37,99,235,.4);}
+.field select:disabled{background:#f8fafc; opacity:.6;}
+.search-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.btn-search,.btn-reset{height:44px;border-radius:12px;border:none;cursor:pointer;font-size:.85rem;font-weight:700;}
+.btn-search{color:#fff; background:linear-gradient(135deg,#3b82f6,#2563eb);}
 .btn-reset{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;}
-.btn-search:active,.btn-reset:active{transform:scale(0.96);}
 
 .suggest{position:absolute;top:calc(100% + 8px);left:0;right:0;background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 20px 40px -8px rgba(0,0,0,.15);max-height:250px;overflow-y:auto;z-index:100;display:none;padding:8px;}
 .suggest.open{display:block}
-.suggest-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-radius:10px;cursor:pointer;font-size:.9rem;font-weight:600;color:#334155;transition:.15s;}
-.suggest-item:active,.suggest-item:hover{background:#eff6ff;color:#1d4ed8;}
-.suggest-item.active{background:#eff6ff;color:#1d4ed8;}
-.suggest-item .jn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.suggest-item .jn mark{background:#fef08a;color:#854d0e;padding:0 2px;border-radius:3px;font-weight:800;}
-.suggest-item .meta{font-size:.65rem;font-weight:700;color:#2563eb;background:#dbeafe;padding:4px 10px;border-radius:20px;flex-shrink:0;}
-.suggest-empty{padding:20px;text-align:center;font-size:.9rem;color:#94a3b8;}
-.suggest-hint{padding:8px 14px;font-size:.65rem;font-weight:800;text-transform:uppercase;color:#94a3b8;border-bottom:1px solid #f1f5f9;margin-bottom:8px;}
+.suggest-item{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:10px;cursor:pointer;font-size:.9rem;font-weight:600;color:#334155;}
+.suggest-item:hover{background:#eff6ff;}
+.suggest-item.active{background:#eff6ff;}
+.suggest-item .meta{font-size:.65rem;color:#2563eb;background:#dbeafe;padding:2px 8px;border-radius:20px;}
 
-.result-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 4px 12px;flex-wrap:wrap;}
+.result-bar{display:flex;align-items:center;justify-content:space-between;padding:0 4px 12px;}
 .result-title{font-size:.95rem;font-weight:700;color:#334155}
 .result-title .hl{color:#2563eb}
-.result-title .sep{color:#cbd5e1;margin:0 6px}
 .counter{font-size:.75rem;font-weight:800;padding:4px 14px;border-radius:20px;background:#e0e7ff;color:#4338ca;}
 
 .grid{display:grid;grid-template-columns:1fr; gap:16px;}
-.card{background:#fff;display:flex;flex-direction:column;border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.04);border:1px solid #f1f5f9;}
-.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px;border-bottom:1px solid #f1f5f9;background:#fafbfc;}
-.card-head h3{font-size:1rem;font-weight:800;color:#0f172a;display:flex;align-items:center;gap:8px;min-width:0;word-break:break-all;}
-.card-head h3 .bullet{width:8px;height:8px;border-radius:50%;background:#3b82f6;flex-shrink:0;box-shadow:0 0 8px rgba(59,130,246,.6);}
-.op-tag{font-size:.65rem;font-weight:800;text-transform:uppercase;padding:6px 12px;border-radius:20px;white-space:nowrap;background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe;}
+.card{background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.04);border:1px solid #f1f5f9;}
+.card-head{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid #f1f5f9;background:#fafbfc;}
+.card-head h3{font-size:1rem;font-weight:800;color:#0f172a;}
+.op-tag{font-size:.65rem;font-weight:800;padding:4px 10px;border-radius:20px;background:#dbeafe;color:#1e40af;}
 
 .specs{display:flex;flex-direction:column;}
 .spec{display:grid;grid-template-columns:120px 1fr;border-bottom:1px solid #f1f5f9;}
-.spec:last-child{border-bottom:none}
-.spec .k{padding:12px 16px;font-size:.65rem;font-weight:800;text-transform:uppercase;color:#64748b;background:#f8fafc;border-right:1px solid #f1f5f9;display:flex;align-items:center;word-break:break-word;line-height:1.4;}
-.spec .v{padding:12px 16px;font-size:.85rem;font-weight:500;color:#1e293b;display:flex;align-items:center;word-break:break-word;line-height:1.45;}
-.spec .v .chip-val{background:#eff6ff;color:#2563eb;font-weight:800;padding:2px 8px;border-radius:6px;font-size:.8rem;display:inline-block;}
+.spec .k{padding:12px 16px;font-size:.65rem;font-weight:800;text-transform:uppercase;color:#64748b;background:#f8fafc;border-right:1px solid #f1f5f9;}
+.spec .v{padding:12px 16px;font-size:.85rem;color:#1e293b;}
 .spec.accent .k{color:#2563eb;background:#eff6ff;}
 .spec.accent .v{color:#1e3a8a;font-weight:700;}
 
-.card-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:.75rem;font-weight:600;color:#64748b;flex-wrap:wrap;}
-.card-foot span{display:flex;align-items:center;gap:6px}
-.card-foot .drum{color:#475569;word-break:break-word;font-weight:600;}
+.card-foot{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:.75rem;color:#64748b;}
 
 .empty{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:60px 20px;text-align:center;background:#fff;border-radius:20px;border:2px dashed #e2e8f0;}
 .empty .icon{font-size:3rem;opacity:.5}
-.empty p{font-size:.95rem;color:#64748b;max-width:320px;line-height:1.6;}
-.empty b{color:#3b82f6;font-weight:700}
+.empty p{font-size:.95rem;color:#64748b;}
 
+/* BOM SPECIFIC STYLES */
 .bom-table{display:flex;flex-direction:column;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;}
 .bom-table-head{display:grid;grid-template-columns:110px 1fr 100px;background:#e2e8f0;border-bottom:2px solid #cbd5e1;}
 .bom-table-head > div{padding:10px 12px;font-size:.6rem;font-weight:800;text-transform:uppercase;color:#475569;letter-spacing:.05em;border-right:1px solid #cbd5e1;}
@@ -153,13 +133,10 @@ body{
 .bom-row:hover{background:#f8fafc;}
 .bom-row > div{padding:10px 12px;font-size:.75rem;font-weight:500;color:#334155;border-right:1px solid #f1f5f9;display:flex;align-items:center;word-break:break-word;line-height:1.4;}
 .bom-row > div:last-child{border-right:none;justify-content:flex-end;text-align:right;font-weight:800;color:#2563eb;font-size:.8rem;background:#fafbfc;}
-
 .op-jdm-row{background:#fefce8 !important;}
 .op-jdm-row .k{background:#fef3c7 !important;color:#b45309 !important;}
 .op-jdm-row .v{padding:8px 12px !important;background:#fefce8 !important;}
 .op-jdm-row select{width:100%; padding:10px 36px 10px 14px; border-radius:10px; border:1px solid #fcd34d; background:#fff; color:#92400e; font-size:.85rem; font-weight:700; font-family:inherit; cursor:pointer; -webkit-appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23b45309' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center;}
-
-/* Editable PLAN/PRD QTY input */
 .plan-qty-row{background:#ecfdf5 !important;}
 .plan-qty-row .k{background:#d1fae5 !important;color:#065f46 !important;}
 .plan-qty-row .v{padding:8px 12px !important;background:#ecfdf5 !important;}
@@ -170,63 +147,73 @@ body{
   .app{padding:24px;}
   .search-panel{grid-template-columns:1.2fr 1.6fr auto auto; align-items:end;}
   .search-buttons{display:flex; flex-direction:row; gap:12px;}
-  .btn-search,.btn-reset{padding:0 24px;}
   .grid{grid-template-columns:repeat(auto-fill,minmax(440px,1fr));}
   .spec{grid-template-columns:180px 1fr;}
-  .spec .k{padding:12px 20px; font-size:.7rem;}
-  .spec .v{padding:12px 20px; font-size:.9rem;}
-  .card-head h3{font-size:1.1rem;}
-  .card-head, .card-foot { padding: 16px 20px; }
 }
 </style>
 </head>
 <body>
 
+<!-- LOGIN SCREEN -->
 <div id="loginScreen">
   <div class="login-box">
     <div class="icon">🔒</div>
     <h2>Access Portal</h2>
-    <input type="text" id="loginUser" placeholder="Enter Username" autocomplete="off">
-    <input type="password" id="loginPass" placeholder="Enter Password">
+    <input type="text" id="loginUser" placeholder="Username" autocomplete="off">
+    <input type="password" id="loginPass" placeholder="Password">
     <button class="login-btn" id="loginBtn">Login</button>
     <div class="login-error" id="loginError">Invalid Username or Password</div>
   </div>
 </div>
 
+<!-- APPROVAL WAITING SCREEN -->
+<div id="approvalScreen">
+  <div class="approval-box">
+    <div class="icon">⏳</div>
+    <h2>Pending Approval</h2>
+    <p>Your request has been sent to the Admin. Please wait for them to approve your account.</p>
+    <button class="btn-refresh" id="refreshApprovalBtn">Check Status Again</button>
+    <button class="btn-cancel" id="cancelApprovalBtn">Cancel & Logout</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
 <div class="app" id="mainApp">
   <div class="topbar">
     <div class="brand">
       <div class="brand-company">THERMOCABLES LTD.</div>
-      <div class="brand-title-row">
-        <div class="dot"></div>
-        <span id="appTitle">JOB CARDS</span>
-      </div>
+      <div class="brand-title-row"><div class="dot"></div><span>JOB CARDS & BOM</span></div>
     </div>
     
     <div class="toggle-container" id="toggleContainer">
       <button class="toggle-btn active" id="toggleJob" data-mode="job">JOB CARDS</button>
       <button class="toggle-btn" id="toggleBom" data-mode="bom">BOM</button>
+      <button class="toggle-btn" id="toggleAdmin" data-mode="admin" style="display:none;">ADMIN</button>
     </div>
     
     <div class="top-actions">
       <div class="pill role-pill" id="rolePill">👤 <b>User</b></div>
       <div class="pill" id="statsPill">📊 Loading...</div>
-      <button class="btn-install" id="installBtn" style="display:none;">📲 Add to Home</button>
       <button class="btn-logout" id="logoutBtn">Logout</button>
     </div>
   </div>
 
+  <!-- ADMIN PANEL -->
+  <div class="admin-panel" id="adminPanel">
+    <h3 style="margin-bottom:12px; font-size:1rem;">User Approvals</h3>
+    <div id="pendingUsersList"></div>
+  </div>
+
+  <!-- JOB SEARCH -->
   <div class="search-panel" id="jobSearchPanel">
     <div class="field" id="jobField">
-      <label for="jobInput">Job Number</label>
-      <input type="text" id="jobInput" placeholder="Type job no..." autocomplete="off" spellcheck="false">
+      <label>Job Number</label>
+      <input type="text" id="jobInput" placeholder="Type job no..." autocomplete="off">
       <div class="suggest" id="suggestBox"></div>
     </div>
     <div class="field">
-      <label for="opSelect">Operation</label>
-      <select id="opSelect" disabled>
-        <option value="">— Select Job First —</option>
-      </select>
+      <label>Operation</label>
+      <select id="opSelect" disabled><option value="">— Select Job First —</option></select>
     </div>
     <div class="search-buttons">
       <button class="btn-search" id="searchBtn">🔍 Show</button>
@@ -234,17 +221,16 @@ body{
     </div>
   </div>
 
+  <!-- BOM SEARCH -->
   <div class="search-panel" id="bomSearchPanel" style="display:none;">
     <div class="field" id="bomField">
-      <label for="bomInput">SO-ITEM / INDEX</label>
-      <input type="text" id="bomInput" placeholder="Type SO-ITEM or INDEX..." autocomplete="off" spellcheck="false">
+      <label>SO-ITEM / INDEX</label>
+      <input type="text" id="bomInput" placeholder="Type SO-ITEM..." autocomplete="off">
       <div class="suggest" id="bomSuggestBox"></div>
     </div>
     <div class="field">
-      <label for="bomOpSelect">Operation JDM</label>
-      <select id="bomOpSelect" disabled>
-        <option value="">— Select SO-ITEM First —</option>
-      </select>
+      <label>Operation JDM</label>
+      <select id="bomOpSelect" disabled><option value="">— Select SO-ITEM First —</option></select>
     </div>
     <div class="search-buttons">
       <button class="btn-search" id="bomSearchBtn">🔍 Show</button>
@@ -254,27 +240,11 @@ body{
 
   <div class="result-bar">
     <div class="result-title" id="resultTitle">Loading data...</div>
-    <div class="resultCount" id="resultCount">0 records</div>
+    <div class="counter" id="resultCount">0 records</div>
   </div>
 
   <div class="grid" id="grid">
-    <div class="empty">
-      <div class="icon">⏳</div>
-      <p>Fetching data...</p>
-    </div>
-  </div>
-</div>
-
-<!-- iOS install instructions modal -->
-<div class="ios-modal-overlay" id="iosModal">
-  <div class="ios-modal">
-    <div class="share-icon">📲</div>
-    <h3>Install "Job Cards"</h3>
-    <p>Add this app to your Home Screen for quick, full-screen access.</p>
-    <div class="step-row"><span class="num">1</span> Tap the <b>Share</b> icon (square with arrow) in Safari's toolbar.</div>
-    <div class="step-row"><span class="num">2</span> Scroll down and tap <b>"Add to Home Screen"</b>.</div>
-    <div class="step-row"><span class="num">3</span> Tap <b>"Add"</b> in the top-right corner.</div>
-    <button class="close-btn" id="iosModalClose">Got it</button>
+    <div class="empty"><div class="icon">⏳</div><p>Fetching data...</p></div>
   </div>
 </div>
 
@@ -282,350 +252,325 @@ body{
 (function(){
 "use strict";
 
-const AUTH_KEY = 'jobcard_auth_role';
-const AUTH_USER_KEY = 'jobcard_auth_user';
+// ==========================================
+// GITHUB API CONFIGURATION
+// ==========================================
+const GITHUB_TOKEN = "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";       // e.g., "ghp_xxxxxxxxxxxx"
+const GITHUB_USERNAME = "Bmk265";      // e.g., "bmk265"
+const GITHUB_REPO_NAME = "JobCards";           // e.g., "JobCards"
+const USERS_FILE_PATH = "users.json";                // Path to the file in your repo
+// ==========================================
 
+const AUTH_KEY = 'jobcard_auth_user';
 let JOB_DATA = [];
 let BOM_DATA = [];
 let CURRENT_MODE = 'job';
 let CURRENT_USER = '';
 let IS_ADMIN = false;
-let SUGGEST_INDEX = -1;
-let SUGGEST_ITEMS = [];
-let BOM_SUGGEST_INDEX = -1;
-let BOM_SUGGEST_ITEMS = [];
-let USER_PLAN_QTY = null;
+let USERS_DATA = { approved: [] };
 
 const loginScreen = document.getElementById('loginScreen');
-const mainApp     = document.getElementById('mainApp');
-const loginUser   = document.getElementById('loginUser');
-const loginPass   = document.getElementById('loginPass');
-const loginBtn    = document.getElementById('loginBtn');
-const loginError  = document.getElementById('loginError');
-const logoutBtn   = document.getElementById('logoutBtn');
-const appTitle    = document.getElementById('appTitle');
-const rolePill    = document.getElementById('rolePill');
-const installBtn  = document.getElementById('installBtn');
-const iosModal    = document.getElementById('iosModal');
-const iosModalClose = document.getElementById('iosModalClose');
-
-const toggleContainer = document.getElementById('toggleContainer');
-const toggleJob   = document.getElementById('toggleJob');
-const toggleBom   = document.getElementById('toggleBom');
+const approvalScreen = document.getElementById('approvalScreen');
+const mainApp = document.getElementById('mainApp');
+const loginUser = document.getElementById('loginUser');
+const loginPass = document.getElementById('loginPass');
+const loginBtn = document.getElementById('loginBtn');
+const loginError = document.getElementById('loginError');
+const logoutBtn = document.getElementById('logoutBtn');
+const rolePill = document.getElementById('rolePill');
+const toggleJob = document.getElementById('toggleJob');
+const toggleBom = document.getElementById('toggleBom');
+const toggleAdmin = document.getElementById('toggleAdmin');
+const adminPanel = document.getElementById('adminPanel');
+const pendingUsersList = document.getElementById('pendingUsersList');
+const refreshApprovalBtn = document.getElementById('refreshApprovalBtn');
+const cancelApprovalBtn = document.getElementById('cancelApprovalBtn');
 const jobSearchPanel = document.getElementById('jobSearchPanel');
 const bomSearchPanel = document.getElementById('bomSearchPanel');
-
-const jobInput   = document.getElementById('jobInput');
-const jobField   = document.getElementById('jobField');
+const jobInput = document.getElementById('jobInput');
+const jobField = document.getElementById('jobField');
 const suggestBox = document.getElementById('suggestBox');
-const opSelect   = document.getElementById('opSelect');
-const searchBtn  = document.getElementById('searchBtn');
-const resetBtn   = document.getElementById('resetBtn');
-
-const bomInput   = document.getElementById('bomInput');
-const bomField   = document.getElementById('bomField');
+const opSelect = document.getElementById('opSelect');
+const bomInput = document.getElementById('bomInput');
+const bomField = document.getElementById('bomField');
 const bomSuggestBox = document.getElementById('bomSuggestBox');
 const bomOpSelect = document.getElementById('bomOpSelect');
-const bomSearchBtn = document.getElementById('bomSearchBtn');
-const bomResetBtn  = document.getElementById('bomResetBtn');
+const grid = document.getElementById('grid');
+const resultTitle = document.getElementById('resultTitle');
+const resultCount = document.getElementById('resultCount');
+const statsPill = document.getElementById('statsPill');
 
-const grid       = document.getElementById('grid');
-const resultTitle= document.getElementById('resultTitle');
-const resultCount= document.getElementById('resultCount');
-const statsPill  = document.getElementById('statsPill');
-
-/* ============ UTILS ============ */
 const esc = s => (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+const cleanSoItem = str => String(str||'').replace(/#/g, '').trim();
+const normalizeHeader = h => String(h||'').toLowerCase().replace(/[\s_\-\/\.]+/g,'');
+function findHeader(headers, ...candidates){ for(const c of candidates){ const found = headers.find(h => normalizeHeader(h) === normalizeHeader(c)); if(found) return found; } return null; }
+function formatQty(n){ if(n === null || n === undefined || isNaN(n)) return '—'; return Number(n).toFixed(4).replace(/\.?0+$/, '') || '0'; }
 
-function normalizeHeader(h){
-  return String(h||'').toLowerCase().replace(/[\s_\-\/\.]+/g,'');
-}
-
-// Cleans up the SO-ITEM string by removing '#' symbols and trimming spaces
-function cleanSoItem(str){
-  return String(str||'').replace(/#/g, '').trim();
-}
-
-function findHeader(headers, ...candidates){
-  for(const c of candidates){
-    const nc = normalizeHeader(c);
-    const found = headers.find(h => normalizeHeader(h) === nc);
-    if(found) return found;
+/* ============ GITHUB API HELPERS ============ */
+async function fetchUsersJSON() {
+  try {
+    const res = await fetch(`https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO_NAME}/main/${USERS_FILE_PATH}?t=${Date.now()}`);
+    if (!res.ok) return { approved: [] };
+    return await res.json();
+  } catch (e) {
+    return { approved: [] };
   }
-  for(const c of candidates){
-    const nc = normalizeHeader(c);
-    const found = headers.find(h => normalizeHeader(h).includes(nc));
-    if(found) return found;
-  }
-  return null;
 }
 
-function formatQty(n){
-  if(n === null || n === undefined || isNaN(n)) return '—';
-  const str = Number(n).toFixed(4);
-  return str.replace(/\.?0+$/, '') || '0';
-}
+async function updateUsersOnGitHub(newData) {
+  const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO_NAME}/contents/${USERS_FILE_PATH}`;
+  const headers = { "Authorization": `token ${GITHUB_TOKEN}`, "Accept": "application/vnd.github.v3+json" };
 
-/* ============ PWA / ADD TO HOME SCREEN ============ */
-let deferredPrompt = null;
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  const getRes = await fetch(url, { headers });
+  if (!getRes.ok) throw new Error("Could not fetch file from GitHub. Check your token.");
+  const fileData = await getRes.json();
+  const sha = fileData.sha;
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js')
-      .then(reg => console.log('SW registered:', reg.scope))
-      .catch(err => console.log('SW registration failed:', err));
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(newData, null, 2))));
+
+  const putRes = await fetch(url, {
+    method: "PUT",
+    headers,
+    body: JSON.stringify({ message: "Update user approvals via App", content: content, sha: sha })
   });
+
+  if (!putRes.ok) throw new Error("Failed to update GitHub file. Check token permissions.");
+  return true;
 }
 
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  if (!isStandalone) showInstallBtn();
-});
+/* ============ AUTHENTICATION LOGIC ============ */
+const ADMIN_USER = 'Admin';
+const ADMIN_PASS = 'Swami@265';
 
-function showInstallBtn(){
-  if (isStandalone) { installBtn.style.display = 'none'; return; }
-  installBtn.style.display = 'inline-flex';
-  if (isIOS) {
-    installBtn.onclick = () => { iosModal.classList.add('open'); };
-  } else if (deferredPrompt) {
-    installBtn.onclick = async () => {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') installBtn.style.display = 'none';
-      deferredPrompt = null;
-    };
-  } else {
-    installBtn.onclick = () => {
-      if (isIOS) iosModal.classList.add('open');
-      else alert('To install: open your browser menu and tap "Install app" or "Add to Home screen".');
-    };
-  }
-}
-
-if (isIOS && !isStandalone) {
-  window.addEventListener('load', () => setTimeout(showInstallBtn, 800));
-}
-
-window.addEventListener('appinstalled', () => {
-  installBtn.style.display = 'none';
-  deferredPrompt = null;
-});
-
-iosModalClose.addEventListener('click', () => iosModal.classList.remove('open'));
-iosModal.addEventListener('click', (e) => { if (e.target === iosModal) iosModal.classList.remove('open'); });
-
-/* ============ AUTHENTICATION ============ */
-const USERS = [
-  { id: 'Outer', pass: 'Outer', role: 'Outer', admin: false },
-  { id: 'Insulation', pass: 'Insulation', role: 'Insulation', admin: false },
-  { id: 'Admin', pass: 'Swami@265', role: 'Admin', admin: true }
-];
-
-function checkAuth() {
-  const savedRole = localStorage.getItem(AUTH_KEY);
-  const savedUser = localStorage.getItem(AUTH_USER_KEY);
-  if (savedRole && savedUser) {
-    CURRENT_USER = savedUser;
-    IS_ADMIN = (savedRole === 'Admin');
-    startApp(); 
-  } else {
-    loginScreen.style.display = 'flex';
-    mainApp.style.display = 'none';
-  }
-}
-
-loginBtn.addEventListener('click', () => {
+loginBtn.addEventListener('click', async () => {
   const u = loginUser.value.trim();
   const p = loginPass.value;
-  const user = USERS.find(x => x.id.toLowerCase() === u.toLowerCase() && x.pass === p);
-  
-  if (user) {
-    localStorage.setItem(AUTH_KEY, user.role);
-    localStorage.setItem(AUTH_USER_KEY, user.id);
-    CURRENT_USER = user.id;
-    IS_ADMIN = user.admin;
-    loginError.style.display = 'none';
-    loginUser.value = '';
-    loginPass.value = '';
+  if(!u || !p) return;
+
+  if (u.toLowerCase() === ADMIN_USER.toLowerCase() && p === ADMIN_PASS) {
+    CURRENT_USER = ADMIN_USER;
+    IS_ADMIN = true;
+    localStorage.setItem(AUTH_KEY, ADMIN_USER);
+    loginScreen.style.display = 'none';
+    startApp();
+    return;
+  }
+
+  const data = await fetchUsersJSON();
+  USERS_DATA = data;
+  const isApproved = data.approved && data.approved.some(x => x.toLowerCase() === u.toLowerCase());
+
+  if (isApproved) {
+    CURRENT_USER = u;
+    IS_ADMIN = false;
+    localStorage.setItem(AUTH_KEY, u);
+    loginScreen.style.display = 'none';
     startApp();
   } else {
-    loginError.style.display = 'block';
+    loginScreen.style.display = 'none';
+    approvalScreen.style.display = 'flex';
   }
 });
 
-loginPass.addEventListener('keydown', e => { if(e.key === 'Enter') loginBtn.click(); });
-logoutBtn.addEventListener('click', () => { 
-  localStorage.removeItem(AUTH_KEY); 
-  localStorage.removeItem(AUTH_USER_KEY);
-  location.reload(); 
+refreshApprovalBtn.addEventListener('click', async () => {
+  const u = loginUser.value.trim();
+  const data = await fetchUsersJSON();
+  const isApproved = data.approved && data.approved.some(x => x.toLowerCase() === u.toLowerCase());
+  if (isApproved) {
+    CURRENT_USER = u;
+    IS_ADMIN = false;
+    localStorage.setItem(AUTH_KEY, u);
+    approvalScreen.style.display = 'none';
+    startApp();
+  } else {
+    alert('Still pending. Ask Admin to approve you.');
+  }
 });
+
+cancelApprovalBtn.addEventListener('click', () => {
+  approvalScreen.style.display = 'none';
+  loginScreen.style.display = 'flex';
+  loginUser.value = ''; loginPass.value = '';
+});
+
+logoutBtn.addEventListener('click', () => {
+  localStorage.removeItem(AUTH_KEY);
+  location.reload();
+});
+
+async function checkAuth() {
+  const savedUser = localStorage.getItem(AUTH_KEY);
+  if (savedUser) {
+    if (savedUser.toLowerCase() === ADMIN_USER.toLowerCase()) {
+      CURRENT_USER = ADMIN_USER; IS_ADMIN = true; startApp();
+    } else {
+      const data = await fetchUsersJSON();
+      USERS_DATA = data;
+      const isApproved = data.approved && data.approved.some(x => x.toLowerCase() === savedUser.toLowerCase());
+      if (isApproved) {
+        CURRENT_USER = savedUser; IS_ADMIN = false; startApp();
+      } else {
+        localStorage.removeItem(AUTH_KEY); loginScreen.style.display = 'flex';
+      }
+    }
+  } else {
+    loginScreen.style.display = 'flex';
+  }
+}
 
 function startApp() {
   loginScreen.style.display = 'none';
+  approvalScreen.style.display = 'none';
   mainApp.style.display = 'block';
   rolePill.innerHTML = `👤 <b>${esc(CURRENT_USER)}</b>`;
-  if (IS_ADMIN) {
-    toggleContainer.classList.remove('hidden');
-  } else {
-    toggleContainer.classList.add('hidden');
-    switchMode('job');
-  }
+  if (IS_ADMIN) { toggleAdmin.style.display = 'inline-block'; loadAdminPanel(); } else { toggleAdmin.style.display = 'none'; }
   loadJobDataFromCSV();
   if (IS_ADMIN) loadBomDataFromCSV();
-  if (!isStandalone) showInstallBtn();
 }
+
+/* ============ ADMIN PANEL (GITHUB AUTO UPDATE) ============ */
+async function loadAdminPanel() {
+  const data = await fetchUsersJSON();
+  USERS_DATA = data;
+  
+  let html = '';
+  if (data.approved && data.approved.length > 0) {
+    data.approved.forEach(u => {
+      html += `
+        <div class="user-row">
+          <div class="user-info"><span class="name">${esc(u)}</span><span class="status approved">Approved</span></div>
+          <div class="action-btns">
+            <button class="btn-delete" onclick="window.removeUser('${esc(u)}')">Remove</button>
+          </div>
+        </div>`;
+    });
+  } else {
+    html = `<p style="font-size:.85rem; color:#64748b;">No users approved yet.</p>`;
+  }
+
+  html += `
+    <div style="margin-top:16px; border-top:1px solid #e2e8f0; padding-top:16px;">
+      <label style="font-size:.75rem; font-weight:700; color:#64748b; margin-bottom:6px; display:block;">Add User Manually</label>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="newUserInput" placeholder="Username" style="flex:1; padding:8px 12px; border-radius:8px; border:1px solid #e2e8f0; font-size:.85rem;">
+        <button class="btn-approve" onclick="window.addUser()" style="padding:8px 16px;">Add</button>
+      </div>
+    </div>
+  `;
+
+  pendingUsersList.innerHTML = html;
+}
+
+window.addUser = async function() {
+  const input = document.getElementById('newUserInput');
+  const newUser = input.value.trim();
+  if(!newUser) return alert('Enter a username.');
+  if(USERS_DATA.approved.includes(newUser)) return alert('User already approved.');
+
+  const newData = { approved: [...USERS_DATA.approved, newUser] };
+  
+  try {
+    pendingUsersList.innerHTML = `<p style="color:#3b82f6; font-weight:700;">Updating GitHub... Please wait.</p>`;
+    await updateUsersOnGitHub(newData);
+    alert('User Approved successfully!');
+    loadAdminPanel();
+  } catch(e) {
+    alert('Error: ' + e.message + '\n\nDid you forget to add your GitHub token in the code?');
+    loadAdminPanel();
+  }
+};
+
+window.removeUser = async function(username) {
+  if(!confirm('Remove ' + username + '?')) return;
+  const newData = { approved: USERS_DATA.approved.filter(u => u !== username) };
+  
+  try {
+    pendingUsersList.innerHTML = `<p style="color:#3b82f6; font-weight:700;">Updating GitHub...</p>`;
+    await updateUsersOnGitHub(newData);
+    loadAdminPanel();
+  } catch(e) {
+    alert('Error: ' + e.message);
+    loadAdminPanel();
+  }
+};
 
 /* ============ MODE SWITCHING ============ */
 function switchMode(mode){
   CURRENT_MODE = mode;
-  if(mode === 'bom' && !IS_ADMIN){ mode = 'job'; CURRENT_MODE = 'job'; }
-  
-  if(mode === 'job'){
-    toggleJob.classList.add('active');
-    toggleBom.classList.remove('active');
-    jobSearchPanel.style.display = '';
-    bomSearchPanel.style.display = 'none';
-    appTitle.textContent = 'JOB CARDS';
-    resetJobSearch();
-    updateStatsPill();
-    renderEmpty('Start typing a <b>job number</b> above.', '🔎');
-  } else {
-    toggleJob.classList.remove('active');
-    toggleBom.classList.add('active');
-    jobSearchPanel.style.display = 'none';
-    bomSearchPanel.style.display = '';
-    appTitle.textContent = 'BOM';
-    resetBomSearch();
-    updateStatsPill();
-    renderEmpty('Start typing a <b>SO-ITEM</b> above.', '📦');
+  if(mode === 'admin'){
+    toggleAdmin.classList.add('active'); toggleJob.classList.remove('active'); toggleBom.classList.remove('active');
+    jobSearchPanel.style.display = 'none'; bomSearchPanel.style.display = 'none'; adminPanel.classList.add('active');
+    return;
   }
-  resultTitle.textContent = 'Enter details above';
-  resultCount.textContent = '0 records';
+  adminPanel.classList.remove('active');
+  if(mode === 'job'){
+    toggleJob.classList.add('active'); toggleBom.classList.remove('active');
+    jobSearchPanel.style.display = 'grid'; bomSearchPanel.style.display = 'none';
+    resetJobSearch(); updateStatsPill(); renderEmpty('Start typing a <b>job number</b> above.', '🔎');
+  } else {
+    toggleJob.classList.remove('active'); toggleBom.classList.add('active');
+    jobSearchPanel.style.display = 'none'; bomSearchPanel.style.display = 'grid';
+    resetBomSearch(); updateStatsPill(); renderEmpty('Start typing a <b>SO-ITEM</b> above.', '📦');
+  }
+  resultTitle.textContent = 'Enter details above'; resultCount.textContent = '0 records';
 }
 
 toggleJob.addEventListener('click', () => switchMode('job'));
-toggleBom.addEventListener('click', () => { if(IS_ADMIN) switchMode('bom'); });
+toggleBom.addEventListener('click', () => switchMode('bom'));
+toggleAdmin.addEventListener('click', () => switchMode('admin'));
 
-/* ============ LOAD JOB DATA ============ */
+/* ============ DATA LOADING ============ */
 async function loadJobDataFromCSV() {
   try {
     const response = await fetch('data.csv?v=' + new Date().getTime());
     if (!response.ok) throw new Error('data.csv not found');
     const csvText = await response.text();
-    Papa.parse(csvText, {
-      header: true,
-      skipEmptyLines: true,
-      complete: function(results) {
-        processJobCSVData(results.data);
-        updateStatsPill();
-      }
-    });
-  } catch (error) {
-    console.error(error);
-    if(CURRENT_MODE === 'job') {
-      renderEmpty('Could not find <b>data.csv</b>. Admin must upload it to GitHub.', '⚠️');
-    }
-  }
+    Papa.parse(csvText, { header: true, skipEmptyLines: true, complete: function(results) { processJobCSVData(results.data); updateStatsPill(); } });
+  } catch (error) { if(CURRENT_MODE === 'job') renderEmpty('Could not find <b>data.csv</b>.', '⚠️'); }
 }
 
 function processJobCSVData(rows) {
   const headers = Object.keys(rows[0] || {});
   const soItemKey = findHeader(headers, 'SO-ITEM', 'SOITEM', 'INDEX');
   const opKey = findHeader(headers, 'OPERATION DETAIL', 'OPERATIONDETAIL', 'OPERATION');
-  if (!soItemKey || !opKey) { console.warn('CSV missing required headers'); return; }
-
+  if (!soItemKey || !opKey) return;
   JOB_DATA = [];
   rows.forEach((row, i) => {
     const soItem = String(row[soItemKey] || '').trim();
     const op = String(row[opKey] || '').trim();
     if (!soItem || !op) return;
-
     const details = [];
     const hCols = headers.filter(h => h.trim().toUpperCase().endsWith('H'));
-
     hCols.forEach(hCol => {
       const base = hCol.trim().toUpperCase().slice(0, -1);
       const dCol = headers.find(h => h.trim().toUpperCase() === base + 'D');
       const label = String(row[hCol] || '').trim();
-      if (dCol) {
-        const val = String(row[dCol] || '').trim();
-        if (label !== '' || val !== '') details.push([label || hCol, val || '—']);
-      } else if (label !== '') {
-        details.push([label, '—']);
-      }
+      if (dCol) { const val = String(row[dCol] || '').trim(); if (label !== '' || val !== '') details.push([label || hCol, val || '—']); }
+      else if (label !== '') details.push([label, '—']);
     });
-
-    JOB_DATA.push({
-      order: i, 
-      soItem, 
-      so: soItem.split('#')[0].trim(), 
-      operation: op,
-      qty: row[findHeader(headers, 'QTY', 'QUANTITY')] || '',
-      customer: row[findHeader(headers, 'CUSTOMER')] || '',
-      size: row[findHeader(headers, 'SIZE')] || '',
-      currentOp: row[findHeader(headers, 'CURRENT OPERATION', 'CURRENTOP')] || '',
-      nextOp: row[findHeader(headers, 'NEXT OPERATION', 'NEXTOP')] || '',
-      details,
-      drum: row[findHeader(headers, 'DRUM')] || ''
-    });
+    JOB_DATA.push({ order: i, soItem, so: soItem.split('#')[0].trim(), operation: op, qty: row[findHeader(headers, 'QTY', 'QUANTITY')] || '', customer: row[findHeader(headers, 'CUSTOMER')] || '', size: row[findHeader(headers, 'SIZE')] || '', currentOp: row[findHeader(headers, 'CURRENT OPERATION', 'CURRENTOP')] || '', nextOp: row[findHeader(headers, 'NEXT OPERATION', 'NEXTOP')] || '', details, drum: row[findHeader(headers, 'DRUM')] || '' });
   });
 }
 
-/* ============ LOAD BOM DATA (HEADER FROM ROW 2) ============ */
 async function loadBomDataFromCSV() {
   try {
     const response = await fetch('bom.csv?v=' + new Date().getTime());
     if (!response.ok) throw new Error('bom.csv not found');
     const csvText = await response.text();
-    
-    Papa.parse(csvText, {
-      header: false,
-      skipEmptyLines: false,
-      complete: function(results) {
-        const allRows = results.data;
-        if(!allRows || allRows.length < 2){ console.warn('BOM CSV too short'); return; }
-        
-        function rowHasHeader(row){
-          if(!row || !row.length) return false;
-          return row.some(cell => {
-            const n = normalizeHeader(cell);
-            return n === 'soitemno' || n === 'soitem';
-          });
-        }
-        
-        let headerRowIndex = 0;
-        if(!rowHasHeader(allRows[0]) && rowHasHeader(allRows[1])){
-          headerRowIndex = 1;
-        }
-        
-        const headerRow = allRows[headerRowIndex].map(h => String(h||'').trim());
-        const dataRows = allRows.slice(headerRowIndex + 1).filter(r => r.some(c => String(c||'').trim() !== ''));
-        
-        const rows = dataRows.map(r => {
-          const obj = {};
-          headerRow.forEach((h, i) => { obj[h] = r[i] !== undefined ? r[i] : ''; });
-          return obj;
-        }).filter(o => Object.values(o).some(v => String(v||'').trim() !== ''));
-        
-        processBomCSVData(rows);
-        updateStatsPill();
-      }
-    });
-  } catch (error) {
-    console.error(error);
-    if(CURRENT_MODE === 'bom') {
-      renderEmpty('Could not find <b>bom.csv</b>. Admin must upload it to GitHub.', '⚠️');
-    }
-  }
+    Papa.parse(csvText, { header: false, skipEmptyLines: false, complete: function(results) {
+      const allRows = results.data;
+      if(!allRows || allRows.length < 2) return;
+      const headerRow = allRows[0].map(h => String(h||'').trim());
+      const dataRows = allRows.slice(1).filter(r => r.some(c => String(c||'').trim() !== ''));
+      const rows = dataRows.map(r => { const obj = {}; headerRow.forEach((h, i) => { obj[h] = r[i] !== undefined ? r[i] : ''; }); return obj; });
+      processBomCSVData(rows); updateStatsPill();
+    }});
+  } catch (error) { if(CURRENT_MODE === 'bom') renderEmpty('Could not find <b>bom.csv</b>.', '⚠️'); }
 }
 
 function processBomCSVData(rows) {
   if(!rows || !rows.length) return;
   const headers = Object.keys(rows[0] || {});
-  
   const soItemKey = findHeader(headers, 'SO/ITEM NO', 'SOITEMNO', 'SO ITEM NO', 'SO-ITEM', 'SOITEM');
   const operationKey = findHeader(headers, 'OPERATION JDM', 'OPERATIONJDM', 'OPERATION');
   const groupKey = findHeader(headers, 'GROUP');
@@ -638,29 +583,14 @@ function processBomCSVData(rows) {
   const colourKey = findHeader(headers, 'COLOUR', 'COLOR');
   const planQtyKey = findHeader(headers, 'PLAN/PRD QTY', 'PLANPRDQTY');
 
-  if (!soItemKey) { console.warn('BOM CSV missing SO/ITEM NO header'); return; }
-
+  if (!soItemKey) return;
   const grouped = new Map();
-  
   rows.forEach(row => {
-    // CLEAN THE SO ITEM HERE by removing '#'
-    const rawSoItem = String(row[soItemKey] || '').trim();
-    const soItemRaw = cleanSoItem(rawSoItem);
-    
+    const soItemRaw = cleanSoItem(String(row[soItemKey] || '').trim());
     if(!soItemRaw) return;
-    
     if(!grouped.has(soItemRaw)){
-      grouped.set(soItemRaw, {
-        soItem: soItemRaw,
-        customer: String(row[customerKey] || '').trim(),
-        size: String(row[sizeKey] || '').trim(),
-        defaultPlanQty: parseFloat(row[planQtyKey]) || 0,
-        colour: String(row[colourKey] || '').trim(),
-        lines: [],
-        operationJDMToOpnCode: new Map()
-      });
+      grouped.set(soItemRaw, { soItem: soItemRaw, customer: String(row[customerKey] || '').trim(), size: String(row[sizeKey] || '').trim(), defaultPlanQty: parseFloat(row[planQtyKey]) || 0, colour: String(row[colourKey] || '').trim(), lines: [], operationJDMToOpnCode: new Map() });
     }
-    
     const rec = grouped.get(soItemRaw);
     const matCode = String(row[materialCodeKey] || '').trim();
     const matDisc = String(row[materialDiscKey] || '').trim();
@@ -668,66 +598,28 @@ function processBomCSVData(rows) {
     const opnCode = String(row[opnKey] || '').trim();
     const opJDM = String(row[operationKey] || '').trim();
     const bomPerKm = parseFloat(row[bomPerKmKey]) || 0;
-    
-    if(opJDM && opnCode && !rec.operationJDMToOpnCode.has(opJDM)){
-      rec.operationJDMToOpnCode.set(opJDM, opnCode);
-    }
-    
+    if(opJDM && opnCode && !rec.operationJDMToOpnCode.has(opJDM)) rec.operationJDMToOpnCode.set(opJDM, opnCode);
     if(!matCode && !matDisc) return;
-    
-    rec.lines.push({
-      group: rowGroup,
-      opnCode,
-      operationJDM: opJDM,
-      matCode,
-      matDisc: matDisc || matCode,
-      bomPerKm
-    });
+    rec.lines.push({ group: rowGroup, opnCode, operationJDM: opJDM, matCode, matDisc: matDisc || matCode, bomPerKm });
   });
-
   BOM_DATA = Array.from(grouped.values());
 }
 
 function updateStatsPill(){
-  if(CURRENT_MODE === 'job'){
-    statsPill.innerHTML = `📊 <b>${buildJobIndex().size}</b> jobs`;
-  } else {
-    statsPill.innerHTML = `📦 <b>${BOM_DATA.length}</b> BOM items`;
-  }
+  if(CURRENT_MODE === 'job') statsPill.innerHTML = `📊 <b>${buildJobIndex().size}</b> jobs`;
+  else statsPill.innerHTML = `📦 <b>${BOM_DATA.length}</b> BOM items`;
 }
 
 /* ============ JOB SEARCH LOGIC ============ */
-function jobNumberOf(row){
-  if(!row.soItem) return '';
-  return row.soItem.split('#')[0].trim();
-}
-
-function buildJobIndex(){
-  const map = new Map();
-  JOB_DATA.forEach(r => {
-    const j = jobNumberOf(r);
-    if(!j) return;
-    if(!map.has(j)) map.set(j, {opCount:0, ops:new Set()});
-    const rec = map.get(j);
-    if(r.operation) rec.ops.add(r.operation);
-  });
-  map.forEach(v => v.opCount = v.ops.size);
-  return map;
-}
-
+function jobNumberOf(row){ if(!row.soItem) return ''; return row.soItem.split('#')[0].trim(); }
+function buildJobIndex(){ const map = new Map(); JOB_DATA.forEach(r => { const j = jobNumberOf(r); if(!j) return; if(!map.has(j)) map.set(j, {opCount:0, ops:new Set()}); const rec = map.get(j); if(r.operation) rec.ops.add(r.operation); }); map.forEach(v => v.opCount = v.ops.size); return map; }
 function allJobNumbers(){ return Array.from(buildJobIndex().keys()).sort((a,b)=> a.localeCompare(b, undefined, {numeric:true, sensitivity:'base'})); }
 function filterJobs(term){ const q = term.trim().toLowerCase(); const jobs = allJobNumbers(); return q ? jobs.filter(j => j.toLowerCase().includes(q)) : jobs; }
 
 function opsForJob(jobNo){
   if(!jobNo) return [];
   const jn = jobNo.trim().toLowerCase(); const seen = new Set(); const list = [];
-  JOB_DATA.forEach(r => {
-    if(!r.soItem || !r.operation) return;
-    if(jobNumberOf(r).toLowerCase() === jn){
-      const op = r.operation.trim();
-      if(!seen.has(op)){ seen.add(op); list.push(op); }
-    }
-  });
+  JOB_DATA.forEach(r => { if(!r.soItem || !r.operation) return; if(jobNumberOf(r).toLowerCase() === jn){ const op = r.operation.trim(); if(!seen.has(op)){ seen.add(op); list.push(op); } } });
   return list;
 }
 
@@ -747,10 +639,11 @@ function highlightMatch(text, term){
   return esc(text.slice(0,i)) + '<mark>' + esc(text.slice(i, i+t.length)) + '</mark>' + esc(text.slice(i+t.length));
 }
 
+let suggestIndex = -1, suggestItems = [];
 function renderSuggestions(term){
-  const matches = filterJobs(term); const idx = buildJobIndex(); SUGGEST_INDEX = -1;
-  if(matches.length === 0){ SUGGEST_ITEMS = []; suggestBox.innerHTML = `<div class="suggest-empty">No jobs match <b>“${esc(term)}”</b></div>`; suggestBox.classList.add('open'); return; }
-  SUGGEST_ITEMS = matches;
+  const matches = filterJobs(term); const idx = buildJobIndex(); suggestIndex = -1;
+  if(matches.length === 0){ suggestItems = []; suggestBox.innerHTML = `<div class="suggest-empty">No jobs match <b>“${esc(term)}”</b></div>`; suggestBox.classList.add('open'); return; }
+  suggestItems = matches;
   let html = `<div class="suggest-hint">${matches.length} jobs found</div>`;
   matches.forEach((j, i) => {
     const rec = idx.get(j) || {opCount:0};
@@ -759,12 +652,12 @@ function renderSuggestions(term){
   suggestBox.innerHTML = html; suggestBox.classList.add('open');
 }
 
-function closeSuggestions(){ suggestBox.classList.remove('open'); SUGGEST_INDEX = -1; }
+function closeSuggestions(){ suggestBox.classList.remove('open'); suggestIndex = -1; }
 function pickSuggestion(jobNo){ jobInput.value = jobNo; closeSuggestions(); refreshOpSelect(); if(!opSelect.disabled && opSelect.options.length > 2) opSelect.focus(); else if(opSelect.value) renderJobResults(); }
 function moveSuggestion(dir){
-  if(!SUGGEST_ITEMS.length) return;
-  SUGGEST_INDEX += dir; if(SUGGEST_INDEX < 0) SUGGEST_INDEX = SUGGEST_ITEMS.length - 1; if(SUGGEST_INDEX >= SUGGEST_ITEMS.length) SUGGEST_INDEX = 0;
-  Array.from(suggestBox.querySelectorAll('.suggest-item')).forEach((el,i)=>{ el.classList.toggle('active', i === SUGGEST_INDEX); if(i === SUGGEST_INDEX) el.scrollIntoView({block:'nearest'}); });
+  if(!suggestItems.length) return;
+  suggestIndex += dir; if(suggestIndex < 0) suggestIndex = suggestItems.length - 1; if(suggestIndex >= suggestItems.length) suggestIndex = 0;
+  Array.from(suggestBox.querySelectorAll('.suggest-item')).forEach((el,i)=>{ el.classList.toggle('active', i === suggestIndex); if(i === suggestIndex) el.scrollIntoView({block:'nearest'}); });
 }
 
 function renderEmpty(msg, icon='🔎'){ grid.innerHTML = `<div class="empty"><div class="icon">${icon}</div><p>${msg}</p></div>`; }
@@ -794,20 +687,14 @@ function renderJobResults(){
   grid.innerHTML = html;
 }
 
-function resetJobSearch(){
-  jobInput.value = '';
-  opSelect.innerHTML = '<option value="">— Select Job First —</option>';
-  opSelect.disabled = true;
-  closeSuggestions();
-}
-
+function resetJobSearch(){ jobInput.value = ''; opSelect.innerHTML = '<option value="">— Select Job First —</option>'; opSelect.disabled = true; closeSuggestions(); }
 jobInput.addEventListener('input', () => { renderSuggestions(jobInput.value); refreshOpSelect(); });
 jobInput.addEventListener('focus', () => { if(!jobInput.value.trim()) renderSuggestions(''); else renderSuggestions(jobInput.value); });
 jobInput.addEventListener('keydown', e => {
   const open = suggestBox.classList.contains('open');
   if(e.key === 'ArrowDown'){ if(!open){ renderSuggestions(jobInput.value); return; } e.preventDefault(); moveSuggestion(1); }
   else if(e.key === 'ArrowUp'){ if(!open) return; e.preventDefault(); moveSuggestion(-1); }
-  else if(e.key === 'Enter'){ e.preventDefault(); if(open && SUGGEST_INDEX >= 0) pickSuggestion(SUGGEST_ITEMS[SUGGEST_INDEX]); else if(open && SUGGEST_ITEMS.length === 1) pickSuggestion(SUGGEST_ITEMS[0]); else if(opSelect.value) renderJobResults(); else opSelect.focus(); }
+  else if(e.key === 'Enter'){ e.preventDefault(); if(open && suggestIndex >= 0) pickSuggestion(suggestItems[suggestIndex]); else if(open && suggestItems.length === 1) pickSuggestion(suggestItems[0]); else if(opSelect.value) renderJobResults(); else opSelect.focus(); }
   else if(e.key === 'Escape'){ closeSuggestions(); }
 });
 
@@ -815,276 +702,108 @@ suggestBox.addEventListener('mousedown', e => { const item = e.target.closest('.
 document.addEventListener('click', e => { if(!jobField.contains(e.target)) closeSuggestions(); if(!bomField.contains(e.target)) closeBomSuggestions(); });
 jobInput.addEventListener('blur', () => { setTimeout(closeSuggestions, 150); });
 opSelect.addEventListener('change', () => { if(jobInput.value.trim() && opSelect.value) renderJobResults(); });
-searchBtn.addEventListener('click', () => { closeSuggestions(); if(!jobInput.value.trim()){ jobInput.focus(); return; } if(!opSelect.value){ opSelect.focus(); return; } renderJobResults(); });
-resetBtn.addEventListener('click', () => { resetJobSearch(); resultTitle.textContent = 'Enter details above'; resultCount.textContent = '0 records'; renderEmpty('Start typing a <b>job number</b> above.','🔎'); jobInput.focus(); });
+document.getElementById('searchBtn').addEventListener('click', () => { closeSuggestions(); if(!jobInput.value.trim()){ jobInput.focus(); return; } if(!opSelect.value){ opSelect.focus(); return; } renderJobResults(); });
+document.getElementById('resetBtn').addEventListener('click', () => { resetJobSearch(); resultTitle.textContent = 'Enter details above'; resultCount.textContent = '0 records'; renderEmpty('Start typing a <b>job number</b> above.','🔎'); jobInput.focus(); });
 
 /* ============ BOM SEARCH LOGIC ============ */
-function getAllBomKeys(){
-  return BOM_DATA.map(b => b.soItem).sort((a,b)=> a.localeCompare(b, undefined, {numeric:true, sensitivity:'base'}));
-}
-
-function filterBomKeys(term){
-  // We also clean the user input just in case they paste with '#'
-  const q = cleanSoItem(term).toLowerCase();
-  const keys = getAllBomKeys();
-  return q ? keys.filter(k => k.toLowerCase().includes(q)) : keys;
-}
-
-function bomOpsForItem(soItem){
-  if(!soItem) return [];
-  const item = BOM_DATA.find(b => b.soItem === soItem);
-  if(!item) return [];
-  const list = [];
-  item.operationJDMToOpnCode.forEach((code, name) => list.push({ name, code }));
-  list.sort((a, b) => a.name.localeCompare(b.name, undefined, {numeric:true, sensitivity:'base'}));
-  return list;
-}
+function getAllBomKeys(){ return BOM_DATA.map(b => b.soItem).sort((a,b)=> a.localeCompare(b, undefined, {numeric:true, sensitivity:'base'})); }
+function filterBomKeys(term){ const q = cleanSoItem(term).toLowerCase(); const keys = getAllBomKeys(); return q ? keys.filter(k => k.toLowerCase().includes(q)) : keys; }
+function bomOpsForItem(soItem){ if(!soItem) return []; const item = BOM_DATA.find(b => b.soItem === soItem); if(!item) return []; const list = []; item.operationJDMToOpnCode.forEach((code, name) => list.push({ name, code })); list.sort((a, b) => a.name.localeCompare(b.name, undefined, {numeric:true, sensitivity:'base'})); return list; }
 
 function refreshBomOpSelect(){
-  const soItem = bomInput.value.trim();
-  bomOpSelect.innerHTML = '';
+  const soItem = bomInput.value.trim(); bomOpSelect.innerHTML = '';
   if(!soItem){ bomOpSelect.innerHTML = '<option value="">— Select SO-ITEM First —</option>'; bomOpSelect.disabled = true; return; }
   const ops = bomOpsForItem(soItem);
   if(ops.length === 0){ bomOpSelect.innerHTML = '<option value="">— No Operations —</option>'; bomOpSelect.disabled = true; return; }
   const ph = document.createElement('option'); ph.value = ''; ph.textContent = '— All Operations —'; bomOpSelect.appendChild(ph);
-  ops.forEach(o => {
-    const opt = document.createElement('option');
-    opt.value = o.name;
-    opt.textContent = o.name;
-    bomOpSelect.appendChild(opt);
-  });
+  ops.forEach(o => { const opt = document.createElement('option'); opt.value = o.name; opt.textContent = o.name; bomOpSelect.appendChild(opt); });
   bomOpSelect.disabled = false;
 }
 
+let bomSuggestIndex = -1, bomSuggestItems = [];
 function renderBomSuggestions(term){
-  const matches = filterBomKeys(term);
-  BOM_SUGGEST_INDEX = -1;
-  if(matches.length === 0){
-    BOM_SUGGEST_ITEMS = [];
-    bomSuggestBox.innerHTML = `<div class="suggest-empty">No items match <b>“${esc(term)}”</b></div>`;
-    bomSuggestBox.classList.add('open');
-    return;
-  }
-  BOM_SUGGEST_ITEMS = matches;
+  const matches = filterBomKeys(term); bomSuggestIndex = -1;
+  if(matches.length === 0){ bomSuggestItems = []; bomSuggestBox.innerHTML = `<div class="suggest-empty">No items match <b>“${esc(term)}”</b></div>`; bomSuggestBox.classList.add('open'); return; }
+  bomSuggestItems = matches;
   let html = `<div class="suggest-hint">${matches.length} items found</div>`;
   matches.slice(0, 50).forEach((k, i) => {
     const item = BOM_DATA.find(b => b.soItem === k);
     const lineCount = item ? item.lines.length : 0;
     html += `<div class="suggest-item" data-bom="${esc(k)}" data-idx="${i}"><span class="jn">${highlightMatch(k, term)}</span><span class="meta">${lineCount} lines</span></div>`;
   });
-  bomSuggestBox.innerHTML = html;
-  bomSuggestBox.classList.add('open');
+  bomSuggestBox.innerHTML = html; bomSuggestBox.classList.add('open');
 }
 
-function closeBomSuggestions(){ bomSuggestBox.classList.remove('open'); BOM_SUGGEST_INDEX = -1; }
-
-function pickBomSuggestion(soItem){
-  bomInput.value = soItem;
-  closeBomSuggestions();
-  refreshBomOpSelect();
-  USER_PLAN_QTY = null;
-  renderBomResults();
-}
-
+function closeBomSuggestions(){ bomSuggestBox.classList.remove('open'); bomSuggestIndex = -1; }
+function pickBomSuggestion(soItem){ bomInput.value = soItem; closeBomSuggestions(); refreshBomOpSelect(); USER_PLAN_QTY = null; renderBomResults(); }
 function moveBomSuggestion(dir){
-  if(!BOM_SUGGEST_ITEMS.length) return;
-  BOM_SUGGEST_INDEX += dir;
-  if(BOM_SUGGEST_INDEX < 0) BOM_SUGGEST_INDEX = BOM_SUGGEST_ITEMS.length - 1;
-  if(BOM_SUGGEST_INDEX >= BOM_SUGGEST_ITEMS.length) BOM_SUGGEST_INDEX = 0;
-  Array.from(bomSuggestBox.querySelectorAll('.suggest-item')).forEach((el,i)=>{ 
-    el.classList.toggle('active', i === BOM_SUGGEST_INDEX); 
-    if(i === BOM_SUGGEST_INDEX) el.scrollIntoView({block:'nearest'}); 
-  });
+  if(!bomSuggestItems.length) return;
+  bomSuggestIndex += dir;
+  if(bomSuggestIndex < 0) bomSuggestIndex = bomSuggestItems.length - 1;
+  if(bomSuggestIndex >= bomSuggestItems.length) bomSuggestIndex = 0;
+  Array.from(bomSuggestBox.querySelectorAll('.suggest-item')).forEach((el,i)=>{ el.classList.toggle('active', i === bomSuggestIndex); if(i === bomSuggestIndex) el.scrollIntoView({block:'nearest'}); });
 }
 
+let USER_PLAN_QTY = null;
 function renderBomResults(){
-  const soItem = bomInput.value.trim();
-  const selectedOpName = bomOpSelect.value;
-  if(!soItem){
-    renderEmpty('Please enter a <b>SO-ITEM</b> first.','⌨️');
-    resultTitle.textContent = 'Enter SO-ITEM';
-    resultCount.textContent = '0 records';
-    return;
-  }
-  
+  const soItem = bomInput.value.trim(); const selectedOpName = bomOpSelect.value;
+  if(!soItem){ renderEmpty('Please enter a <b>SO-ITEM</b> first.','⌨️'); resultTitle.textContent = 'Enter SO-ITEM'; resultCount.textContent = '0 records'; return; }
   const item = BOM_DATA.find(b => b.soItem === soItem);
-  if(!item){
-    renderEmpty(`No BOM found for <b>${esc(soItem)}</b>.`, '🗂️');
-    resultTitle.textContent = soItem;
-    resultCount.textContent = '0 records';
-    return;
-  }
-  
-  const effectivePlanQty = (USER_PLAN_QTY !== null && !isNaN(USER_PLAN_QTY))
-    ? USER_PLAN_QTY
-    : item.defaultPlanQty;
-  
+  if(!item){ renderEmpty(`No BOM found for <b>${esc(soItem)}</b>.`, '🗂️'); resultTitle.textContent = soItem; resultCount.textContent = '0 records'; return; }
+  const effectivePlanQty = (USER_PLAN_QTY !== null && !isNaN(USER_PLAN_QTY)) ? USER_PLAN_QTY : item.defaultPlanQty;
   let lines = item.lines;
-  if(selectedOpName){
-    lines = lines.filter(l => l.operationJDM === selectedOpName);
-  }
-  
+  if(selectedOpName) lines = lines.filter(l => l.operationJDM === selectedOpName);
   resultTitle.innerHTML = `<span class="hl">${esc(soItem)}</span>${selectedOpName ? ` <span class="sep">|</span> ${esc(selectedOpName)}` : ''}`;
   resultCount.textContent = `${lines.length} line${lines.length!==1?'s':''}`;
-  
-  if(lines.length === 0){
-    renderEmpty(`No BOM lines found for this selection.`, '📋');
-    return;
-  }
-  
+  if(lines.length === 0){ renderEmpty(`No BOM lines found for this selection.`, '📋'); return; }
   const groupMap = new Map();
-  lines.forEach(l => {
-    const g = l.group || 'OTHER';
-    if(!groupMap.has(g)) groupMap.set(g, []);
-    groupMap.get(g).push(l);
-  });
-  
+  lines.forEach(l => { const g = l.group || 'OTHER'; if(!groupMap.has(g)) groupMap.set(g, []); groupMap.get(g).push(l); });
   let specs = '';
   specs += `<div class="spec accent"><div class="k">SO-ITEM</div><div class="v"><span class="chip-val">${esc(item.soItem)}</span></div></div>`;
   if(item.customer) specs += `<div class="spec"><div class="k">CUSTOMER JDM</div><div class="v">${esc(item.customer)}</div></div>`;
   if(item.size) specs += `<div class="spec"><div class="k">SIZE</div><div class="v">${esc(item.size)}</div></div>`;
-  
   const planVal = formatQty(effectivePlanQty);
-  specs += `<div class="spec plan-qty-row">
-    <div class="k">PLAN/PRD QTY</div>
-    <div class="v">
-      <input type="number" id="planQtyInput" value="${esc(planVal)}" min="0" step="any" inputmode="decimal" placeholder="Enter Qty">
-    </div>
-  </div>`;
-  
+  specs += `<div class="spec plan-qty-row"><div class="k">PLAN/PRD QTY</div><div class="v"><input type="number" id="planQtyInput" value="${esc(planVal)}" min="0" step="any" inputmode="decimal" placeholder="Enter Qty"></div></div>`;
   if(item.colour) specs += `<div class="spec"><div class="k">COLOUR</div><div class="v">${esc(item.colour)}</div></div>`;
-  
   const allOps = bomOpsForItem(soItem);
   let opOptionsHtml = `<option value="">— All Operations —</option>`;
-  allOps.forEach(o => {
-    opOptionsHtml += `<option value="${esc(o.name)}" ${o.name === selectedOpName ? 'selected' : ''}>${esc(o.name)}</option>`;
-  });
-  
-  specs += `<div class="spec op-jdm-row">
-    <div class="k">OPERATION JDM</div>
-    <div class="v">
-      <select id="inlineOpSelect">${opOptionsHtml}</select>
-    </div>
-  </div>`;
-  
-  let tableHtml = `
-    <div class="bom-table">
-      <div class="bom-table-head">
-        <div>Material Code</div>
-        <div>Material Disc</div>
-        <div>JDM BOM Qty</div>
-      </div>
-  `;
-  
+  allOps.forEach(o => { opOptionsHtml += `<option value="${esc(o.name)}" ${o.name === selectedOpName ? 'selected' : ''}>${esc(o.name)}</option>`; });
+  specs += `<div class="spec op-jdm-row"><div class="k">OPERATION JDM</div><div class="v"><select id="inlineOpSelect">${opOptionsHtml}</select></div></div>`;
+  let tableHtml = `<div class="bom-table"><div class="bom-table-head"><div>Material Code</div><div>Material Disc</div><div>JDM BOM Qty</div></div>`;
   const sortedGroups = Array.from(groupMap.keys()).sort();
   let grandTotal = 0;
   sortedGroups.forEach(groupName => {
     const groupLines = groupMap.get(groupName);
     tableHtml += `<div class="bom-group-header">${esc(groupName)}<span class="count">${groupLines.length}</span></div>`;
     groupLines.forEach(l => {
-      const computed = (effectivePlanQty * l.bomPerKm) / 1000;
-      grandTotal += computed;
-      const displayQty = formatQty(computed);
-      tableHtml += `
-        <div class="bom-row">
-          <div>${esc(l.matCode || '—')}</div>
-          <div>${esc(l.matDisc || '—')}</div>
-          <div>${esc(displayQty)}</div>
-        </div>
-      `;
+      const computed = (effectivePlanQty * l.bomPerKm) / 1000; grandTotal += computed; const displayQty = formatQty(computed);
+      tableHtml += `<div class="bom-row"><div>${esc(l.matCode || '—')}</div><div>${esc(l.matDisc || '—')}</div><div>${esc(displayQty)}</div></div>`;
     });
   });
-  
   tableHtml += `</div>`;
-  
-  const html = `<div class="card">
-    <div class="card-head">
-      <h3><span class="bullet"></span>${esc(item.soItem)}</h3>
-      <span class="op-tag">BOM</span>
-    </div>
-    <div class="specs">${specs}</div>
-    <div style="padding: 0 16px 16px;">${tableHtml}</div>
-    <div class="card-foot">
-      <span>📦 ${lines.length} line${lines.length!==1?'s':''}</span>
-      <span>🏷️ ${allOps.length} op${allOps.length!==1?'s':''}</span>
-    </div>
-  </div>`;
-  
+  const html = `<div class="card"><div class="card-head"><h3><span class="bullet"></span>${esc(item.soItem)}</h3><span class="op-tag">BOM</span></div><div class="specs">${specs}</div><div style="padding: 0 16px 16px;">${tableHtml}</div><div class="card-foot"><span>📦 ${lines.length} line${lines.length!==1?'s':''}</span><span>🏷️ ${allOps.length} op${allOps.length!==1?'s':''}</span></div></div>`;
   grid.innerHTML = html;
-  
   const inlineSel = document.getElementById('inlineOpSelect');
-  if(inlineSel){
-    inlineSel.addEventListener('change', (e) => {
-      bomOpSelect.value = e.target.value;
-      renderBomResults();
-    });
-  }
-  
+  if(inlineSel){ inlineSel.addEventListener('change', (e) => { bomOpSelect.value = e.target.value; renderBomResults(); }); }
   const planInput = document.getElementById('planQtyInput');
-  if(planInput){
-    const handleRecalc = () => {
-      const val = parseFloat(planInput.value);
-      USER_PLAN_QTY = isNaN(val) ? 0 : val;
-      const rows = grid.querySelectorAll('.bom-row');
-      let idx = 0;
-      sortedGroups.forEach(groupName => {
-        const groupLines = groupMap.get(groupName);
-        groupLines.forEach(l => {
-          const computed = (USER_PLAN_QTY * l.bomPerKm) / 1000;
-          if(rows[idx]){
-            rows[idx].children[2].textContent = formatQty(computed);
-          }
-          idx++;
-        });
-      });
-    };
-    planInput.addEventListener('input', handleRecalc);
-  }
+  if(planInput){ planInput.addEventListener('input', () => { const val = parseFloat(planInput.value); USER_PLAN_QTY = isNaN(val) ? 0 : val; const rows = grid.querySelectorAll('.bom-row'); let idx = 0; sortedGroups.forEach(groupName => { const groupLines = groupMap.get(groupName); groupLines.forEach(l => { const computed = (USER_PLAN_QTY * l.bomPerKm) / 1000; if(rows[idx]) rows[idx].children[2].textContent = formatQty(computed); idx++; }); }); }); }
 }
 
-function resetBomSearch(){
-  bomInput.value = '';
-  bomOpSelect.innerHTML = '<option value="">— Select SO-ITEM First —</option>';
-  bomOpSelect.disabled = true;
-  closeBomSuggestions();
-  USER_PLAN_QTY = null;
-}
-
+function resetBomSearch(){ bomInput.value = ''; bomOpSelect.innerHTML = '<option value="">— Select SO-ITEM First —</option>'; bomOpSelect.disabled = true; closeBomSuggestions(); USER_PLAN_QTY = null; }
 bomInput.addEventListener('input', () => { renderBomSuggestions(bomInput.value); refreshBomOpSelect(); });
 bomInput.addEventListener('focus', () => { if(!bomInput.value.trim()) renderBomSuggestions(''); else renderBomSuggestions(bomInput.value); });
 bomInput.addEventListener('keydown', e => {
   const open = bomSuggestBox.classList.contains('open');
   if(e.key === 'ArrowDown'){ if(!open){ renderBomSuggestions(bomInput.value); return; } e.preventDefault(); moveBomSuggestion(1); }
   else if(e.key === 'ArrowUp'){ if(!open) return; e.preventDefault(); moveBomSuggestion(-1); }
-  else if(e.key === 'Enter'){ 
-    e.preventDefault(); 
-    if(open && BOM_SUGGEST_INDEX >= 0) pickBomSuggestion(BOM_SUGGEST_ITEMS[BOM_SUGGEST_INDEX]); 
-    else if(open && BOM_SUGGEST_ITEMS.length === 1) pickBomSuggestion(BOM_SUGGEST_ITEMS[0]); 
-    else renderBomResults(); 
-  }
+  else if(e.key === 'Enter'){ e.preventDefault(); if(open && bomSuggestIndex >= 0) pickBomSuggestion(bomSuggestItems[bomSuggestIndex]); else if(open && bomSuggestItems.length === 1) pickBomSuggestion(bomSuggestItems[0]); else renderBomResults(); }
   else if(e.key === 'Escape'){ closeBomSuggestions(); }
 });
-
-bomSuggestBox.addEventListener('mousedown', e => { 
-  const item = e.target.closest('.suggest-item'); 
-  if(!item) return; 
-  e.preventDefault(); 
-  pickBomSuggestion(item.dataset.bom); 
-});
+bomSuggestBox.addEventListener('mousedown', e => { const item = e.target.closest('.suggest-item'); if(!item) return; e.preventDefault(); pickBomSuggestion(item.dataset.bom); });
 bomInput.addEventListener('blur', () => { setTimeout(closeBomSuggestions, 150); });
 bomOpSelect.addEventListener('change', () => { if(bomInput.value.trim()) renderBomResults(); });
-bomSearchBtn.addEventListener('click', () => { 
-  closeBomSuggestions(); 
-  if(!bomInput.value.trim()){ bomInput.focus(); return; } 
-  renderBomResults(); 
-});
-bomResetBtn.addEventListener('click', () => { 
-  resetBomSearch(); 
-  resultTitle.textContent = 'Enter details above'; 
-  resultCount.textContent = '0 records'; 
-  renderEmpty('Start typing a <b>SO-ITEM</b> above.','📦'); 
-  bomInput.focus(); 
-});
+document.getElementById('bomSearchBtn').addEventListener('click', () => { closeBomSuggestions(); if(!bomInput.value.trim()){ bomInput.focus(); return; } renderBomResults(); });
+document.getElementById('bomResetBtn').addEventListener('click', () => { resetBomSearch(); resultTitle.textContent = 'Enter details above'; resultCount.textContent = '0 records'; renderEmpty('Start typing a <b>SO-ITEM</b> above.','📦'); bomInput.focus(); });
 
 /* ============ INIT ============ */
 checkAuth();

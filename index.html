@@ -168,9 +168,9 @@ body{
     <div class="icon">🔒</div>
     <h2>Access Portal</h2>
     <input type="text" id="loginUser" placeholder="Enter Username" autocomplete="off">
-    <input type="password" id="loginPass" placeholder="Enter Password" autocomplete="off">
-    <button class="login-btn" id="loginBtn">Login</button>
-    <div class="login-error" id="loginError">Invalid Username or Password</div>
+    <input type="password" id="loginPass" placeholder="Enter Password" autocomplete="off" style="display:none;">
+    <button class="login-btn" id="loginBtn">Next</button>
+    <div class="login-error" id="loginError">Invalid Username</div>
   </div>
 </div>
 
@@ -351,6 +351,8 @@ function checkAuth() {
   }
 }
 
+let loginStep = 1; // 1 = checking username, 2 = checking password
+
 loginBtn.addEventListener('click', () => {
   const u = loginUser.value.trim().toLowerCase();
   const p = loginPass.value;
@@ -359,30 +361,53 @@ loginBtn.addEventListener('click', () => {
 
   const userRecord = USERS[u];
 
-  if (userRecord) {
-    // If the user has a required password, check it
-    if (userRecord.pass !== '' && p !== userRecord.pass) {
-      loginError.textContent = "Invalid Password";
+  if (loginStep === 1) {
+    // Step 1: Checking Username
+    if (!userRecord) {
+      loginError.textContent = "Invalid Username";
       loginError.style.display = 'block';
       return;
     }
 
-    // Login successful
-    localStorage.setItem(AUTH_KEY, loginUser.value.trim()); // Store original case
-    CURRENT_USER = loginUser.value.trim();
-    CAN_SEE_BOM = userRecord.bom;
-    loginError.style.display = 'none';
-    loginUser.value = '';
-    loginPass.value = '';
-    startApp();
+    if (userRecord.pass === '') {
+      // No password required, log in immediately
+      performLogin(loginUser.value.trim(), userRecord.bom);
+    } else {
+      // Password required, show password field
+      loginStep = 2;
+      loginError.style.display = 'none';
+      loginUser.disabled = true; // Lock the username field
+      loginPass.style.display = 'block';
+      loginPass.focus();
+      loginBtn.textContent = 'Login';
+    }
   } else {
-    loginError.textContent = "Invalid Username";
-    loginError.style.display = 'block';
+    // Step 2: Checking Password
+    if (p !== userRecord.pass) {
+      loginError.textContent = "Invalid Password";
+      loginError.style.display = 'block';
+      return;
+    }
+    performLogin(loginUser.value.trim(), userRecord.bom);
   }
 });
 
+function performLogin(username, canSeeBom) {
+  localStorage.setItem(AUTH_KEY, username); 
+  CURRENT_USER = username;
+  CAN_SEE_BOM = canSeeBom;
+  loginError.style.display = 'none';
+  loginUser.value = '';
+  loginPass.value = '';
+  loginUser.disabled = false;
+  loginPass.style.display = 'none';
+  loginStep = 1;
+  loginBtn.textContent = 'Next';
+  startApp();
+}
+
 loginPass.addEventListener('keydown', e => { if(e.key === 'Enter') loginBtn.click(); });
-loginUser.addEventListener('keydown', e => { if(e.key === 'Enter') loginPass.focus(); });
+loginUser.addEventListener('keydown', e => { if(e.key === 'Enter') loginBtn.click(); });
 
 logoutBtn.addEventListener('click', () => { 
   localStorage.removeItem(AUTH_KEY); 

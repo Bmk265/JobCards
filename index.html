@@ -7,7 +7,6 @@
 <meta name="theme-color" content="#3b82f6">
 <title>Job Cards & BOM</title>
 
-<!-- Link to the actual manifest file -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIyIiBmaWxsPSIjM2I4MmY2Ii8+PHBhdGggZD0iTTMwIDY1VjM1aDh2MjJoMjB2OEgzMHptMjgtMzBoMTJ2MzBINTgvMzV6IiBmaWxsPSJ3aGl0ZSIvPjxjaXJjbGUgY3g9IjQ2IiBjeT0iNDIiIHI9IjYiIGZpbGw9IiNmYmJmMjQiLz48L3N2Zz4=">
 
@@ -342,6 +341,11 @@ function normalizeHeader(h){
   return String(h||'').toLowerCase().replace(/[\s_\-\/\.]+/g,'');
 }
 
+// Cleans up the SO-ITEM string by removing '#' symbols and trimming spaces
+function cleanSoItem(str){
+  return String(str||'').replace(/#/g, '').trim();
+}
+
 function findHeader(headers, ...candidates){
   for(const c of candidates){
     const nc = normalizeHeader(c);
@@ -367,7 +371,6 @@ let deferredPrompt = null;
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
-// Register the actual sw.js file (Required for Android Install prompt)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js')
@@ -640,7 +643,10 @@ function processBomCSVData(rows) {
   const grouped = new Map();
   
   rows.forEach(row => {
-    const soItemRaw = String(row[soItemKey] || '').trim();
+    // CLEAN THE SO ITEM HERE by removing '#'
+    const rawSoItem = String(row[soItemKey] || '').trim();
+    const soItemRaw = cleanSoItem(rawSoItem);
+    
     if(!soItemRaw) return;
     
     if(!grouped.has(soItemRaw)){
@@ -818,7 +824,8 @@ function getAllBomKeys(){
 }
 
 function filterBomKeys(term){
-  const q = term.trim().toLowerCase();
+  // We also clean the user input just in case they paste with '#'
+  const q = cleanSoItem(term).toLowerCase();
   const keys = getAllBomKeys();
   return q ? keys.filter(k => k.toLowerCase().includes(q)) : keys;
 }

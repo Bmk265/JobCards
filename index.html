@@ -276,11 +276,11 @@ body{
 // ==========================================
 // GITHUB API CONFIGURATION (MUST FILL THESE)
 // ==========================================
-const GITHUB_TOKEN = "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";       // e.g., "ghp_xxxxxxxxxxxx"
-const GITHUB_USERNAME = "bmk265";      // e.g., "bmk265"
-const GITHUB_REPO_NAME = "JobCards";           // e.g., "JobCards"
-const USERS_FILE_PATH = "users.json";                // Path to the file in your repo
-const ADMIN_PASSWORD = "Swami@265";                  // Admin password to access panel
+const GITHUB_TOKEN = "ghp_YourNewTokenHere";         // PASTE YOUR NEW TOKEN HERE
+const GITHUB_USERNAME = "bmk265";                    // Lowercase
+const GITHUB_REPO_NAME = "JobCards";                 // Case-sensitive
+const USERS_FILE_PATH = "users.json";
+const ADMIN_PASSWORD = "Swami@265";
 // ==========================================
 
 const AUTH_KEY = 'jobcard_auth_user';
@@ -288,7 +288,7 @@ let JOB_DATA = [];
 let BOM_DATA = [];
 let CURRENT_MODE = 'job';
 let CURRENT_USER = '';
-let CURRENT_ACCESS = 'both'; // 'both', 'job', 'bom'
+let CURRENT_ACCESS = 'both';
 let IS_ADMIN = false;
 let USERS_DATA = { approved: [] };
 let TEMP_REG_NAME = '';
@@ -350,26 +350,58 @@ function formatQty(n){ if(n === null || n === undefined || isNaN(n)) return '—
 async function fetchUsersJSON() {
   try {
     const res = await fetch(`https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO_NAME}/main/${USERS_FILE_PATH}?t=${Date.now()}`);
-    if (!res.ok) return { approved: [] };
-    return await res.json();
-  } catch (e) { return { approved: [] }; }
+    if (!res.ok) {
+      console.warn("Raw fetch failed:", res.status);
+      return { approved: [] };
+    }
+    const text = await res.text();
+    if (!text || text.trim() === '') return { approved: [] };
+    return JSON.parse(text);
+  } catch (e) {
+    console.error("Fetch Error:", e);
+    return { approved: [] };
+  }
 }
 
 async function updateUsersOnGitHub(newData) {
-  if (GITHUB_TOKEN === "YOUR_GITHUB_TOKEN_HERE") throw new Error("GitHub Token is missing.");
+  if (GITHUB_TOKEN === "ghp_YourNewTokenHere" || GITHUB_TOKEN === "YOUR_GITHUB_TOKEN_HERE") {
+    throw new Error("GitHub Token is missing in the code.");
+  }
+  
   const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO_NAME}/contents/${USERS_FILE_PATH}`;
-  const headers = { "Authorization": `token ${GITHUB_TOKEN}`, "Accept": "application/vnd.github.v3+json" };
-  const getRes = await fetch(url, { headers });
-  if (!getRes.ok) throw new Error("Could not fetch file from GitHub.");
-  const fileData = await getRes.json();
-  const sha = fileData.sha;
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(newData, null, 2))));
-  const putRes = await fetch(url, {
-    method: "PUT", headers,
-    body: JSON.stringify({ message: "Update device approvals via App", content: content, sha: sha })
-  });
-  if (!putRes.ok) throw new Error("Failed to update GitHub file.");
-  return true;
+  const headers = { 
+    "Authorization": `token ${GITHUB_TOKEN}`, 
+    "Accept": "application/vnd.github.v3+json",
+    "Content-Type": "application/json"
+  };
+
+  try {
+    const getRes = await fetch(url, { headers });
+    
+    if (!getRes.ok) {
+      if (getRes.status === 401) throw new Error("Unauthorized: Your GitHub Token is invalid or expired.");
+      if (getRes.status === 404) throw new Error("Not Found: Check your Repo Name, Username, or if 'users.json' exists.");
+      throw new Error(`GitHub API Error: ${getRes.status}`);
+    }
+    
+    const fileData = await getRes.json();
+    const sha = fileData.sha;
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(newData, null, 2))));
+
+    const putRes = await fetch(url, {
+      method: "PUT",
+      headers,
+      body: JSON.stringify({ message: "Update device approvals", content: content, sha: sha })
+    });
+
+    if (!putRes.ok) {
+      const errData = await putRes.json();
+      throw new Error(`Failed to save: ${errData.message}`);
+    }
+    return true;
+  } catch (error) {
+    throw error;
+  }
 }
 
 /* ============ REGISTRATION & AUTH ============ */
@@ -389,11 +421,10 @@ regBtn.addEventListener('click', async () => {
     date: new Date().toISOString()
   };
 
-  const data = await fetchUsersJSON();
-  const newData = { approved: [...(data.approved || []), newRequest] };
-  
   try {
     regBtn.textContent = 'Sending...';
+    const data = await fetchUsersJSON();
+    const newData = { approved: [...(data.approved || []), newRequest] };
     await updateUsersOnGitHub(newData);
     registerScreen.style.display = 'none';
     approvalScreen.style.display = 'flex';
@@ -481,7 +512,6 @@ function startApp() {
   
   rolePill.innerHTML = `👤 <b>${esc(CURRENT_USER)}</b>`;
   
-  // Show/Hide Toggles based on Access
   toggleContainer.classList.remove('hidden');
   toggleAdmin.style.display = IS_ADMIN ? 'inline-block' : 'none';
   
@@ -499,7 +529,6 @@ function startApp() {
     loadBomDataFromCSV();
   }
   
-  // Set default view
   if (IS_ADMIN || CURRENT_ACCESS === 'both' || CURRENT_ACCESS === 'job') {
     switchMode('job');
   } else if (CURRENT_ACCESS === 'bom') {
@@ -559,7 +588,6 @@ window.updateStatus = async function(index, newStatus) {
   
   newData.approved[index].status = newStatus;
   
-  // If approving, grab the access level from the dropdown
   if (newStatus === 'approved') {
     const sel = document.getElementById(`accessSel-${index}`);
     if (sel) newData.approved[index].access = sel.value;

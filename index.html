@@ -19,8 +19,13 @@
 body{
   font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   background: #f1f5f9;
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(253,16%,7%,0.05) 0, transparent 50%), 
+    radial-gradient(at 50% 0%, hsla(225,39%,30%,0.05) 0, transparent 50%), 
+    radial-gradient(at 100% 0%, hsla(339,49%,30%,0.05) 0, transparent 50%);
   color: #1e293b;
   min-height: 100vh;
+  min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
   font-size: 14px;
   line-height: 1.5;
@@ -33,30 +38,30 @@ body{
 
 .app{max-width:1500px;margin:0 auto;padding:16px; padding-bottom: env(safe-area-inset-bottom);}
 
-/* LOGIN & APPROVAL SCREENS */
-#loginScreen, #approvalScreen{position:fixed; top:0; left:0; width:100%; height:100%;background: #f1f5f9; z-index:9999;display:flex; flex-direction:column; align-items:center; justify-content:center;padding: 20px; text-align:center;}
-.login-box, .approval-box{background:#fff; padding:32px 24px; border-radius:24px;box-shadow:0 10px 40px rgba(0,0,0,0.08); width:100%; max-width:400px;}
-.login-box .icon, .approval-box .icon{font-size:3rem; margin-bottom:12px;}
-.login-box h2, .approval-box h2{font-size:1.4rem; font-weight:800; color:#0f172a; margin-bottom:24px;}
-.login-box input{width:100%; padding:14px 16px; border-radius:12px; border:1px solid #e2e8f0;font-size:1rem; margin-bottom:12px; outline:none; transition:.2s;font-family:inherit;}
-.login-box input:focus{border-color:#3b82f6; box-shadow:0 0 0 4px rgba(59,130,246,.15);}
+#loginScreen, #approvalScreen, #registerScreen{position:fixed; top:0; left:0; width:100%; height:100%;background: #f1f5f9; z-index:9999;display:flex; flex-direction:column; align-items:center; justify-content:center;padding: 20px; text-align:center;}
+.login-box, .approval-box, .register-box{background:#fff; padding:32px 24px; border-radius:24px;box-shadow:0 10px 40px rgba(0,0,0,0.08); width:100%; max-width:400px;}
+.login-box .icon, .approval-box .icon, .register-box .icon{font-size:3rem; margin-bottom:12px;}
+.login-box h2, .approval-box h2, .register-box h2{font-size:1.4rem; font-weight:800; color:#0f172a; margin-bottom:24px;}
+.login-box input, .register-box input{width:100%; padding:14px 16px; border-radius:12px; border:1px solid #e2e8f0;font-size:1rem; margin-bottom:12px; outline:none; transition:.2s;font-family:inherit;}
+.login-box input:focus, .register-box input:focus{border-color:#3b82f6; box-shadow:0 0 0 4px rgba(59,130,246,.15);}
 .login-btn, .btn-refresh{width:100%; padding:14px; border-radius:12px; border:none;background:linear-gradient(135deg,#3b82f6,#2563eb); color:#fff;font-size:1rem; font-weight:700; cursor:pointer; transition:.2s;margin-top:8px;}
 .login-btn:active, .btn-refresh:active{transform:scale(0.98);}
 .login-error{color:#ef4444; font-size:.85rem; font-weight:600; margin-top:10px; display:none;}
 .btn-cancel{background:transparent; color:#ef4444; border:none; font-weight:600; font-size:.85rem; cursor:pointer; text-decoration:underline; margin-top:12px;}
 
-/* APP UI */
 #mainApp{display:none;}
-.topbar{display:flex;flex-direction:column;gap:16px;padding:20px 16px;background: rgba(255, 255, 255, 0.85);backdrop-filter: blur(16px);border: 1px solid rgba(255, 255, 255, 0.9);border-radius: 20px;box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);margin-bottom: 16px;}
-.brand{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.topbar{display:flex;flex-direction:column;gap:16px;padding:20px 16px;background: rgba(255, 255, 255, 0.85);backdrop-filter: blur(16px);-webkit-backdrop-filter: blur(16px);border: 1px solid rgba(255, 255, 255, 0.9);border-radius: 20px;box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);margin-bottom: 16px;}
+.brand{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;}
 .brand-company{font-size:.75rem; font-weight:700; color:#64748b; letter-spacing:.05em;text-transform:uppercase;}
-.brand-title-row{display:flex; align-items:center; gap:8px;}
+.brand-title-row{display:flex; align-items:center; justify-content:center; gap:8px;}
 .brand .dot{width:12px;height:12px;border-radius:50%;background: linear-gradient(135deg, #3b82f6, #8b5cf6);box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);}
 .brand span{font-weight:800; font-size:1.3rem; letter-spacing:-.02em;background: linear-gradient(135deg, #1e293b, #475569);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 
 .toggle-container{display:flex;justify-content:center;align-items:center;gap:6px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:30px;padding:4px;width:fit-content;margin:0 auto;}
-.toggle-btn{padding:8px 22px;border-radius:24px;border:none;background:transparent;color:#64748b;font-weight:700;font-size:.8rem;cursor:pointer;transition:.2s;font-family:inherit;}
+.toggle-btn{padding:8px 22px;border-radius:24px;border:none;background:transparent;color:#64748b;font-weight:700;font-size:.8rem;cursor:pointer;transition:.2s;font-family:inherit;letter-spacing:.02em;}
 .toggle-btn.active{background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;box-shadow:0 4px 12px -2px rgba(37,99,235,.4);}
+.toggle-btn:not(.active):active{transform:scale(0.96);}
+.toggle-container.hidden{display:none !important;}
 
 .top-actions{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;}
 .pill{display:flex;align-items:center;gap:6px;font-size:.75rem;font-weight:600;color:#475569;background:#f8fafc;border:1px solid #e2e8f0;padding:6px 12px;border-radius:30px;}
@@ -65,12 +70,29 @@ body{
 .pill.role-pill b{color:#b45309;}
 .btn-logout{background:none; border:none; color:#ef4444; font-weight:700; font-size:.75rem;cursor:pointer; text-decoration:underline; padding:4px;}
 
+/* ADD TO HOME SCREEN BUTTON */
+.btn-install{background:linear-gradient(135deg,#8b5cf6,#6366f1); border:none; color:#fff; font-weight:700; font-size:.75rem; padding:6px 14px; border-radius:30px; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 4px 12px -2px rgba(99,102,241,.4); transition:.2s;}
+.btn-install:active{transform:scale(0.95);}
+
+/* iOS install modal */
+.ios-modal-overlay{position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.45); backdrop-filter:blur(4px); z-index:10000; display:none; align-items:flex-end; justify-content:center; padding:20px;}
+.ios-modal-overlay.open{display:flex;}
+.ios-modal{background:#fff; border-radius:24px 24px 20px 20px; padding:24px 20px 30px; width:100%; max-width:420px; text-align:center; box-shadow:0 -10px 40px rgba(0,0,0,0.2); animation:slideUp .3s ease;}
+@keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.ios-modal .share-icon{font-size:2.5rem; margin-bottom:12px;}
+.ios-modal h3{font-size:1.1rem; font-weight:800; color:#0f172a; margin-bottom:8px;}
+.ios-modal p{font-size:.85rem; color:#64748b; margin-bottom:16px; line-height:1.6;}
+.ios-modal .step-row{display:flex; align-items:center; gap:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:10px 14px; margin-bottom:8px; font-size:.8rem; font-weight:600; color:#334155; text-align:left;}
+.ios-modal .step-row .num{background:#3b82f6; color:#fff; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.7rem; font-weight:800; flex-shrink:0;}
+.ios-modal .close-btn{margin-top:12px; width:100%; padding:12px; border-radius:12px; border:none; background:#f1f5f9; color:#475569; font-weight:700; font-size:.9rem; cursor:pointer; font-family:inherit;}
+
 /* ADMIN MANAGER */
 .admin-panel{background:#fff; border-radius:20px; padding:16px; margin-bottom:16px; border:1px solid #e2e8f0; display:none;}
 .admin-panel.active{display:block;}
 .user-row{display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f1f5f9;}
 .user-info{display:flex; flex-direction:column; gap:2px;}
 .user-info .name{font-weight:700; font-size:.9rem; color:#0f172a;}
+.user-info .did{font-size:.65rem; font-family:monospace; color:#64748b;}
 .user-info .status{font-size:.7rem; font-weight:700; text-transform:uppercase;}
 .user-info .status.pending{color:#d97706;}
 .user-info .status.approved{color:#10b981;}
@@ -79,7 +101,6 @@ body{
 .btn-reject{background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; padding:6px 12px; border-radius:8px; font-size:.75rem; font-weight:700; cursor:pointer;}
 .btn-delete{background:transparent; color:#ef4444; border:none; font-size:.75rem; text-decoration:underline; cursor:pointer; padding:6px;}
 
-/* SEARCH & CARDS */
 .search-panel{display:grid;grid-template-columns:1fr;gap:12px;background: #fff;border-radius: 20px;padding:16px;margin-bottom: 16px;box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);}
 .field{display:flex;flex-direction:column;gap:6px;position:relative}
 .field label{font-size:.65rem;text-transform:uppercase;font-weight:800;color:#64748b;}
@@ -166,12 +187,24 @@ body{
   </div>
 </div>
 
+<!-- REGISTRATION SCREEN -->
+<div id="registerScreen" style="display:none;">
+  <div class="register-box">
+    <div class="icon">📝</div>
+    <h2>Register Device</h2>
+    <p style="font-size:.85rem; color:#64748b; margin-bottom:16px;">Your login is valid, but this device is not yet approved. Please enter your full name to request access from the Admin.</p>
+    <input type="text" id="regName" placeholder="Enter Your Full Name" autocomplete="off">
+    <button class="login-btn" id="regBtn">Request Access</button>
+    <button class="btn-cancel" id="regCancelBtn">Cancel</button>
+  </div>
+</div>
+
 <!-- APPROVAL WAITING SCREEN -->
-<div id="approvalScreen">
+<div id="approvalScreen" style="display:none;">
   <div class="approval-box">
     <div class="icon">⏳</div>
     <h2>Pending Approval</h2>
-    <p>Your request has been sent to the Admin. Please wait for them to approve your account.</p>
+    <p>Your device request has been sent to the Admin. Please wait for them to approve this specific device.</p>
     <button class="btn-refresh" id="refreshApprovalBtn">Check Status Again</button>
     <button class="btn-cancel" id="cancelApprovalBtn">Cancel & Logout</button>
   </div>
@@ -200,7 +233,7 @@ body{
 
   <!-- ADMIN PANEL -->
   <div class="admin-panel" id="adminPanel">
-    <h3 style="margin-bottom:12px; font-size:1rem;">User Approvals</h3>
+    <h3 style="margin-bottom:12px; font-size:1rem;">Device Approvals</h3>
     <div id="pendingUsersList"></div>
   </div>
 
@@ -268,8 +301,21 @@ let CURRENT_MODE = 'job';
 let CURRENT_USER = '';
 let IS_ADMIN = false;
 let USERS_DATA = { approved: [] };
+let TEMP_LOGIN_USER = '';
+let CURRENT_DEVICE_ID = '';
+
+// Generate or get a unique Device ID for this browser
+function getDeviceId() {
+  let id = localStorage.getItem('jobcard_device_id');
+  if (!id) {
+    id = 'DEV-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+    localStorage.setItem('jobcard_device_id', id);
+  }
+  return id;
+}
 
 const loginScreen = document.getElementById('loginScreen');
+const registerScreen = document.getElementById('registerScreen');
 const approvalScreen = document.getElementById('approvalScreen');
 const mainApp = document.getElementById('mainApp');
 const loginUser = document.getElementById('loginUser');
@@ -283,6 +329,9 @@ const toggleBom = document.getElementById('toggleBom');
 const toggleAdmin = document.getElementById('toggleAdmin');
 const adminPanel = document.getElementById('adminPanel');
 const pendingUsersList = document.getElementById('pendingUsersList');
+const regName = document.getElementById('regName');
+const regBtn = document.getElementById('regBtn');
+const regCancelBtn = document.getElementById('regCancelBtn');
 const refreshApprovalBtn = document.getElementById('refreshApprovalBtn');
 const cancelApprovalBtn = document.getElementById('cancelApprovalBtn');
 const jobSearchPanel = document.getElementById('jobSearchPanel');
@@ -331,7 +380,7 @@ async function updateUsersOnGitHub(newData) {
   const putRes = await fetch(url, {
     method: "PUT",
     headers,
-    body: JSON.stringify({ message: "Update user approvals via App", content: content, sha: sha })
+    body: JSON.stringify({ message: "Update device approvals via App", content: content, sha: sha })
   });
 
   if (!putRes.ok) throw new Error("Failed to update GitHub file. Check token permissions.");
@@ -347,6 +396,8 @@ loginBtn.addEventListener('click', async () => {
   const p = loginPass.value;
   if(!u || !p) return;
 
+  CURRENT_DEVICE_ID = getDeviceId();
+
   if (u.toLowerCase() === ADMIN_USER.toLowerCase() && p === ADMIN_PASS) {
     CURRENT_USER = ADMIN_USER;
     IS_ADMIN = true;
@@ -356,34 +407,95 @@ loginBtn.addEventListener('click', async () => {
     return;
   }
 
+  // Check if user/pass is valid (using simple username check here, or you can check p)
+  const validUsers = ['Outer', 'Insulation'];
+  if (!validUsers.some(x => x.toLowerCase() === u.toLowerCase())) {
+    loginError.style.display = 'block';
+    return;
+  }
+
   const data = await fetchUsersJSON();
   USERS_DATA = data;
-  const isApproved = data.approved && data.approved.some(x => x.toLowerCase() === u.toLowerCase());
+  
+  // Check if this specific Device ID is approved
+  const isDeviceApproved = data.approved && data.approved.some(x => 
+    x.name.toLowerCase() === u.toLowerCase() && x.deviceId === CURRENT_DEVICE_ID && x.status === 'approved'
+  );
 
-  if (isApproved) {
+  if (isDeviceApproved) {
     CURRENT_USER = u;
     IS_ADMIN = false;
     localStorage.setItem(AUTH_KEY, u);
     loginScreen.style.display = 'none';
     startApp();
   } else {
-    loginScreen.style.display = 'none';
-    approvalScreen.style.display = 'flex';
+    // Check if already pending
+    const isPending = data.approved && data.approved.some(x => 
+      x.deviceId === CURRENT_DEVICE_ID && x.status === 'pending'
+    );
+    
+    if (isPending) {
+      loginScreen.style.display = 'none';
+      approvalScreen.style.display = 'flex';
+    } else {
+      // Needs to register device
+      TEMP_LOGIN_USER = u;
+      loginScreen.style.display = 'none';
+      registerScreen.style.display = 'flex';
+    }
   }
 });
 
+regBtn.addEventListener('click', async () => {
+  const name = regName.value.trim();
+  if (!name) return alert('Please enter your name.');
+
+  CURRENT_DEVICE_ID = getDeviceId();
+  
+  const newRequest = {
+    name: TEMP_LOGIN_USER,
+    realName: name,
+    deviceId: CURRENT_DEVICE_ID,
+    status: 'pending',
+    date: new Date().toISOString()
+  };
+
+  const newData = { approved: [...USERS_DATA.approved, newRequest] };
+  
+  try {
+    regBtn.textContent = 'Sending...';
+    await updateUsersOnGitHub(newData);
+    regName.value = '';
+    registerScreen.style.display = 'none';
+    approvalScreen.style.display = 'flex';
+  } catch (e) {
+    alert('Error sending request: ' + e.message + '\nDid you add your GitHub token?');
+  } finally {
+    regBtn.textContent = 'Request Access';
+  }
+});
+
+regCancelBtn.addEventListener('click', () => {
+  registerScreen.style.display = 'none';
+  loginScreen.style.display = 'flex';
+  loginUser.value = ''; loginPass.value = '';
+});
+
 refreshApprovalBtn.addEventListener('click', async () => {
-  const u = loginUser.value.trim();
   const data = await fetchUsersJSON();
-  const isApproved = data.approved && data.approved.some(x => x.toLowerCase() === u.toLowerCase());
+  USERS_DATA = data;
+  const isApproved = data.approved && data.approved.some(x => 
+    x.deviceId === CURRENT_DEVICE_ID && x.status === 'approved'
+  );
+  
   if (isApproved) {
-    CURRENT_USER = u;
+    CURRENT_USER = data.approved.find(x => x.deviceId === CURRENT_DEVICE_ID).name;
     IS_ADMIN = false;
-    localStorage.setItem(AUTH_KEY, u);
+    localStorage.setItem(AUTH_KEY, CURRENT_USER);
     approvalScreen.style.display = 'none';
     startApp();
   } else {
-    alert('Still pending. Ask Admin to approve you.');
+    alert('Still pending. Ask Admin to approve this device.');
   }
 });
 
@@ -400,13 +512,18 @@ logoutBtn.addEventListener('click', () => {
 
 async function checkAuth() {
   const savedUser = localStorage.getItem(AUTH_KEY);
+  CURRENT_DEVICE_ID = getDeviceId();
+  
   if (savedUser) {
     if (savedUser.toLowerCase() === ADMIN_USER.toLowerCase()) {
       CURRENT_USER = ADMIN_USER; IS_ADMIN = true; startApp();
     } else {
       const data = await fetchUsersJSON();
       USERS_DATA = data;
-      const isApproved = data.approved && data.approved.some(x => x.toLowerCase() === savedUser.toLowerCase());
+      const isApproved = data.approved && data.approved.some(x => 
+        x.deviceId === CURRENT_DEVICE_ID && x.status === 'approved'
+      );
+      
       if (isApproved) {
         CURRENT_USER = savedUser; IS_ADMIN = false; startApp();
       } else {
@@ -420,6 +537,7 @@ async function checkAuth() {
 
 function startApp() {
   loginScreen.style.display = 'none';
+  registerScreen.style.display = 'none';
   approvalScreen.style.display = 'none';
   mainApp.style.display = 'block';
   rolePill.innerHTML = `👤 <b>${esc(CURRENT_USER)}</b>`;
@@ -428,64 +546,56 @@ function startApp() {
   if (IS_ADMIN) loadBomDataFromCSV();
 }
 
-/* ============ ADMIN PANEL (GITHUB AUTO UPDATE) ============ */
+/* ============ ADMIN PANEL (DEVICE APPROVALS) ============ */
 async function loadAdminPanel() {
   const data = await fetchUsersJSON();
   USERS_DATA = data;
   
   let html = '';
   if (data.approved && data.approved.length > 0) {
-    data.approved.forEach(u => {
-      html += `
-        <div class="user-row">
-          <div class="user-info"><span class="name">${esc(u)}</span><span class="status approved">Approved</span></div>
-          <div class="action-btns">
-            <button class="btn-delete" onclick="window.removeUser('${esc(u)}')">Remove</button>
-          </div>
-        </div>`;
+    data.approved.forEach((req, index) => {
+      if (req.status === 'pending') {
+        html += `
+          <div class="user-row">
+            <div class="user-info">
+              <span class="name">${esc(req.name)} (${esc(req.realName)})</span>
+              <span class="did">Device: ${esc(req.deviceId)}</span>
+              <span class="status pending">Pending</span>
+            </div>
+            <div class="action-btns">
+              <button class="btn-approve" onclick="window.updateStatus(${index}, 'approved')">Approve</button>
+              <button class="btn-reject" onclick="window.updateStatus(${index}, 'rejected')">Reject</button>
+            </div>
+          </div>`;
+      } else if (req.status === 'approved') {
+        html += `
+          <div class="user-row">
+            <div class="user-info">
+              <span class="name">${esc(req.name)} (${esc(req.realName)})</span>
+              <span class="did">Device: ${esc(req.deviceId)}</span>
+              <span class="status approved">Approved</span>
+            </div>
+            <div class="action-btns">
+              <button class="btn-delete" onclick="window.updateStatus(${index}, 'rejected')">Revoke</button>
+            </div>
+          </div>`;
+      }
     });
   } else {
-    html = `<p style="font-size:.85rem; color:#64748b;">No users approved yet.</p>`;
+    html = `<p style="font-size:.85rem; color:#64748b;">No devices registered yet.</p>`;
   }
-
-  html += `
-    <div style="margin-top:16px; border-top:1px solid #e2e8f0; padding-top:16px;">
-      <label style="font-size:.75rem; font-weight:700; color:#64748b; margin-bottom:6px; display:block;">Add User Manually</label>
-      <div style="display:flex; gap:8px;">
-        <input type="text" id="newUserInput" placeholder="Username" style="flex:1; padding:8px 12px; border-radius:8px; border:1px solid #e2e8f0; font-size:.85rem;">
-        <button class="btn-approve" onclick="window.addUser()" style="padding:8px 16px;">Add</button>
-      </div>
-    </div>
-  `;
 
   pendingUsersList.innerHTML = html;
 }
 
-window.addUser = async function() {
-  const input = document.getElementById('newUserInput');
-  const newUser = input.value.trim();
-  if(!newUser) return alert('Enter a username.');
-  if(USERS_DATA.approved.includes(newUser)) return alert('User already approved.');
-
-  const newData = { approved: [...USERS_DATA.approved, newUser] };
+window.updateStatus = async function(index, newStatus) {
+  const newData = { ...USERS_DATA };
+  if (!newData.approved) newData.approved = [];
+  
+  newData.approved[index].status = newStatus;
   
   try {
     pendingUsersList.innerHTML = `<p style="color:#3b82f6; font-weight:700;">Updating GitHub... Please wait.</p>`;
-    await updateUsersOnGitHub(newData);
-    alert('User Approved successfully!');
-    loadAdminPanel();
-  } catch(e) {
-    alert('Error: ' + e.message + '\n\nDid you forget to add your GitHub token in the code?');
-    loadAdminPanel();
-  }
-};
-
-window.removeUser = async function(username) {
-  if(!confirm('Remove ' + username + '?')) return;
-  const newData = { approved: USERS_DATA.approved.filter(u => u !== username) };
-  
-  try {
-    pendingUsersList.innerHTML = `<p style="color:#3b82f6; font-weight:700;">Updating GitHub...</p>`;
     await updateUsersOnGitHub(newData);
     loadAdminPanel();
   } catch(e) {
@@ -561,7 +671,6 @@ async function loadBomDataFromCSV() {
       const allRows = results.data;
       if(!allRows || allRows.length < 2) return;
       
-      // --- RESTORED HEADER DETECTION LOGIC ---
       function rowHasHeader(row){
         if(!row || !row.length) return false;
         return row.some(cell => {
@@ -571,7 +680,6 @@ async function loadBomDataFromCSV() {
       }
       
       let headerRowIndex = 0;
-      // If row 0 doesn't have the header, but row 1 does, use row 1
       if(!rowHasHeader(allRows[0]) && rowHasHeader(allRows[1])){
         headerRowIndex = 1;
       }

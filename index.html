@@ -168,9 +168,9 @@ body{
     <div class="icon">🔒</div>
     <h2>Access Portal</h2>
     <input type="text" id="loginUser" placeholder="Enter Username" autocomplete="off">
-    <input type="password" id="loginPass" placeholder="Enter Password" style="display:none;"> <!-- Hidden for easy access -->
+    <input type="password" id="loginPass" placeholder="Enter Password" autocomplete="off">
     <button class="login-btn" id="loginBtn">Login</button>
-    <div class="login-error" id="loginError">Invalid Username</div>
+    <div class="login-error" id="loginError">Invalid Username or Password</div>
   </div>
 </div>
 
@@ -265,6 +265,7 @@ let USER_PLAN_QTY = null;
 const loginScreen = document.getElementById('loginScreen');
 const mainApp     = document.getElementById('mainApp');
 const loginUser   = document.getElementById('loginUser');
+const loginPass   = document.getElementById('loginPass');
 const loginBtn    = document.getElementById('loginBtn');
 const loginError  = document.getElementById('loginError');
 const logoutBtn   = document.getElementById('logoutBtn');
@@ -328,14 +329,21 @@ function formatQty(n){
 }
 
 /* ============ AUTHENTICATION ============ */
-const FULL_ACCESS_USERS = ['Admin', 'Rakesh', 'Rasheed', 'Manikanta'];
-const JOB_ONLY_USERS = ['Outer', 'Insulation'];
+// Outer and Insulation have NO password (empty string)
+const USERS = {
+  'outer':      { pass: '',             bom: false },
+  'insulation': { pass: '',             bom: false },
+  'admin':      { pass: 'Admin@Tcl',    bom: true },
+  'rakesh':     { pass: 'Rakesh@Tcl',   bom: true },
+  'rasheed':    { pass: 'Rasheed@Tcl',  bom: true },
+  'manikanta':  { pass: 'Manikanta@Tcl',bom: true }
+};
 
 function checkAuth() {
   const savedUser = localStorage.getItem(AUTH_KEY);
-  if (savedUser) {
+  if (savedUser && USERS[savedUser.toLowerCase()]) {
     CURRENT_USER = savedUser;
-    setPermissions();
+    CAN_SEE_BOM = USERS[savedUser.toLowerCase()].bom;
     startApp(); 
   } else {
     loginScreen.style.display = 'flex';
@@ -343,31 +351,29 @@ function checkAuth() {
   }
 }
 
-function setPermissions() {
-  const userLower = CURRENT_USER.toLowerCase();
-  if (FULL_ACCESS_USERS.some(u => u.toLowerCase() === userLower)) {
-    CAN_SEE_BOM = true;
-  } else if (JOB_ONLY_USERS.some(u => u.toLowerCase() === userLower)) {
-    CAN_SEE_BOM = false;
-  } else {
-    CAN_SEE_BOM = false; // Default
-  }
-}
-
 loginBtn.addEventListener('click', () => {
-  const u = loginUser.value.trim();
-  if (!u) return;
+  const u = loginUser.value.trim().toLowerCase();
+  const p = loginPass.value;
   
-  const userLower = u.toLowerCase();
-  const isValid = FULL_ACCESS_USERS.some(x => x.toLowerCase() === userLower) || 
-                  JOB_ONLY_USERS.some(x => x.toLowerCase() === userLower);
-                  
-  if (isValid) {
-    localStorage.setItem(AUTH_KEY, u);
-    CURRENT_USER = u;
-    setPermissions();
+  if (!u) return;
+
+  const userRecord = USERS[u];
+
+  if (userRecord) {
+    // If the user has a required password, check it
+    if (userRecord.pass !== '' && p !== userRecord.pass) {
+      loginError.textContent = "Invalid Password";
+      loginError.style.display = 'block';
+      return;
+    }
+
+    // Login successful
+    localStorage.setItem(AUTH_KEY, loginUser.value.trim()); // Store original case
+    CURRENT_USER = loginUser.value.trim();
+    CAN_SEE_BOM = userRecord.bom;
     loginError.style.display = 'none';
     loginUser.value = '';
+    loginPass.value = '';
     startApp();
   } else {
     loginError.textContent = "Invalid Username";
@@ -375,7 +381,9 @@ loginBtn.addEventListener('click', () => {
   }
 });
 
-loginUser.addEventListener('keydown', e => { if(e.key === 'Enter') loginBtn.click(); });
+loginPass.addEventListener('keydown', e => { if(e.key === 'Enter') loginBtn.click(); });
+loginUser.addEventListener('keydown', e => { if(e.key === 'Enter') loginPass.focus(); });
+
 logoutBtn.addEventListener('click', () => { 
   localStorage.removeItem(AUTH_KEY); 
   location.reload(); 
@@ -395,12 +403,7 @@ function startApp() {
   loadJobDataFromCSV();
   if (CAN_SEE_BOM) loadBomDataFromCSV();
   
-  if (CAN_SEE_BOM) {
-    // If they have access to both, default to Job Cards
-    switchMode('job');
-  } else {
-    switchMode('job');
-  }
+  switchMode('job');
 }
 
 /* ============ MODE SWITCHING ============ */

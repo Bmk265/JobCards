@@ -13,7 +13,6 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBreGUBGU8rvOam98erNe48OQghvYIrLiA",
@@ -27,15 +26,15 @@
   try {
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const storage = getStorage(app);
     
+    // Settings document for Company Name (Firestore is still free)
     const settingsDocRef = doc(db, "app_settings", "config");
 
-    window.firebaseDB = { settingsDocRef, getDoc, setDoc, storage, ref, uploadBytes, getDownloadURL };
+    window.firebaseDB = { settingsDocRef, getDoc, setDoc };
     window.firebaseReady = true;
     window.dispatchEvent(new Event('firebaseLoaded'));
   } catch (error) {
-    alert("Firebase Init Error: " + error.message);
+    console.error("Firebase Init Error: ", error);
   }
 </script>
 
@@ -161,8 +160,9 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans
     </div>
     <div class="top-actions">
       <div class="pill" id="statsPill">📊 0 jobs</div>
-      <label class="btn-upload admin-only" id="uploadLabel" for="fileInput">📂 Upload Data</label>
-      <input type="file" id="fileInput" accept=".csv" class="admin-only">
+      
+      <!-- No Upload Button Here! Data comes from GitHub -->
+      
       <button class="btn-company admin-only" id="editCompanyBtn">✏️ Change Name</button>
       <button class="btn-logout" id="logoutBtn">Logout</button>
     </div>
@@ -228,21 +228,19 @@ const grid       = document.getElementById('grid');
 const resultTitle= document.getElementById('resultTitle');
 const resultCount= document.getElementById('resultCount');
 const statsPill  = document.getElementById('statsPill');
-const fileInput  = document.getElementById('fileInput');
 const companyName = document.getElementById('companyName');
 const editCompanyBtn = document.getElementById('editCompanyBtn');
 
-/* FIREBASE CLOUD HANDLER */
+/* FIREBASE SETTINGS HANDLER (Only for Company Name) */
 let firebaseReady = false;
 window.addEventListener('firebaseLoaded', () => {
   firebaseReady = true;
   if (localStorage.getItem(AUTH_KEY)) {
-    loadCloudSettings();
-    loadCSVFromCloud();
+    loadCompanyNameFromCloud();
   }
 });
 
-async function loadCloudSettings() {
+async function loadCompanyNameFromCloud() {
   if(!firebaseReady) return;
   try {
     const { settingsDocRef, getDoc } = window.firebaseDB;
@@ -254,19 +252,13 @@ async function loadCloudSettings() {
   } catch(e) { console.error("Settings Load Error", e); }
 }
 
-async function loadCSVFromCloud() {
-  if(!firebaseReady) return;
+/* LOAD DATA FROM GITHUB CSV */
+async function loadDataFromCSV() {
   try {
-    resultTitle.textContent = 'Syncing data from cloud...';
-    const { storage, ref, getDownloadURL } = window.firebaseDB;
-    
-    // Get the download URL for the file
-    const fileRef = ref(storage, 'data/database.csv');
-    const url = await getDownloadURL(fileRef);
-    
-    // Fetch the actual file from the URL
-    const response = await fetch(url);
-    if(!response.ok) throw new Error("Network response was not ok");
+    resultTitle.textContent = 'Syncing data from GitHub...';
+    // Fetches the file named data.csv from your GitHub repository
+    const response = await fetch('data.csv');
+    if (!response.ok) throw new Error('data.csv not found');
     
     const csvText = await response.text();
     
@@ -279,41 +271,11 @@ async function loadCSVFromCloud() {
       }
     });
   } catch (error) {
-    console.error("Download Error Details:", error);
-    if(error.code === 'storage/object-not-found') {
-      resultTitle.textContent = 'No data uploaded yet.';
-      renderEmpty('Admin has not uploaded any data yet.', '📂');
-    } else {
-      // Show the exact error to the user
-      resultTitle.textContent = 'Failed to load data.';
-      renderEmpty(`<b>Error:</b> ${error.message}`, '⚠️');
-      alert("Load Error: " + error.message);
-    }
+    console.error(error);
+    resultTitle.textContent = 'No data found.';
+    renderEmpty('Could not find <b>data.csv</b> on GitHub. Please ensure you uploaded it next to index.html.', '⚠️');
   }
 }
-
-/* UPLOAD CSV TO CLOUD */
-fileInput.addEventListener('change', async e => {
-  const file = e.target.files[0]; if(!file) return;
-  if(!firebaseReady) { alert("Cloud not connected. Please refresh."); return; }
-
-  try {
-    resultTitle.textContent = 'Uploading to cloud (this may take a moment)...';
-    const { storage, ref, uploadBytes } = window.firebaseDB;
-    
-    const fileRef = ref(storage, 'data/database.csv');
-    await uploadBytes(fileRef, file);
-    
-    alert('Data successfully uploaded to the cloud! It will now appear on all devices.');
-    loadCSVFromCloud();
-  } catch (error) {
-    console.error(error);
-    alert('Upload failed: ' + error.message);
-    resultTitle.textContent = 'Upload failed';
-  } finally {
-    fileInput.value = '';
-  }
-});
 
 function processCSVData(rows) {
   const RESERVED = {
@@ -389,6 +351,7 @@ function checkAuth() {
   const savedRole = localStorage.getItem(AUTH_KEY);
   if (savedRole) {
     startApp(savedRole);
+    loadDataFromCSV(); 
   } else {
     loginScreen.style.display = 'flex';
     mainApp.style.display = 'none';
@@ -406,8 +369,8 @@ loginBtn.addEventListener('click', () => {
     loginUser.value = '';
     loginPass.value = '';
     startApp(user.role);
-    loadCloudSettings();
-    loadCSVFromCloud();
+    loadDataFromCSV();
+    loadCompanyNameFromCloud();
   } else {
     loginError.style.display = 'block';
   }

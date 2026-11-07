@@ -124,12 +124,12 @@ body{
 .empty b{color:#3b82f6;font-weight:700}
 
 .bom-table{display:flex;flex-direction:column;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;}
-.bom-table-head{display:grid;grid-template-columns:110px 1fr 90px;background:#e2e8f0;border-bottom:2px solid #cbd5e1;}
+.bom-table-head{display:grid;grid-template-columns:110px 1fr 100px;background:#e2e8f0;border-bottom:2px solid #cbd5e1;}
 .bom-table-head > div{padding:10px 12px;font-size:.6rem;font-weight:800;text-transform:uppercase;color:#475569;letter-spacing:.05em;border-right:1px solid #cbd5e1;}
 .bom-table-head > div:last-child{border-right:none;text-align:right;}
 .bom-group-header{background:#eff6ff;border-top:1px solid #bfdbfe;border-bottom:1px solid #bfdbfe;padding:8px 12px;font-size:.7rem;font-weight:800;color:#1e40af;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:8px;}
 .bom-group-header .count{font-size:.6rem;font-weight:700;color:#2563eb;background:#dbeafe;padding:2px 8px;border-radius:10px;margin-left:auto;}
-.bom-row{display:grid;grid-template-columns:110px 1fr 90px;border-bottom:1px solid #f1f5f9;transition:.15s;}
+.bom-row{display:grid;grid-template-columns:110px 1fr 100px;border-bottom:1px solid #f1f5f9;transition:.15s;}
 .bom-row:hover{background:#f8fafc;}
 .bom-row > div{padding:10px 12px;font-size:.75rem;font-weight:500;color:#334155;border-right:1px solid #f1f5f9;display:flex;align-items:center;word-break:break-word;line-height:1.4;}
 .bom-row > div:last-child{border-right:none;justify-content:flex-end;text-align:right;font-weight:800;color:#2563eb;font-size:.8rem;background:#fafbfc;}
@@ -138,6 +138,13 @@ body{
 .op-jdm-row .k{background:#fef3c7 !important;color:#b45309 !important;}
 .op-jdm-row .v{padding:8px 12px !important;background:#fefce8 !important;}
 .op-jdm-row select{width:100%; padding:10px 36px 10px 14px; border-radius:10px; border:1px solid #fcd34d; background:#fff; color:#92400e; font-size:.85rem; font-weight:700; font-family:inherit; cursor:pointer; -webkit-appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23b45309' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center;}
+
+/* Editable PLAN/PRD QTY input */
+.plan-qty-row{background:#ecfdf5 !important;}
+.plan-qty-row .k{background:#d1fae5 !important;color:#065f46 !important;}
+.plan-qty-row .v{padding:8px 12px !important;background:#ecfdf5 !important;}
+.plan-qty-row input{width:100%; padding:10px 14px; border-radius:10px; border:1px solid #6ee7b7; background:#fff; color:#065f46; font-size:.9rem; font-weight:700; font-family:inherit; outline:none;}
+.plan-qty-row input:focus{border-color:#10b981; box-shadow: 0 0 0 4px rgba(16,185,129,.15);}
 
 @media(min-width:768px){
   .app{padding:24px;}
@@ -253,6 +260,8 @@ let SUGGEST_INDEX = -1;
 let SUGGEST_ITEMS = [];
 let BOM_SUGGEST_INDEX = -1;
 let BOM_SUGGEST_ITEMS = [];
+// User input for PLAN/PRD QTY (overrides CSV default)
+let USER_PLAN_QTY = null;
 
 const loginScreen = document.getElementById('loginScreen');
 const mainApp     = document.getElementById('mainApp');
@@ -308,6 +317,12 @@ function findHeader(headers, ...candidates){
     if(found) return found;
   }
   return null;
+}
+
+function formatQty(n){
+  if(n === null || n === undefined || isNaN(n)) return '—';
+  const str = Number(n).toFixed(4);
+  return str.replace(/\.?0+$/, '') || '0';
 }
 
 /* ============ AUTHENTICATION ============ */
@@ -524,7 +539,7 @@ function processBomCSVData(rows) {
   const opnKey = findHeader(headers, 'OPN CODE', 'OPNCODE', 'OPN');
   const materialCodeKey = findHeader(headers, 'MATERIAL CODE', 'MATERIALCODE');
   const materialDiscKey = findHeader(headers, 'MATERIAL DISC', 'MATERIALDISC', 'MATERIAL');
-  const qtyKey = findHeader(headers, 'JDM BOM QTY', 'JDMBOMQTY');
+  const bomPerKmKey = findHeader(headers, 'BOM/KM - JDM', 'BOMKMJDM', 'BOM/KM', 'BOM/KM-JDM');
   const customerKey = findHeader(headers, 'CUSTOMER JDM', 'CUSTOMERJDM');
   const sizeKey = findHeader(headers, 'SIZE');
   const colourKey = findHeader(headers, 'COLOUR', 'COLOR');
@@ -543,10 +558,9 @@ function processBomCSVData(rows) {
         soItem: soItemRaw,
         customer: String(row[customerKey] || '').trim(),
         size: String(row[sizeKey] || '').trim(),
-        planQty: String(row[planQtyKey] || '').trim(),
+        defaultPlanQty: parseFloat(row[planQtyKey]) || 0,
         colour: String(row[colourKey] || '').trim(),
         lines: [],
-        // Store both: opJDM name -> its opnCode
         operationJDMToOpnCode: new Map()
       });
     }
@@ -554,12 +568,11 @@ function processBomCSVData(rows) {
     const rec = grouped.get(soItemRaw);
     const matCode = String(row[materialCodeKey] || '').trim();
     const matDisc = String(row[materialDiscKey] || '').trim();
-    const jdmBomQty = String(row[qtyKey] || '').trim();
     const rowGroup = String(row[groupKey] || '').trim() || 'OTHER';
     const opnCode = String(row[opnKey] || '').trim();
     const opJDM = String(row[operationKey] || '').trim();
+    const bomPerKm = parseFloat(row[bomPerKmKey]) || 0;
     
-    // Map operation JDM name -> opn code (e.g. "CONDUCTOR" -> "1000")
     if(opJDM && opnCode && !rec.operationJDMToOpnCode.has(opJDM)){
       rec.operationJDMToOpnCode.set(opJDM, opnCode);
     }
@@ -572,7 +585,7 @@ function processBomCSVData(rows) {
       operationJDM: opJDM,
       matCode,
       matDisc: matDisc || matCode,
-      jdmBomQty
+      bomPerKm
     });
   });
 
@@ -720,15 +733,12 @@ function filterBomKeys(term){
   return q ? keys.filter(k => k.toLowerCase().includes(q)) : keys;
 }
 
-// Returns list of {name, code} for OPERATION JDM options
 function bomOpsForItem(soItem){
   if(!soItem) return [];
   const item = BOM_DATA.find(b => b.soItem === soItem);
   if(!item) return [];
   const list = [];
-  item.operationJDMToOpnCode.forEach((code, name) => {
-    list.push({ name, code });
-  });
+  item.operationJDMToOpnCode.forEach((code, name) => list.push({ name, code }));
   list.sort((a, b) => a.name.localeCompare(b.name, undefined, {numeric:true, sensitivity:'base'}));
   return list;
 }
@@ -742,7 +752,7 @@ function refreshBomOpSelect(){
   const ph = document.createElement('option'); ph.value = ''; ph.textContent = '— All Operations —'; bomOpSelect.appendChild(ph);
   ops.forEach(o => {
     const opt = document.createElement('option');
-    opt.value = o.name;   // value = OPERATION JDM name
+    opt.value = o.name;
     opt.textContent = o.name;
     bomOpSelect.appendChild(opt);
   });
@@ -775,6 +785,8 @@ function pickBomSuggestion(soItem){
   bomInput.value = soItem;
   closeBomSuggestions();
   refreshBomOpSelect();
+  // Reset user plan qty when item changes
+  USER_PLAN_QTY = null;
   renderBomResults();
 }
 
@@ -791,7 +803,7 @@ function moveBomSuggestion(dir){
 
 function renderBomResults(){
   const soItem = bomInput.value.trim();
-  const selectedOpName = bomOpSelect.value;   // OPERATION JDM name
+  const selectedOpName = bomOpSelect.value;
   if(!soItem){
     renderEmpty('Please enter a <b>SO-ITEM</b> first.','⌨️');
     resultTitle.textContent = 'Enter SO-ITEM';
@@ -806,6 +818,12 @@ function renderBomResults(){
     resultCount.textContent = '0 records';
     return;
   }
+  
+  // Determine current effective PLAN/PRD QTY
+  // USER_PLAN_QTY overrides default if set
+  const effectivePlanQty = (USER_PLAN_QTY !== null && !isNaN(USER_PLAN_QTY))
+    ? USER_PLAN_QTY
+    : item.defaultPlanQty;
   
   let lines = item.lines;
   if(selectedOpName){
@@ -831,10 +849,19 @@ function renderBomResults(){
   specs += `<div class="spec accent"><div class="k">SO-ITEM</div><div class="v"><span class="chip-val">${esc(item.soItem)}</span></div></div>`;
   if(item.customer) specs += `<div class="spec"><div class="k">CUSTOMER JDM</div><div class="v">${esc(item.customer)}</div></div>`;
   if(item.size) specs += `<div class="spec"><div class="k">SIZE</div><div class="v">${esc(item.size)}</div></div>`;
-  if(item.planQty) specs += `<div class="spec"><div class="k">PLAN/PRD QTY</div><div class="v">${esc(item.planQty)}</div></div>`;
+  
+  // Editable PLAN/PRD QTY input row
+  const planVal = formatQty(effectivePlanQty);
+  specs += `<div class="spec plan-qty-row">
+    <div class="k">PLAN/PRD QTY</div>
+    <div class="v">
+      <input type="number" id="planQtyInput" value="${esc(planVal)}" min="0" step="any" inputmode="decimal" placeholder="Enter Qty">
+    </div>
+  </div>`;
+  
   if(item.colour) specs += `<div class="spec"><div class="k">COLOUR</div><div class="v">${esc(item.colour)}</div></div>`;
   
-  // Operation JDM dropdown - shows names only
+  // Operation JDM dropdown
   const allOps = bomOpsForItem(soItem);
   let opOptionsHtml = `<option value="">— All Operations —</option>`;
   allOps.forEach(o => {
@@ -848,7 +875,7 @@ function renderBomResults(){
     </div>
   </div>`;
   
-  // Materials table — MATERIAL CODE | MATERIAL DISC | JDM BOM QTY
+  // Materials table
   let tableHtml = `
     <div class="bom-table">
       <div class="bom-table-head">
@@ -859,15 +886,20 @@ function renderBomResults(){
   `;
   
   const sortedGroups = Array.from(groupMap.keys()).sort();
+  let grandTotal = 0;
   sortedGroups.forEach(groupName => {
     const groupLines = groupMap.get(groupName);
     tableHtml += `<div class="bom-group-header">${esc(groupName)}<span class="count">${groupLines.length}</span></div>`;
     groupLines.forEach(l => {
+      // Live calculation: (planQty × bomPerKm) / 1000
+      const computed = (effectivePlanQty * l.bomPerKm) / 1000;
+      grandTotal += computed;
+      const displayQty = formatQty(computed);
       tableHtml += `
         <div class="bom-row">
           <div>${esc(l.matCode || '—')}</div>
           <div>${esc(l.matDisc || '—')}</div>
-          <div>${esc(l.jdmBomQty || '—')}</div>
+          <div>${esc(displayQty)}</div>
         </div>
       `;
     });
@@ -883,19 +915,43 @@ function renderBomResults(){
     <div class="specs">${specs}</div>
     <div style="padding: 0 16px 16px;">${tableHtml}</div>
     <div class="card-foot">
-      <span>📦 ${lines.length} material line${lines.length!==1?'s':''}</span>
+      <span>📦 ${lines.length} line${lines.length!==1?'s':''}</span>
       <span>🏷️ ${allOps.length} op${allOps.length!==1?'s':''}</span>
     </div>
   </div>`;
   
   grid.innerHTML = html;
   
+  // Wire up inline operation dropdown
   const inlineSel = document.getElementById('inlineOpSelect');
   if(inlineSel){
     inlineSel.addEventListener('change', (e) => {
       bomOpSelect.value = e.target.value;
       renderBomResults();
     });
+  }
+  
+  // Wire up live PLAN/PRD QTY input — recalculates table on every keystroke
+  const planInput = document.getElementById('planQtyInput');
+  if(planInput){
+    const handleRecalc = () => {
+      const val = parseFloat(planInput.value);
+      USER_PLAN_QTY = isNaN(val) ? 0 : val;
+      // Update only the JDM BOM Qty cells without full re-render (keeps focus on input)
+      const rows = grid.querySelectorAll('.bom-row');
+      let idx = 0;
+      sortedGroups.forEach(groupName => {
+        const groupLines = groupMap.get(groupName);
+        groupLines.forEach(l => {
+          const computed = (USER_PLAN_QTY * l.bomPerKm) / 1000;
+          if(rows[idx]){
+            rows[idx].children[2].textContent = formatQty(computed);
+          }
+          idx++;
+        });
+      });
+    };
+    planInput.addEventListener('input', handleRecalc);
   }
 }
 
@@ -904,6 +960,7 @@ function resetBomSearch(){
   bomOpSelect.innerHTML = '<option value="">— Select SO-ITEM First —</option>';
   bomOpSelect.disabled = true;
   closeBomSuggestions();
+  USER_PLAN_QTY = null;
 }
 
 bomInput.addEventListener('input', () => { renderBomSuggestions(bomInput.value); refreshBomOpSelect(); });

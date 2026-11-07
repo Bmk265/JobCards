@@ -100,7 +100,7 @@ body{
 .counter{font-size:.75rem;font-weight:800;padding:4px 14px;border-radius:20px;background:#e0e7ff;color:#4338ca;}
 
 .grid{display:grid;grid-template-columns:1fr; gap:16px;}
-.card{background:#fff;display:flex;flex-direction:column;border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.04);border:1px solid #f1f5f9;}
+.card{background:#fff;display:flex;flex-direction:column;border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.04);border:1px solid #f1f5f9; position:relative;}
 .card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px;border-bottom:1px solid #f1f5f9;background:#fafbfc;}
 .card-head h3{font-size:1rem;font-weight:800;color:#0f172a;display:flex;align-items:center;gap:8px;min-width:0;word-break:break-all;}
 .card-head h3 .bullet{width:8px;height:8px;border-radius:50%;background:#3b82f6;flex-shrink:0;box-shadow:0 0 8px rgba(59,130,246,.6);}
@@ -118,6 +118,14 @@ body{
 .card-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:.75rem;font-weight:600;color:#64748b;flex-wrap:wrap;}
 .card-foot span{display:flex;align-items:center;gap:6px}
 .card-foot .drum{color:#475569;word-break:break-word;font-weight:600;}
+
+/* PRINT BUTTON */
+.btn-print-card{
+  background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; 
+  padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; 
+  cursor: pointer; margin-left: 8px; display: flex; align-items: center; gap: 4px;
+}
+.btn-print-card:hover { background: #c7d2fe; }
 
 .empty{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:60px 20px;text-align:center;background:#fff;border-radius:20px;border:2px dashed #e2e8f0;}
 .empty .icon{font-size:3rem;opacity:.5}
@@ -146,6 +154,37 @@ body{
 .plan-qty-row .v{padding:8px 12px !important;background:#ecfdf5 !important;}
 .plan-qty-row input{width:100%; padding:10px 14px; border-radius:10px; border:1px solid #6ee7b7; background:#fff; color:#065f46; font-size:.9rem; font-weight:700; font-family:inherit; outline:none;}
 .plan-qty-row input:focus{border-color:#10b981; box-shadow: 0 0 0 4px rgba(16,185,129,.15);}
+
+/* ========================================= */
+/* PRINT STYLES (Hides UI when saving to PDF) */
+/* ========================================= */
+@media print {
+  body { background: #fff; color: #000; font-size: 12px; }
+  .app { padding: 0; max-width: 100%; }
+  
+  /* Hide everything except the card we want to print */
+  .topbar, .search-panel, .result-bar, .admin-panel, .btn-print-card, .btn-search, .btn-reset, .btn-logout { 
+    display: none !important; 
+  }
+  
+  .grid { display: block; }
+  .card { 
+    box-shadow: none; border: 1px solid #000; border-radius: 0; 
+    page-break-inside: avoid; margin-bottom: 20px;
+  }
+  
+  .card-head { background: #fff; border-bottom: 2px solid #000; }
+  .spec .k { background: #fff; border-right: 1px solid #000; }
+  .spec { border-bottom: 1px solid #000; }
+  .bom-table { border: 1px solid #000; }
+  .bom-table-head > div { border-right: 1px solid #000; background: #fff; }
+  .bom-row { border-bottom: 1px solid #000; }
+  .bom-row > div { border-right: 1px solid #000; }
+  .bom-group-header { background: #fff; border-top: 1px solid #000; border-bottom: 1px solid #000; color: #000; }
+  
+  /* Force backgrounds to not print to save ink */
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}
 
 @media(min-width:768px){
   .app{padding:24px;}
@@ -329,7 +368,6 @@ function formatQty(n){
 }
 
 /* ============ AUTHENTICATION ============ */
-// Outer and Insulation have NO password (empty string)
 const USERS = {
   'outer':      { pass: '',             bom: false },
   'insulation': { pass: '',             bom: false },
@@ -351,7 +389,7 @@ function checkAuth() {
   }
 }
 
-let loginStep = 1; // 1 = checking username, 2 = checking password
+let loginStep = 1;
 
 loginBtn.addEventListener('click', () => {
   const u = loginUser.value.trim().toLowerCase();
@@ -362,7 +400,6 @@ loginBtn.addEventListener('click', () => {
   const userRecord = USERS[u];
 
   if (loginStep === 1) {
-    // Step 1: Checking Username
     if (!userRecord) {
       loginError.textContent = "Invalid Username";
       loginError.style.display = 'block';
@@ -370,19 +407,16 @@ loginBtn.addEventListener('click', () => {
     }
 
     if (userRecord.pass === '') {
-      // No password required, log in immediately
       performLogin(loginUser.value.trim(), userRecord.bom);
     } else {
-      // Password required, show password field
       loginStep = 2;
       loginError.style.display = 'none';
-      loginUser.disabled = true; // Lock the username field
+      loginUser.disabled = true;
       loginPass.style.display = 'block';
       loginPass.focus();
       loginBtn.textContent = 'Login';
     }
   } else {
-    // Step 2: Checking Password
     if (p !== userRecord.pass) {
       loginError.textContent = "Invalid Password";
       loginError.style.display = 'block';
@@ -741,7 +775,9 @@ function renderJobResults(){
     specs += `<div class="spec"><div class="k">CURR OP</div><div class="v">${esc(row.currentOp||'—')}</div></div>`;
     specs += `<div class="spec"><div class="k">NEXT OP</div><div class="v">${esc(row.nextOp||'—')}</div></div>`;
     (row.details||[]).forEach(([k,v])=>{ specs += `<div class="spec"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div></div>`; });
-    html += `<div class="card"><div class="card-head"><h3><span class="bullet"></span>${esc(row.soItem)}</h3><span class="op-tag">${esc(row.operation)}</span></div><div class="specs">${specs}</div><div class="card-foot"><span>🏷️ ${esc(row.so)}</span><span class="drum">🥁 ${esc(row.drum||'—')}</span></div></div>`;
+    
+    // ADDED PDF BUTTON HERE
+    html += `<div class="card"><div class="card-head"><h3><span class="bullet"></span>${esc(row.soItem)}</h3><div><span class="op-tag">${esc(row.operation)}</span><button class="btn-print-card" onclick="window.print()">📄 PDF</button></div></div><div class="specs">${specs}</div><div class="card-foot"><span>🏷️ ${esc(row.so)}</span><span class="drum">🥁 ${esc(row.drum||'—')}</span></div></div>`;
   });
   grid.innerHTML = html;
 }
@@ -948,10 +984,14 @@ function renderBomResults(){
   
   tableHtml += `</div>`;
   
+  // ADDED PDF BUTTON HERE
   const html = `<div class="card">
     <div class="card-head">
       <h3><span class="bullet"></span>${esc(item.soItem)}</h3>
-      <span class="op-tag">BOM</span>
+      <div>
+        <span class="op-tag">BOM</span>
+        <button class="btn-print-card" onclick="window.print()">📄 PDF</button>
+      </div>
     </div>
     <div class="specs">${specs}</div>
     <div style="padding: 0 16px 16px;">${tableHtml}</div>

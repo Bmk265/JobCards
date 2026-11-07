@@ -402,8 +402,8 @@ const statsPill  = document.getElementById('statsPill');
 async function loadDataFromCSV() {
   try {
     resultTitle.textContent = 'Syncing data...';
-    // Fetches data.csv from the same folder on GitHub
-    const response = await fetch('data.csv');
+    // Added cache-busting to ensure it always gets the latest CSV you uploaded
+    const response = await fetch('data.csv?v=' + new Date().getTime());
     if (!response.ok) throw new Error('data.csv not found');
     
     const csvText = await response.text();
@@ -431,14 +431,27 @@ function processCSVData(rows) {
   };
 
   const headers = Object.keys(rows[0] || {});
-  const findHeader = (name) => headers.find(h => h.toLowerCase().includes(name.toLowerCase()));
+  const findHeader = (name) => headers.find(h => h.toLowerCase().replace(/\s+/g, '').includes(name.toLowerCase()));
 
   const soItemKey = findHeader('SO-ITEM') || findHeader('INDEX');
-  const opKey = findHeader('OPERATION DETAIL') || findHeader('OPERATION');
+  const opKey = findHeader('OPERATIONDETAIL') || findHeader('OPERATION');
 
   if (!soItemKey || !opKey) {
     alert('CSV is missing required headers: "SO-ITEM" and "OPERATION DETAIL"');
     return;
+  }
+
+  // Function to find the exact matching 'D' column for an 'H' column
+  function getMatchDCol(hCol) {
+    const cleanH = hCol.replace(/\s+/g, '').toUpperCase();
+    if (!cleanH.endsWith('H')) return null;
+    
+    const base = cleanH.slice(0, -1); // remove the 'H'
+    
+    return headers.find(h2 => {
+      const cleanH2 = h2.replace(/\s+/g, '').toUpperCase();
+      return cleanH2 === base + 'D';
+    });
   }
 
   DATA = [];
@@ -452,19 +465,21 @@ function processCSVData(rows) {
       if (h === soItemKey || h === opKey || Object.values(RESERVED).includes(h.toUpperCase())) return;
       
       const colName = h.trim();
-      if (/H$/i.test(colName)) {
-        const base = colName.replace(/H$/i, '');
-        const dColName = base + 'D';
-        const actualDCol = headers.find(h2 => h2.trim().toUpperCase() === dColName.toUpperCase());
+      
+      // If it ends with 'H', find its matching 'D'
+      if (/H$/i.test(colName.replace(/\s+/g, ''))) {
+        const matchD = getMatchDCol(colName);
         
         const label = String(row[h] || '').trim();
-        if (actualDCol) {
-          const val = String(row[actualDCol] || '').trim();
+        if (matchD) {
+          const val = String(row[matchD] || '').trim();
           if (label !== '' || val !== '') details.push([label || colName, val || '—']);
         } else if (label !== '') {
           details.push([label, '—']);
         }
-      } else if (!/D$/i.test(colName) && colName !== '') {
+      } 
+      // If it's a standalone column (not ending in D and not matched above)
+      else if (!/D$/i.test(colName.replace(/\s+/g, '')) && colName !== '') {
         const val = String(row[h] || '').trim();
         if (val !== '') details.push([colName, val]);
       }
@@ -475,8 +490,8 @@ function processCSVData(rows) {
       qty: row[findHeader('QTY')] || '',
       customer: row[findHeader('CUSTOMER')] || '',
       size: row[findHeader('SIZE')] || '',
-      currentOp: row[findHeader('CURRENT OPERATION')] || '',
-      nextOp: row[findHeader('NEXT OPERATION')] || '',
+      currentOp: row[findHeader('CURRENTOPERATION')] || '',
+      nextOp: row[findHeader('NEXTOPERATION')] || '',
       details,
       drum: row[findHeader('DRUM')] || ''
     });

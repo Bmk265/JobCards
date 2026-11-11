@@ -962,7 +962,7 @@ html { -webkit-text-size-adjust: 100%; }
     
     <div class="report-form-group">
       <label>Your Name / Role</label>
-      <input type="text" id="reportUser" readonly style="background: #e2e8f0; color: #475569;">
+      <input type="text" id="reportUser" placeholder="Enter your name...">
     </div>
 
     <div class="report-form-group">
@@ -1232,8 +1232,9 @@ window.openReportModal = function(event) {
   }
   document.getElementById('profileDropdown').classList.remove('show');
   
-  // Auto-fill user
-  document.getElementById('reportUser').value = CURRENT_ROLE + ' (' + CURRENT_USER + ')';
+  // Clear name field and focus it for input
+  const userField = document.getElementById('reportUser');
+  userField.value = '';
   
   // Auto-fill module based on active view
   const activeView = document.querySelector('.view-section.active').id.replace('view-', '');
@@ -1254,6 +1255,9 @@ window.openReportModal = function(event) {
 
   document.getElementById('reportMsg').value = ''; // Clear previous msg
   document.getElementById('reportModal').classList.add('open');
+  
+  // Slight delay to allow modal animation to finish before focusing
+  setTimeout(() => { userField.focus(); }, 300);
 };
 
 window.closeReportModal = function(event) {
@@ -1262,17 +1266,22 @@ window.closeReportModal = function(event) {
 };
 
 window.sendReport = function() {
-  const roleUser = document.getElementById('reportUser').value;
+  const roleUser = document.getElementById('reportUser').value.trim();
   const module = document.getElementById('reportModule').value;
   const msg = document.getElementById('reportMsg').value.trim();
   
+  if (!roleUser) {
+    alert("Please enter your name.");
+    document.getElementById('reportUser').focus();
+    return;
+  }
   if (!msg) {
     alert("Please describe the issue before sending.");
+    document.getElementById('reportMsg').focus();
     return;
   }
 
-  // Placeholder email - user can change this to their actual support email
-  const supportEmail = "support@thermocables.com"; 
+  const supportEmail = "Vamsi.nextwavetechnologies@gmail.com"; 
   const subject = encodeURIComponent(`[App Issue] ${module} - ${roleUser}`);
   const body = encodeURIComponent(`User: ${roleUser}\nModule: ${module}\n\nIssue Description:\n${msg}\n\n---\nSent from Thermocables Portal App`);
   
@@ -1281,12 +1290,18 @@ window.sendReport = function() {
 };
 
 window.copyReport = function() {
-  const roleUser = document.getElementById('reportUser').value;
+  const roleUser = document.getElementById('reportUser').value.trim();
   const module = document.getElementById('reportModule').value;
   const msg = document.getElementById('reportMsg').value.trim();
   
+  if (!roleUser) {
+    alert("Please enter your name.");
+    document.getElementById('reportUser').focus();
+    return;
+  }
   if (!msg) {
     alert("Please describe the issue before copying.");
+    document.getElementById('reportMsg').focus();
     return;
   }
 

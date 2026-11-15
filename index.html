@@ -780,9 +780,81 @@ html { -webkit-text-size-adjust: 100%; }
   .bom-table-head, .bom-row, .bom-group-header { min-width: 260px; }
   .bom-table-head, .bom-row { grid-template-columns: 80px 1fr 60px; }
 }
+
+/* ============ OFFLINE / SYNC UI ============ */
+.offline-banner {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 99999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: #f59e0b;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+  transition: background 0.25s ease;
+  pointer-events: none;
+}
+body.has-offline-banner .app { padding-top: 48px; }
+body.has-offline-banner .user-profile { top: calc(26px + 36px); }
+body.has-offline-banner .profile-dropdown { top: calc(78px + 36px); }
+
+.update-toast {
+  position: fixed;
+  bottom: calc(96px + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99998;
+  display: none;
+  align-items: center;
+  gap: 10px;
+  background: #0f172a;
+  color: #ffffff;
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.4);
+  max-width: calc(100% - 32px);
+}
+.update-toast.show { display: flex; }
+.update-toast span { flex: 1; min-width: 0; }
+.update-toast button {
+  border: none;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-weight: 800;
+  font-size: 0.78rem;
+  cursor: pointer;
+  background: #3b82f6;
+  color: #ffffff;
+  white-space: nowrap;
+}
+.update-toast button.dismiss {
+  background: transparent;
+  color: #94a3b8;
+  padding: 7px 8px;
+}
+
+@media print {
+  .offline-banner, .update-toast { display: none !important; }
+}
 </style>
 </head>
 <body>
+
+<!-- Offline / sync status banner -->
+<div id="offlineBanner" class="offline-banner" style="display: none;" role="status" aria-live="polite"></div>
+
+<!-- "New version available" toast -->
+<div id="updateToast" class="update-toast" style="display: none;" role="alert">
+  <span>🆕 A new version is available.</span>
+  <button onclick="window.location.reload()">Reload</button>
+  <button class="dismiss" onclick="document.getElementById('updateToast').style.display='none'">Later</button>
+</div>
 
 <div id="loginScreen">
   <div class="login-card">
@@ -1244,7 +1316,7 @@ html { -webkit-text-size-adjust: 100%; }
   <div class="modal-content" onclick="event.stopPropagation()">
     <button class="modal-close" onclick="closeKnowledge(event)">✕</button>
     <div class="modal-header">
-      <div class="k-icon" id="modalIcon" style="font-size: 1.5rem; width: 48px; height: 48px;">📚</div>
+      <div class="k-icon" id="modalIcon" style="font-size: 1.5rem; width: 48px; height: 48px;">??</div>
       <h3 id="modalTitle">Title</h3>
     </div>
     <div class="modal-body" id="modalBody"></div>
@@ -1298,8 +1370,24 @@ html { -webkit-text-size-adjust: 100%; }
 (function(){
 "use strict";
 
+/* --- SERVICE WORKER REGISTRATION (OFFLINE SUPPORT) --- */
+let SW_REGISTRATION = null;
+
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(err => console.log(err)); });
+  window.addEventListener('load', async () => {
+    try {
+      SW_REGISTRATION = await navigator.serviceWorker.register('sw.js', { scope: './' });
+      console.log('[SW] Registered, scope:', SW_REGISTRATION.scope);
+      SW_REGISTRATION.update().catch(() => {});
+    } catch (err) {
+      console.warn('[SW] Registration failed:', err);
+    }
+  });
+
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    const toast = document.getElementById('updateToast');
+    if (toast) toast.classList.add('show');
+  });
 }
 
 let CURRENT_USER = '', CURRENT_ROLE = '', ALLOWED_VIEWS = [];
@@ -1456,9 +1544,93 @@ function completeLogin(u) {
   loadJobDataFromCSV();
   if (ALLOWED_VIEWS.includes('bom')) loadBomDataFromCSV();
   
-  loadBanners(); // Load banners on login
+  loadBanners();
   switchMainView('home');
+
+  // Show offline banner immediately if starting offline
+  if (!navigator.onLine) setSyncState('offline');
 }
+
+/* --- OFFLINE / ONLINE SYNC ORCHESTRATION --- */
+let isSyncing = false;
+
+function setSyncState(state) {
+  const banner = document.getElementById('offlineBanner');
+  if (!banner) return;
+
+  const configs = {
+    offline:  { text: '⚠️  Offline — showing cached data', bg: '#f59e0b', persist: true },
+    syncing:  { text: '🔄  Refreshing latest data…',       bg: '#3b82f6', persist: true },
+    synced:   { text: '✓  Data up to date',                bg: '#10b981', persist: false },
+    partial:  { text: '⚠️  Some data could not be refreshed', bg: '#f59e0b', persist: false },
+    error:    { text: '✗  Failed to refresh data',         bg: '#ef4444', persist: false }
+  };
+
+  const cfg = configs[state] || configs.offline;
+  banner.textContent = cfg.text;
+  banner.style.background = cfg.bg;
+  banner.style.display = 'flex';
+  document.body.classList.add('has-offline-banner');
+
+  if (banner._hideTimer) { clearTimeout(banner._hideTimer); banner._hideTimer = null; }
+
+  if (!cfg.persist) {
+    banner._hideTimer = setTimeout(() => {
+      banner.style.display = 'none';
+      document.body.classList.remove('has-offline-banner');
+    }, state === 'syncing' ? 30000 : 3000);
+  }
+}
+
+function rerenderActiveDataView() {
+  if (document.getElementById('view-jobcards')?.classList.contains('active')) {
+    if (opSelect && opSelect.value) renderJobResults();
+  }
+  if (document.getElementById('view-bom')?.classList.contains('active')) {
+    if (bomInput && bomInput.value.trim()) renderBomResults();
+  }
+}
+
+async function refreshData() {
+  if (isSyncing || !navigator.onLine) return false;
+  isSyncing = true;
+  setSyncState('syncing');
+
+  try {
+    const results = await Promise.all([
+      loadJobDataFromCSV(),
+      ALLOWED_VIEWS.includes('bom') ? loadBomDataFromCSV() : Promise.resolve(true)
+    ]);
+
+    if (results.every(r => r === true)) {
+      setSyncState('synced');
+      rerenderActiveDataView();
+      return true;
+    } else {
+      setSyncState('partial');
+      rerenderActiveDataView();
+      return false;
+    }
+  } catch (e) {
+    console.error('[sync] refresh failed:', e);
+    setSyncState('error');
+    return false;
+  } finally {
+    isSyncing = false;
+  }
+}
+
+window.refreshData = refreshData;
+
+window.addEventListener('online', () => {
+  console.log('[sync] Back online — refreshing data');
+  refreshData();
+});
+
+window.addEventListener('offline', () => {
+  console.log('[sync] Gone offline');
+  setSyncState('offline');
+});
 
 window.handleLogout = function() { localStorage.removeItem('tc_user'); location.reload(); };
 
@@ -1559,7 +1731,7 @@ window.closeKnowledge = function(event) {
   document.getElementById('knowledgeModal').classList.remove('open');
 };
 
-/* --- NEW QR MODAL LOGIC --- */
+/* --- QR MODAL LOGIC --- */
 window.openQrModal = function(event) {
   if(event) event.stopPropagation();
   document.getElementById('profileDropdown').classList.remove('show');
@@ -1708,7 +1880,6 @@ window.addBanner = function() {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
         
-        // Compress to JPEG at 75% quality to keep localStorage size down
         const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
 
         BANNERS.push({ text, img: dataUrl, link, active: true });
@@ -1751,18 +1922,30 @@ window.toggleBanner = function(i) {
 /* --- SHARED CSV HELPERS --- */
 function normalizeHeader(h){ return String(h||'').toLowerCase().replace(/[\s_\-\/\.]+/g,''); }
 function findHeader(headers, ...candidates){ for(const c of candidates){ const found = headers.find(h => normalizeHeader(h) === normalizeHeader(c)); if(found) return found; } return null; }
-/* Added fallback for the black diamond encoding issue */
 function esc(s){ return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/⬖/g, '±'); }
 function formatQty(n) { if(n === null || n === undefined || isNaN(n)) return '—'; return Number(n).toFixed(4).replace(/\.?0+$/, '') || '0'; }
 function formatScientific(num) { if (num === 0) return '0'; const e = Math.floor(Math.log10(Math.abs(num))); const m = num / Math.pow(10, e); return `${m.toFixed(2)} × 10<sup>${e}</sup>`; }
 
-/* --- JOB DATA --- */
+/* --- JOB DATA (OFFLINE-AWARE) --- */
 async function loadJobDataFromCSV() {
   try {
-    const response = await fetch('data.csv?v=' + new Date().getTime());
-    if (!response.ok) return;
-    Papa.parse(await response.text(), { header: true, skipEmptyLines: true, complete: function(results) { processJobCSVData(results.data); } });
-  } catch (e) { console.warn('data.csv not found'); }
+    const response = await fetch('data.csv', { cache: 'no-store' });
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    const text = await response.text();
+    return new Promise((resolve) => {
+      Papa.parse(text, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          processJobCSVData(results.data);
+          resolve(true);
+        }
+      });
+    });
+  } catch (e) {
+    console.warn('[offline] data.csv unavailable — using cached version if present');
+    return false;
+  }
 }
 
 function processJobCSVData(rows) {
@@ -1920,43 +2103,56 @@ document.getElementById('resetBtn').addEventListener('click', () => {
   document.getElementById('jobResultCount').textContent = '0 records';
 });
 
-/* --- BOM DATA --- */
+/* --- BOM DATA (OFFLINE-AWARE) --- */
 let CURRENT_BOM_LINES = [];
 let LAST_BOM_ITEM = null;
 
 async function loadBomDataFromCSV() {
   try {
-    const response = await fetch('bom.csv?v=' + new Date().getTime());
-    if (!response.ok) return;
-    Papa.parse(await response.text(), { header: false, skipEmptyLines: false, complete: function(results) {
-      const allRows = results.data; 
-      if(!allRows || allRows.length < 2) return;
-      
-      function rowHasHeader(row){
-        if(!row || !row.length) return false;
-        return row.some(cell => {
-          const n = normalizeHeader(cell);
-          return n === 'soitemno' || n === 'soitem';
-        });
-      }
-      
-      let headerRowIndex = 0;
-      if(!rowHasHeader(allRows[0]) && rowHasHeader(allRows[1])){
-        headerRowIndex = 1;
-      }
-      
-      const headerRow = allRows[headerRowIndex].map(h => String(h||'').trim());
-      const dataRows = allRows.slice(headerRowIndex + 1).filter(r => r.some(c => String(c||'').trim() !== ''));
-      
-      const rows = dataRows.map(r => {
-        const obj = {};
-        headerRow.forEach((h, i) => { obj[h] = r[i] !== undefined ? r[i] : ''; });
-        return obj;
-      }).filter(o => Object.values(o).some(v => String(v||'').trim() !== ''));
+    const response = await fetch('bom.csv', { cache: 'no-store' });
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    const text = await response.text();
+    return new Promise((resolve) => {
+      Papa.parse(text, {
+        header: false,
+        skipEmptyLines: false,
+        complete: function (results) {
+          const allRows = results.data;
+          if (!allRows || allRows.length < 2) return resolve(false);
 
-      processBomCSVData(rows);
-    }});
-  } catch (e) { console.warn('bom.csv not found'); }
+          function rowHasHeader(row) {
+            if (!row || !row.length) return false;
+            return row.some(cell => {
+              const n = normalizeHeader(cell);
+              return n === 'soitemno' || n === 'soitem';
+            });
+          }
+
+          let headerRowIndex = 0;
+          if (!rowHasHeader(allRows[0]) && rowHasHeader(allRows[1])) {
+            headerRowIndex = 1;
+          }
+
+          const headerRow = allRows[headerRowIndex].map(h => String(h || '').trim());
+          const dataRows = allRows
+            .slice(headerRowIndex + 1)
+            .filter(r => r.some(c => String(c || '').trim() !== ''));
+
+          const rows = dataRows.map(r => {
+            const obj = {};
+            headerRow.forEach((h, i) => { obj[h] = r[i] !== undefined ? r[i] : ''; });
+            return obj;
+          }).filter(o => Object.values(o).some(v => String(v || '').trim() !== ''));
+
+          processBomCSVData(rows);
+          resolve(true);
+        }
+      });
+    });
+  } catch (e) {
+    console.warn('[offline] bom.csv unavailable — using cached version if present');
+    return false;
+  }
 }
 
 function processBomCSVData(rows) {
@@ -2110,7 +2306,6 @@ function renderBomResults(){
     return;
   }
 
-  /* plan qty belongs to one item only — never carry it across items */
   if(LAST_BOM_ITEM !== soItem){ USER_PLAN_QTY = null; LAST_BOM_ITEM = soItem; }
 
   const effectivePlanQty = (USER_PLAN_QTY !== null && !isNaN(USER_PLAN_QTY)) ? USER_PLAN_QTY : item.defaultPlanQty;
@@ -2141,7 +2336,6 @@ function renderBomResults(){
       <div class="bom-table">
         <div class="bom-table-head"><div>Mat Code</div><div>Mat Disc</div><div>Qty</div></div>`;
     
-  /* build the DOM order list as we render — this is what the qty math must use */
   const orderedLines = [];
   const sortedGroups = Array.from(groupMap.keys()).sort();
   sortedGroups.forEach(g => {
@@ -2338,7 +2532,6 @@ window.triggerPrint = function(e, type) {
     }
     gpContainer.innerHTML = gpHtml;
   }
-  /* let the browser apply the print class before snapshotting */
   requestAnimationFrame(() => window.print());
 };
 

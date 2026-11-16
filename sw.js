@@ -6,7 +6,7 @@
  *   - Cross-origin (CDNs, fonts): cache-first
  */
 
-const VERSION      = 'v1.0.0';
+const VERSION      = 'v1.0.1';
 const SHELL_CACHE  = `tc-shell-${VERSION}`;
 const DATA_CACHE   = `tc-data-${VERSION}`;
 

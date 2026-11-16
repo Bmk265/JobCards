@@ -7,7 +7,6 @@
 <meta name="theme-color" content="#f1f5f9">
 <title>Thermocables Portal</title>
 
-  
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 
@@ -1071,7 +1070,7 @@ body.has-offline-banner .profile-dropdown { top: calc(78px + 36px); }
 
     <div class="qc-card active" id="qc-card-cr">
       <div class="qc-card-body">
-        <div class="input-group"><label>CR Reading <span class="unit-hint">(Value)</span></label><input type="number" id="crReading" step="any" placeholder="Enter CR Reading"></div>
+        <div class="input-group"><label>CR Reading <span class="unit-hint">(Ohms)</span></label><input type="number" id="crReading" step="any" placeholder="Enter CR Reading"></div>
         <div class="input-group"><label>Length <span class="unit-hint">(Meters)</span></label><input type="number" id="crLength" step="any" placeholder="Enter Length in Meters"></div>
         <div class="input-group"><label>Temperature <span class="unit-hint">(°C)</span></label><input type="number" id="crTemp" step="any" placeholder="Enter Temperature in °C"></div>
         <div class="input-group"><label>Specified CR <span class="unit-hint">(Value)</span></label><input type="number" id="crSpecified" step="any" placeholder="Enter Specified CR"></div>
@@ -1080,7 +1079,7 @@ body.has-offline-banner .profile-dropdown { top: calc(78px + 36px); }
           <div class="result-card primary"><span class="label">Observed CR</span><div class="value-wrapper"><span class="value" id="obsCrOut">—</span></div></div>
           <div class="status-box status-neutral" id="percentStatusBox">
             <div class="status-icon" id="statusIcon">—</div>
-            <div class="status-text" id="percentDiffOut">0.00%</div>
+            <div class="status-text" id="percentDiffOut">0.0%</div>
             <div class="status-subtext" id="statusText">Waiting for inputs</div>
           </div>
         </div>
@@ -1333,7 +1332,7 @@ body.has-offline-banner .profile-dropdown { top: calc(78px + 36px); }
     </div>
     <div class="modal-body" style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
       <p style="font-size: 0.9rem; color: #64748b;">Point your phone camera here to open the portal on your mobile device.</p>
-      <img id="qrCodeImage" src="" alt="QR Code" style="width: 220px; height: 220px; border-radius: 12px; border: 1px solid #e2e8f0; padding: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+      <img id="qrCodeImage" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="QR Code" style="width: 220px; height: 220px; border-radius: 12px; border: 1px solid #e2e8f0; padding: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
       <button class="btn-print" onclick="closeQrModal()" style="margin-top: 10px;">Close</button>
     </div>
   </div>
@@ -1584,12 +1583,10 @@ function setSyncState(state) {
 }
 
 function rerenderActiveDataView() {
-  if (document.getElementById('view-jobcards')?.classList.contains('active')) {
-    if (opSelect && opSelect.value) renderJobResults();
-  }
-  if (document.getElementById('view-bom')?.classList.contains('active')) {
-    if (bomInput && bomInput.value.trim()) renderBomResults();
-  }
+  try {
+    if (document.getElementById('view-jobcards')?.classList.contains('active') && opSelect?.value) renderJobResults();
+    if (document.getElementById('view-bom')?.classList.contains('active') && bomInput?.value.trim()) renderBomResults();
+  } catch (_) { /* pre-init — safe to ignore */ }
 }
 
 async function refreshData() {
@@ -1653,6 +1650,7 @@ window.addEventListener('load', () => {
     else if (savedUser === 'rasheed') document.getElementById('loginPass').value = 'Rasheed@Tcl';
     else if (savedUser === 'manikanta') document.getElementById('loginPass').value = 'Manikanta@Tcl';
     handleLogin();
+    if (loginStep === 2) handleLogin();
   }
 });
 
@@ -2380,15 +2378,51 @@ document.getElementById('bomResetBtn').addEventListener('click', () => {
 
 /* QC CALC LOGIC */
 function calculateCR() {
-  const r = parseFloat(document.getElementById('crReading').value) || 0, l = parseFloat(document.getElementById('crLength').value) || 0, t = parseFloat(document.getElementById('crTemp').value) || 0, s = parseFloat(document.getElementById('crSpecified').value) || 0;
+  const r = parseFloat(document.getElementById('crReading').value) || 0;
+  const l = parseFloat(document.getElementById('crLength').value) || 0;
+  const t = parseFloat(document.getElementById('crTemp').value) || 0;
+  const s = parseFloat(document.getElementById('crSpecified').value) || 0;
+  
   let obs = (l !== 0 && (230 + t) !== 0) ? (250 / (230 + t)) * (r / l) * 1000 : 0;
   document.getElementById('obsCrOut').textContent = obs.toFixed(2);
-  let diff = s !== 0 ? ((obs - s) / s) * 100 : 0;
-  document.getElementById('percentDiffOut').textContent = (diff > 0 ? "+" : "") + diff.toFixed(2) + "%";
-  const box = document.getElementById('percentStatusBox'); box.className = 'status-box';
-  if (obs === 0 && s === 0) { box.classList.add('status-neutral'); document.getElementById('statusIcon').textContent='—'; document.getElementById('statusText').textContent='Waiting'; }
-  else if (diff > 0) { box.classList.add('status-high'); document.getElementById('statusIcon').textContent='⚠️'; document.getElementById('statusText').textContent='HIGH'; }
-  else { box.classList.add('status-low'); document.getElementById('statusIcon').textContent='✅'; document.getElementById('statusText').textContent='LOW'; }
+  
+  const box = document.getElementById('percentStatusBox'); 
+  box.className = 'status-box';
+  
+  if (obs === 0 && s === 0) {
+    box.classList.add('status-neutral'); 
+    document.getElementById('statusIcon').textContent = '—'; 
+    document.getElementById('percentDiffOut').textContent = '0.0%';
+    document.getElementById('statusText').textContent = 'Waiting for inputs';
+    return;
+  }
+
+  if (s !== 0) {
+    // Exact Excel Match: ROUND((((R - T) * 100 / R)), 1)
+    let diff = Math.abs(Math.round(((s - obs) * 100 / s) * 10) / 10);
+    
+    if (obs > s) {
+      box.classList.add('status-high'); 
+      document.getElementById('statusIcon').textContent = '⚠️'; 
+      document.getElementById('statusText').textContent = 'HIGH';
+      document.getElementById('percentDiffOut').textContent = diff.toFixed(1) + '% HIGH';
+    } else if (obs < s) {
+      box.classList.add('status-low'); 
+      document.getElementById('statusIcon').textContent = '✅'; 
+      document.getElementById('statusText').textContent = 'LOW';
+      document.getElementById('percentDiffOut').textContent = diff.toFixed(1) + '% LOW';
+    } else {
+      box.classList.add('status-neutral'); 
+      document.getElementById('statusIcon').textContent = '='; 
+      document.getElementById('statusText').textContent = 'MATCH';
+      document.getElementById('percentDiffOut').textContent = '0.0%';
+    }
+  } else {
+    box.classList.add('status-neutral'); 
+    document.getElementById('statusIcon').textContent = '—'; 
+    document.getElementById('statusText').textContent = 'No Specified CR';
+    document.getElementById('percentDiffOut').textContent = '—';
+  }
 }
 ['crReading','crLength','crTemp','crSpecified'].forEach(id => document.getElementById(id).addEventListener('input', calculateCR));
 

@@ -990,6 +990,16 @@ body.has-offline-banner .profile-dropdown { top: calc(78px + 36px); }
 (function(){
 "use strict";
 
+/* --- SAFETY: Force hide loader after 4.5 seconds regardless of state --- */
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    const loader = document.getElementById('globalLoader');
+    if (loader && !loader.classList.contains('hidden')) {
+      loader.classList.add('hidden');
+    }
+  }, 4500); // 4500ms = 4.5 seconds (matches animation length)
+});
+
 /* --- SERVICE WORKER REGISTRATION (OFFLINE SUPPORT) --- */
 let SW_REGISTRATION = null;
 
@@ -2004,7 +2014,6 @@ document.getElementById('bomResetBtn').addEventListener('click', () => {
 
 /* QC CALC LOGIC */
 function calculateCRCombined() {
-  // CR Unbalance Part
   const spec = parseFloat(document.getElementById('specCR').value) || 0;
   const max = parseFloat(document.getElementById('maxCR').value) || 0;
   const min = parseFloat(document.getElementById('minCR').value) || 0;
@@ -2018,7 +2027,6 @@ function calculateCRCombined() {
   const low = (spec !== 0) ? ((spec - min) / spec) * 100 : 0;
   document.getElementById('outLow').textContent = (low > 0 ? '+' : '') + low.toFixed(2);
 
-  // Cal CR Part
   const obs = parseFloat(document.getElementById('obsCR').value) || 0;
   const len = parseFloat(document.getElementById('lenCR').value) || 0;
   const temp = parseFloat(document.getElementById('tempCR').value) || 0;

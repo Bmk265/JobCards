@@ -289,6 +289,7 @@ body{
 .gp-field label .gp-label-hint { font-size: 0.6rem; color: #94a3b8; font-weight: 700; text-transform: none; letter-spacing: 0; }
 .gp-field input { width: 100%; padding: 12px 14px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 0.95rem; font-weight: 600; color: #0f172a; background: #f8fafc; outline: none; transition: all 0.2s; }
 .gp-field input:focus { border-color: #3b82f6; background: #fff; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12); }
+.gp-field input.gp-invalid { border-color: #ef4444; background: #fef2f2; box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12); }
 .gp-field-row { display: grid; grid-template-columns: 1fr 1.2fr; gap: 14px; }
 @media (max-width: 480px) { .gp-field-row { grid-template-columns: 1fr; } }
 .gp-time-picker { display: flex; align-items: center; gap: 4px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 4px; transition: all 0.2s; }
@@ -302,6 +303,7 @@ body{
 .gp-preview-label { font-size: 0.65rem; font-weight: 800; color: #1e40af; text-transform: uppercase; letter-spacing: 0.08em; background: #fff; padding: 4px 10px; border-radius: 20px; border: 1px solid #bfdbfe; flex-shrink: 0; }
 .gp-preview-content { display: flex; gap: 16px; font-size: 0.82rem; font-weight: 600; color: #1e40af; flex-wrap: wrap; }
 .gp-preview-content b { font-weight: 800; color: #0f172a; background: #fff; padding: 2px 8px; border-radius: 6px; margin-left: 4px; }
+.gp-preview-content b.gp-preview-empty { color: #b91c1c; background: #fee2e2; }
 .gp-generate-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 16px; border: none; border-radius: 14px; background: linear-gradient(135deg, #0f172a, #1e40af); color: #fff; font-size: 1rem; font-weight: 800; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 14px rgba(30, 64, 175, 0.3); letter-spacing: 0.02em; margin-top: 4px; }
 .gp-generate-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(30, 64, 175, 0.4); }
 .gp-generate-btn:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3); }
@@ -369,14 +371,21 @@ body{
   body.printing-gatepass .print-header, body.printing-gatepass .print-footer, body.printing-gatepass .print-inputs-section, body.printing-gatepass .topbar, body.printing-gatepass .bottom-nav, body.printing-gatepass .view-section, body.printing-gatepass .app-footer, body.printing-gatepass .app > *:not(.gate-pass-print-container) { display: none !important; }
   body.printing-gatepass { width: 190mm !important; height: 277mm !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
   body.printing-gatepass .app { max-width: 100% !important; width: 190mm !important; height: 277mm !important; padding: 0 !important; margin: 0 !important; font-family: Arial, Helvetica, sans-serif !important; overflow: hidden !important; position: static !important; }
-  body.printing-gatepass .gate-pass-print-container { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; grid-template-rows: repeat(9, 1fr) !important; gap: 3mm !important; width: 190mm !important; height: 277mm !important; padding: 0 !important; margin: 0 !important; box-sizing: border-box !important; overflow: hidden !important; page-break-inside: avoid !important; page-break-after: avoid !important; page-break-before: avoid !important; }
+  body.printing-gatepass .gate-pass-print-container { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; grid-template-rows: repeat(var(--gp-rows, 9), 1fr) !important; gap: 3mm !important; width: 190mm !important; height: 277mm !important; padding: 0 !important; margin: 0 !important; box-sizing: border-box !important; overflow: hidden !important; page-break-inside: avoid !important; page-break-after: avoid !important; page-break-before: avoid !important; }
   body.printing-gatepass .gate-pass-card { width: 100% !important; height: 100% !important; border: 1px dashed #666 !important; padding: 1.5mm !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; align-items: center !important; text-align: center !important; box-sizing: border-box !important; background: #fff !important; overflow: hidden !important; page-break-inside: avoid !important; }
-  .gp-company { font-family: Arial, Helvetica, sans-serif !important; font-size: 11px !important; font-weight: 900 !important; text-transform: uppercase !important; margin-bottom: 1mm !important; color: #000 !important; text-align: center !important; width: 100% !important; letter-spacing: 0.5px; }
-  .gp-dept { font-family: Arial, Helvetica, sans-serif !important; font-size: 9px !important; font-weight: 700 !important; color: #333 !important; margin-bottom: 2mm !important; text-align: center !important; width: 100% !important; }
+  .gp-company { font-family: Arial, Helvetica, sans-serif !important; font-size: 10px !important; font-weight: 900 !important; line-height: 1.05 !important; max-height: 5.6mm !important; overflow: hidden !important; text-transform: uppercase !important; margin-bottom: 1mm !important; color: #000 !important; text-align: center !important; width: 100% !important; letter-spacing: 0.5px; }
+  .gp-dept { font-family: Arial, Helvetica, sans-serif !important; font-size: 8.5px !important; font-weight: 700 !important; line-height: 1.05 !important; max-height: 4.7mm !important; overflow: hidden !important; color: #333 !important; margin-bottom: 1mm !important; text-align: center !important; width: 100% !important; }
+  .gp-serial { font-family: monospace !important; font-size: 6.5px !important; font-weight: 700 !important; color: #000 !important; letter-spacing: 0.3px; margin-bottom: 1mm !important; text-align: center !important; width: 100% !important; }
   .gp-datetime { display: flex !important; justify-content: space-between !important; width: 100% !important; font-size: 8px !important; font-family: monospace !important; color: #000 !important; }
   .gp-sig-area { width: 100% !important; display: flex !important; flex-direction: column !important; align-items: center !important; margin-top: auto !important; }
-  .gp-sig-line { width: 85% !important; border-bottom: 1px solid #000 !important; height: 6mm !important; }
-  .gp-sig-label { font-size: 7px !important; font-family: Arial, Helvetica, sans-serif !important; margin-top: 1mm !important; color: #000 !important; text-align: center !important; text-transform: uppercase; }
+  .gp-sig-line { width: 85% !important; border-bottom: 1px solid #000 !important; height: 5mm !important; }
+  .gp-sig-label { font-size: 6.5px !important; font-family: Arial, Helvetica, sans-serif !important; margin-top: 1mm !important; color: #000 !important; text-align: center !important; text-transform: uppercase; }
+  body.printing-gatepass .gate-pass-print-container.gp-dense .gp-company { font-size: 9px !important; max-height: 4.7mm !important; }
+  body.printing-gatepass .gate-pass-print-container.gp-dense .gp-dept { font-size: 7.5px !important; max-height: 3.9mm !important; }
+  body.printing-gatepass .gate-pass-print-container.gp-dense .gp-serial { font-size: 6px !important; }
+  body.printing-gatepass .gate-pass-print-container.gp-dense .gp-datetime { font-size: 7px !important; }
+  body.printing-gatepass .gate-pass-print-container.gp-dense .gp-sig-line { height: 4mm !important; }
+  body.printing-gatepass .gate-pass-print-container.gp-dense .gp-sig-label { font-size: 6px !important; }
 }
 
 /* RESPONSIVE */
@@ -836,7 +845,7 @@ body.has-offline-banner .profile-dropdown { top: calc(78px + 36px); }
       <div class="gp-hero-icon">🎫</div>
       <div class="gp-hero-text">
         <h2>Gate Pass Generator</h2>
-        <p>Generate 27 gate pass cards (9×3) on a single A4 sheet</p>
+        <p>Generate gate pass cards on a single A4 sheet (3 per row)</p>
       </div>
     </div>
 
@@ -847,17 +856,17 @@ body.has-offline-banner .profile-dropdown { top: calc(78px + 36px); }
       </div>
       <div class="gp-form-body">
         <div class="gp-field">
-          <label>Department</label>
-          <input type="text" id="gpDept" placeholder="e.g. PRODUCTION" value="PRODUCTION">
+          <label for="gpDept">Department</label>
+          <input type="text" id="gpDept" placeholder="e.g. PRODUCTION" maxlength="30" autocomplete="off">
         </div>
 
         <div class="gp-field-row">
           <div class="gp-field">
-            <label>Date</label>
+            <label for="gpDate">Date</label>
             <input type="date" id="gpDate">
           </div>
           <div class="gp-field">
-            <label>Out Time <span class="gp-label-hint">(AM / PM)</span></label>
+            <label for="gpHour">Out Time <span class="gp-label-hint">(AM / PM)</span></label>
             <div class="gp-time-picker">
               <select id="gpHour" aria-label="Hour"></select>
               <span class="gp-time-sep">:</span>
@@ -870,11 +879,17 @@ body.has-offline-banner .profile-dropdown { top: calc(78px + 36px); }
           </div>
         </div>
 
+        <div class="gp-field">
+          <label for="gpCount">No. of Passes <span class="gp-label-hint">(1 – 30)</span></label>
+          <input type="number" id="gpCount" min="1" max="30" step="1" inputmode="numeric">
+        </div>
+
         <div class="gp-preview">
           <div class="gp-preview-label">👁️ Preview</div>
           <div class="gp-preview-content">
             <span>Date: <b id="gpPreviewDate">—</b></span>
             <span>Out Time: <b id="gpPreviewTime">—</b></span>
+            <span>Passes: <b id="gpPreviewCount">—</b></span>
           </div>
         </div>
 
@@ -1047,11 +1062,19 @@ function formatDateForDisplay(isoDate) {
   return `${d}/${m}/${y}`;
 }
 
+/* ---- Gate Pass: clamp pass count ---- */
+function clampGpCount(raw) {
+  const n = parseInt(raw, 10);
+  if (isNaN(n)) return 27;
+  return Math.min(30, Math.max(1, n));
+}
+
 /* ---- Gate Pass UI: populate dropdowns, defaults, live preview ---- */
 function initGatePassUI() {
   const hourSel = document.getElementById('gpHour');
   const minSel = document.getElementById('gpMinute');
   if (!hourSel || !minSel) return;
+  if (hourSel.options.length > 0) return; // re-entry guard
 
   for (let h = 1; h <= 12; h++) {
     const v = String(h).padStart(2, '0');
@@ -1068,24 +1091,27 @@ function initGatePassUI() {
     minSel.appendChild(opt);
   }
 
-  const now = new Date();
-  let h = now.getHours();
-  const ampm = h >= 12 ? 'PM' : 'AM';
-  h = h % 12 || 12;
-  hourSel.value = String(h).padStart(2, '0');
-  minSel.value = String(now.getMinutes()).padStart(2, '0');
-  document.getElementById('gpAmPm').value = ampm;
+  syncGatePassClock();
+  syncGatePassDate();
 
-  const dateEl = document.getElementById('gpDate');
-  if (!dateEl.value) {
-    const yyyy = now.getFullYear();
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const dd = String(now.getDate()).padStart(2, '0');
-    dateEl.value = `${yyyy}-${mm}-${dd}`;
-  }
+  // Department: last used -> admin default -> hard fallback
+  const deptEl = document.getElementById('gpDept');
+  deptEl.value = localStorage.getItem('tc_gp_dept') || localStorage.getItem('tc_dept') || 'PRODUCTION';
+  deptEl.addEventListener('input', () => {
+    localStorage.setItem('tc_gp_dept', deptEl.value);
+    updateGatePassPreview();
+  });
 
-  dateEl.addEventListener('change', updateGatePassPreview);
-  dateEl.addEventListener('input', updateGatePassPreview);
+  const countEl = document.getElementById('gpCount');
+  countEl.value = '27';
+  countEl.addEventListener('input', updateGatePassPreview);
+  countEl.addEventListener('blur', () => {
+    countEl.value = clampGpCount(countEl.value);
+    updateGatePassPreview();
+  });
+
+  document.getElementById('gpDate').addEventListener('change', updateGatePassPreview);
+  document.getElementById('gpDate').addEventListener('input', updateGatePassPreview);
   hourSel.addEventListener('change', updateGatePassPreview);
   minSel.addEventListener('change', updateGatePassPreview);
   document.getElementById('gpAmPm').addEventListener('change', updateGatePassPreview);
@@ -1093,13 +1119,52 @@ function initGatePassUI() {
   updateGatePassPreview();
 }
 
+/* Set the out-time to the current clock */
+function syncGatePassClock() {
+  const hourSel = document.getElementById('gpHour');
+  const minSel = document.getElementById('gpMinute');
+  if (!hourSel || !minSel) return;
+  const now = new Date();
+  let h = now.getHours();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  hourSel.value = String(h).padStart(2, '0');
+  minSel.value = String(now.getMinutes()).padStart(2, '0');
+  document.getElementById('gpAmPm').value = ampm;
+}
+
+/* Set the date to today, only if empty */
+function syncGatePassDate() {
+  const dateEl = document.getElementById('gpDate');
+  if (!dateEl || dateEl.value) return;
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  dateEl.value = `${yyyy}-${mm}-${dd}`;
+}
+
+/* Preview mirrors exactly what will print — no silent fallbacks */
 function updateGatePassPreview() {
   const d = document.getElementById('gpDate').value;
   const h = document.getElementById('gpHour').value;
   const m = document.getElementById('gpMinute').value;
   const ap = document.getElementById('gpAmPm').value;
-  document.getElementById('gpPreviewDate').textContent = d ? formatDateForDisplay(d) : '—';
-  document.getElementById('gpPreviewTime').textContent = (h && m && ap) ? `${h}:${m} ${ap}` : '—';
+  const c = document.getElementById('gpCount').value;
+
+  const dateOut = document.getElementById('gpPreviewDate');
+  const timeOut = document.getElementById('gpPreviewTime');
+  const countOut = document.getElementById('gpPreviewCount');
+
+  dateOut.textContent = d ? formatDateForDisplay(d) : 'not set';
+  dateOut.classList.toggle('gp-preview-empty', !d);
+
+  timeOut.textContent = (h && m && ap) ? `${h}:${m} ${ap}` : 'not set';
+  timeOut.classList.toggle('gp-preview-empty', !(h && m && ap));
+
+  const countVal = parseInt(c, 10);
+  countOut.textContent = (!isNaN(countVal) && countVal > 0) ? String(clampGpCount(countVal)) : 'not set';
+  countOut.classList.toggle('gp-preview-empty', isNaN(countVal) || countVal < 1);
 }
 
 /* ---- LOGIN ---- */
@@ -1322,14 +1387,8 @@ window.switchMainView = function(viewName) {
   else if(viewName === 'qccalc') document.getElementById('nav-qc').classList.add('active');
   else if(viewName === 'gatepass') {
     document.getElementById('nav-gatepass').classList.add('active');
-    const dateEl = document.getElementById('gpDate');
-    if (!dateEl.value) {
-      const now = new Date();
-      const yyyy = now.getFullYear();
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const dd = String(now.getDate()).padStart(2, '0');
-      dateEl.value = `${yyyy}-${mm}-${dd}`;
-    }
+    syncGatePassDate();
+    syncGatePassClock();
     updateGatePassPreview();
   }
   
@@ -1352,7 +1411,7 @@ window.openKnowledge = function(key) {
     'lean': { icon: '⚙️', title: 'Lean Manufacturing', content: `<p>Lean manufacturing is a production method aimed primarily at reducing times within the production system as well as response times from suppliers and to customers. It is derived from the Toyota Production System (TPS).</p><h5>Key Principles:</h5><ul><li><b>Kaizen:</b> Continuous, incremental improvement involving everyone.</li><li><b>Poka-yoke:</b> Mistake-proofing. Designing processes so mistakes are impossible to make.</li><li><b>Just-In-Time (JIT):</b> Producing only what is needed, when it is needed.</li><li><b>Gemba:</b> "The real place." Going to the factory floor to observe and solve problems.</li></ul><h5>The 7 Wastes (Muda):</h5><ul><li>Transportation, Inventory, Motion, Waiting, Overproduction, Overprocessing, Defects.</li></ul>` },
     'standards': { icon: '📜', title: 'IEC Cable Standards', content: `<p>International Electrotechnical Commission (IEC) standards are globally recognized benchmarks for cable manufacturing and testing.</p><table><tr><th>Standard</th><th>Description</th></tr><tr><td><b>IEC 60228</b></td><td>Conductors of insulated cables. Defines Class 1 (solid), Class 2 (stranded), Class 5 (flexible), and Class 6 (extra flexible).</td></tr><tr><td><b>IEC 60502</b></td><td>Power cables with extruded insulation (PVC, XLPE, EPR) for rated voltages from 1kV to 30kV.</td></tr><tr><td><b>IEC 60332</b></td><td>Tests on electric and optical fibre cables under fire conditions. (Flame propagation).</td></tr><tr><td><b>IEC 60754</b></td><td>Test on gases evolved during combustion of materials from cables (Halogen acid gas).</td></tr><tr><td><b>IEC 61034</b></td><td>Measurement of smoke density of cables burning under defined conditions.</td></tr></table>` },
     'formulas': { icon: '📐', title: 'Engineering Formulas', content: `<p>Essential formulas used in cable design and quality control:</p><h5>1. Conductor Resistance</h5><p>The DC resistance of a conductor is calculated using:</p><div class="formula-box">R = (ρ × L) / A</div><ul><li><b>R</b> = Resistance (Ω)</li><li><b>ρ</b> = Resistivity (Copper ≈ 0.01724 Ω·mm²/m at 20°C)</li><li><b>L</b> = Length (m)</li><li><b>A</b> = Cross-sectional Area (mm²)</li></ul><h5>2. Voltage Drop</h5><p>For a single-phase circuit:</p><div class="formula-box">Vd = (2 × I × L × R) / 1000</div><ul><li><b>I</b> = Current (A)</li><li><b>L</b> = Cable Length (m)</li><li><b>R</b> = Resistance (Ω/km)</li></ul><h5>3. Capacitance</h5><p>Capacitance per unit length (pF/m) is crucial for communication cables and high-voltage cables.</p><div class="formula-box">C = (2 × π × ε) / ln(D/d)</div><ul><li><b>ε</b> = Permittivity of insulation</li><li><b>D</b> = Diameter over insulation</li><li><b>d</b> = Conductor diameter</li></ul>` },
-    'construction': { icon: '🔌', title: 'Cable Construction Anatomy', content: `<p>A standard power or control cable consists of several protective layers to ensure safety and longevity.</p><h5>From Inside Out:</h5><ul><li><b>1. Conductor:</b> Annealed copper or aluminum. Carries the current. Stranded for flexibility.</li><li><b>2. Insulation:</b> XLPE, PVC, or Rubber. Prevents current leakage and protects against electric shock.</li><li><b>3. Bedding/Inner Sheath:</b> Extruded PVC or tape. Binds the cores together and prevents moisture ingress.</li><li><b>4. Armouring:</b> Steel wire (SWA) or steel tape (STA). Provides mechanical protection against crushing and rodents.</li><li><b>5. Outer Sheath:</b> Extruded PVC, PE, or LSZH (Low Smoke Zero Halogen). Protects against UV, chemicals, and fire.</li></ul><p style="margin-top:12px;"><b>Did you know?</b> The "Skin Effect" at high frequencies means AC current flows mostly on the surface of the conductor. This is why high-frequency cables use finely stranded wire (Litz wire) to increase surface area.</p>` }
+    'construction': { icon: '🔌', title: 'Cable Construction Anatomy', content: `<p>A standard power or control cable consists of several protective layers to ensure safety and longevity.</p><h5>From Inside Out:</h5><ul><li><b>1. Conductor:</b> Annealed copper or aluminum. Carries the current. Stranded for flexibility.</li><li><b>2. Insulation:</b> XLPE, PVC, or Rubber. Prevents current leakage and protects against electric shock.</li><li><b>3. Bedding/Inner Sheath:</b> Extruded PVC or tape. Binds the cores together and prevents moisture ingress.</li><li><b>4. Armouring:</b> Steel wire (SWA) or steel tape (STA). Provides mechanical protection against crushing and rodents.</li><li><b>5. Outer Sheath:</b> Extruded PVC, PE, or LSZH (Low Smoke Zero Halogen). Protects against UV, chemicals, and fire.</li></ul><p style="margin-top:12px;"><b>Did you know?</b> The "Skin Effect" at high frequencies means AC current flows mostly on the surface of the conductor. This is why high-frequency cables use Litz wire to increase surface area.</p>` }
   };
   const item = data[key];
   if(!item) return;
@@ -2168,23 +2227,67 @@ window.triggerPrint = function(e, type) {
     html += `<tr><td>Plan Qty</td><td>${formatQty(USER_PLAN_QTY !== null ? USER_PLAN_QTY : (BOM_DATA.find(b=>b.soItem===bomInput.value.trim())?.defaultPlanQty || 0))}</td></tr></table>`;
     printInputs.innerHTML = html;
   } else if (type === 'gatepass') {
+    const gpDeptEl = document.getElementById('gpDept');
+    const gpDateEl = document.getElementById('gpDate');
+    const gpHourEl = document.getElementById('gpHour');
+    const gpMinuteEl = document.getElementById('gpMinute');
+    const gpAmPmEl = document.getElementById('gpAmPm');
+    const gpCountEl = document.getElementById('gpCount');
+
+    // Validate — no silent fallbacks
+    gpDeptEl.classList.remove('gp-invalid');
+    gpDateEl.classList.remove('gp-invalid');
+    gpCountEl.classList.remove('gp-invalid');
+
+    if (!gpDeptEl.value.trim()) {
+      gpDeptEl.classList.add('gp-invalid');
+      gpDeptEl.focus();
+      alert('Enter a department before generating.');
+      return;
+    }
+    if (!gpDateEl.value) {
+      gpDateEl.classList.add('gp-invalid');
+      gpDateEl.focus();
+      alert('Select a date before generating.');
+      return;
+    }
+    if (!gpHourEl.value || !gpMinuteEl.value || !gpAmPmEl.value) {
+      gpHourEl.focus();
+      alert('Select the out time before generating.');
+      return;
+    }
+
+    const countRaw = parseInt(gpCountEl.value, 10);
+    if (isNaN(countRaw) || countRaw < 1) {
+      gpCountEl.classList.add('gp-invalid');
+      gpCountEl.focus();
+      alert('Enter how many passes to generate (1 – 30).');
+      return;
+    }
+    const gpCount = clampGpCount(countRaw);
+    gpCountEl.value = gpCount;
+    updateGatePassPreview();
+
     document.body.classList.add('printing-gatepass');
-    
-    const gpDept = document.getElementById('gpDept').value || 'PRODUCTION';
-    const gpDateRaw = document.getElementById('gpDate').value;
-    const gpHour = document.getElementById('gpHour').value;
-    const gpMinute = document.getElementById('gpMinute').value;
-    const gpAmPm = document.getElementById('gpAmPm').value;
-    const gpDate = gpDateRaw ? formatDateForDisplay(gpDateRaw) : now.toLocaleDateString('en-GB');
-    const gpTime = (gpHour && gpMinute && gpAmPm) ? `${gpHour}:${gpMinute} ${gpAmPm}` : now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    const gpDept = gpDeptEl.value.trim();
+    const gpDate = formatDateForDisplay(gpDateEl.value);
+    const gpTime = `${gpHourEl.value}:${gpMinuteEl.value} ${gpAmPmEl.value}`;
     const company = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
 
+    const rows = Math.ceil(gpCount / 3);
+    gpContainer.style.setProperty('--gp-rows', String(rows));
+    gpContainer.classList.toggle('gp-dense', gpCount > 27);
+
+    const pad = gpCount > 9 ? 2 : 2;
     let gpHtml = '';
-    for (let i = 0; i < 27; i++) {
+    for (let i = 0; i < gpCount; i++) {
+      const serial = String(i + 1).padStart(pad, '0');
       gpHtml += `
         <div class="gate-pass-card">
           <div class="gp-company">${esc(company)}</div>
           <div class="gp-dept">${esc(gpDept)}</div>
+          <div class="gp-serial">Pass ${serial} of ${gpCount}</div>
           <div class="gp-datetime">
             <span>Date: ${esc(gpDate)}</span>
             <span>Out Time: ${esc(gpTime)}</span>
@@ -2203,6 +2306,11 @@ window.triggerPrint = function(e, type) {
 
 window.addEventListener('afterprint', () => {
   document.body.classList.remove('printing-gatepass');
+  const gpContainer = document.getElementById('gatePassPrintArea');
+  if (gpContainer) {
+    gpContainer.classList.remove('gp-dense');
+    gpContainer.style.removeProperty('--gp-rows');
+  }
 });
 
 /* Initialize Gate Pass UI */

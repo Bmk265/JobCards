@@ -203,7 +203,7 @@ body {
   100% { width: 100%; opacity: 1; }
 }
 
-/* --- LOGIN SCREEN --- */
+/* --- LOGIN & REGISTRATION SCREEN --- */
 #loginScreen {
   position: fixed;
   inset: 0;
@@ -217,18 +217,20 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  padding: 20px;
+  padding: 18px;
+  overflow-y: auto;
 }
 .login-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-xl);
-  padding: 36px 28px;
+  padding: 28px 24px;
   width: 100%;
-  max-width: 390px;
+  max-width: 410px;
   text-align: center;
   box-shadow: var(--shadow-lg);
   animation: cardEnter 0.4s var(--ease-smooth);
+  margin: auto;
 }
 @keyframes cardEnter {
   from { opacity: 0; transform: translateY(14px) scale(0.985); }
@@ -239,30 +241,65 @@ body {
   font-size: 1.45rem;
   font-weight: 800;
   letter-spacing: -0.025em;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 .login-card p {
   color: var(--text-muted);
-  font-size: 0.86rem;
-  margin-bottom: 24px;
+  font-size: 0.84rem;
+  margin-bottom: 16px;
 }
-.login-input {
+.auth-mode-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  background: var(--bg-subtle);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  margin-bottom: 18px;
+}
+.auth-mode-btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+.auth-mode-btn.active {
+  background: var(--bg-surface);
+  color: var(--accent-primary);
+  box-shadow: var(--shadow-xs);
+}
+.login-input, .login-select {
   width: 100%;
-  padding: 13px 16px;
+  padding: 11px 14px;
   border-radius: var(--radius-md);
   border: 1.5px solid var(--border-light);
   background: var(--bg-app);
   color: var(--text-primary);
-  font-size: 0.94rem;
+  font-size: 0.9rem;
   font-weight: 500;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   outline: none;
+  font-family: inherit;
   transition: border-color 0.2s var(--ease-smooth), background-color 0.2s var(--ease-smooth), box-shadow 0.2s var(--ease-smooth);
 }
-.login-input:focus {
+.login-input:focus, .login-select:focus {
   border-color: var(--accent-primary);
   background: var(--bg-surface);
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+.auth-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+@media (max-width: 400px) {
+  .auth-grid-2 { grid-template-columns: 1fr; gap: 0; }
 }
 .login-btn {
   width: 100%;
@@ -294,7 +331,18 @@ body {
   border-radius: var(--radius-sm);
   font-size: 0.8rem;
   font-weight: 600;
-  margin-top: 14px;
+  margin-top: 12px;
+  display: none;
+}
+.login-success {
+  color: var(--success-text);
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 12px;
   display: none;
 }
 
@@ -423,11 +471,16 @@ body {
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
+.profile-meta-sub {
+  font-size: 0.78rem;
+  color: #cbd5e1;
+  margin-top: 3px;
+}
 .profile-role-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-top: 6px;
+  margin-top: 7px;
   padding: 4px 10px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.14);
@@ -500,6 +553,131 @@ body {
   display: block;
   font-size: 0.72rem;
   color: var(--text-muted);
+}
+
+/* --- USER PROFILE CONTACT CARD & ADMIN USER MANAGEMENT --- */
+.profile-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+@media (max-width: 440px) {
+  .profile-info-grid { grid-template-columns: 1fr; }
+}
+.profile-info-box {
+  background: var(--bg-app);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.profile-info-box .lbl {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+.profile-info-box .val {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 2px;
+  word-break: break-word;
+}
+
+.admin-user-form {
+  background: var(--bg-app);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-bottom: 14px;
+}
+.admin-user-form-title {
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-primary);
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.admin-user-card {
+  background: var(--bg-app);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.admin-user-card-info {
+  min-width: 0;
+  flex: 1;
+}
+.admin-user-card-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.admin-user-role-tag {
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-primary);
+  border: 1px solid var(--accent-border);
+}
+.admin-user-card-sub {
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  word-break: break-word;
+}
+.admin-user-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.btn-mini-edit {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-soft);
+  color: var(--accent-primary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-mini-del {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-mini-cancel {
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 /* --- MAINTENANCE SECTION --- */
@@ -864,10 +1042,13 @@ body {
   letter-spacing: 0;
 }
 .report-form-group input[type="text"],
+.report-form-group input[type="email"],
+.report-form-group input[type="tel"],
+.report-form-group input[type="password"],
 .report-form-group select,
 .report-form-group textarea {
   width: 100%;
-  padding: 11px 14px;
+  padding: 10px 13px;
   border-radius: var(--radius-md);
   border: 1.5px solid var(--border-light);
   background: var(--bg-app);
@@ -883,7 +1064,7 @@ body {
   resize: vertical;
   line-height: 1.5;
 }
-.report-form-group input[type="text"]:focus,
+.report-form-group input:focus,
 .report-form-group select:focus,
 .report-form-group textarea:focus {
   border-color: var(--accent-primary);
@@ -913,12 +1094,12 @@ body {
   cursor: pointer;
 }
 .btn-send {
-  padding: 13px 18px;
+  padding: 12px 18px;
   border-radius: var(--radius-md);
   border: none;
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   color: #ffffff;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 6px 16px rgba(37, 99, 235, 0.24);
@@ -2464,14 +2645,41 @@ body.has-offline-banner .app { padding-top: 48px; }
   <button class="dismiss" onclick="document.getElementById('updateToast').style.display='none'">Later</button>
 </div>
 
+<!-- LOGIN & REGISTRATION SCREEN -->
 <div id="loginScreen">
   <div class="login-card">
     <h2>Thermocables</h2>
-    <p>Enter your credentials to access your modules.</p>
-    <input type="text" id="loginUser" class="login-input" placeholder="Username" autocomplete="off">
-    <input type="password" id="loginPass" class="login-input" placeholder="Password (Admin only)" autocomplete="off" style="display: none;">
-    <button class="login-btn" id="loginBtn" onclick="handleLogin()">Next</button>
+    <p id="authSubtitle">Enter your credentials to access your modules.</p>
+
+    <div class="auth-mode-switch">
+      <button type="button" class="auth-mode-btn active" id="modeLoginBtn" onclick="setAuthMode('login')">Sign In</button>
+      <button type="button" class="auth-mode-btn" id="modeRegisterBtn" onclick="setAuthMode('register')">Register</button>
+    </div>
+
+    <!-- Sign In Form -->
+    <div id="loginFormWrap">
+      <input type="text" id="loginUser" class="login-input" placeholder="Username" autocomplete="off">
+      <input type="password" id="loginPass" class="login-input" placeholder="Password" autocomplete="off" style="display: none;">
+      <button type="button" class="login-btn" id="loginBtn" onclick="handleLogin()">Next</button>
+    </div>
+
+    <!-- Registration Form -->
+    <div id="registerFormWrap" style="display: none;">
+      <input type="text" id="regName" class="login-input" placeholder="Full Name" autocomplete="name">
+      <div class="auth-grid-2">
+        <input type="text" id="regDept" class="login-input" placeholder="Department (e.g. QC, Production)">
+        <input type="text" id="regPlant" class="login-input" placeholder="Plant (e.g. Plant 1)">
+      </div>
+      <input type="text" id="regUsername" class="login-input" placeholder="Choose Username" autocomplete="username">
+      <div class="auth-grid-2">
+        <input type="password" id="regPass" class="login-input" placeholder="Password" autocomplete="new-password">
+        <input type="password" id="regConfirmPass" class="login-input" placeholder="Confirm Password" autocomplete="new-password">
+      </div>
+      <button type="button" class="login-btn" id="registerBtn" onclick="handleRegister()">Create Account</button>
+    </div>
+
     <div class="login-error" id="loginError">Invalid Credentials</div>
+    <div class="login-success" id="loginSuccess">Account created.</div>
   </div>
 </div>
 
@@ -2864,8 +3072,44 @@ body.has-offline-banner .app { padding-top: 48px; }
       <div class="profile-badge-avatar" id="profileHubAvatar">TC</div>
       <div class="profile-hero-meta">
         <h2 id="profileHubName">User</h2>
+        <div class="profile-meta-sub" id="profileHubSub">Department • Plant</div>
         <div class="profile-role-pill" id="profileHubRole">Role</div>
       </div>
+    </div>
+
+    <!-- User Profile Contact & Account Management -->
+    <div class="maint-card" id="userContactCard">
+      <div class="maint-header">
+        <h3>👤 My Profile &amp; Contact</h3>
+        <span class="maint-lock-pill" id="profileUsernameBadge">@user</span>
+      </div>
+      <div class="profile-info-grid">
+        <div class="profile-info-box">
+          <div class="lbl">Full Name</div>
+          <div class="val" id="profInfoName">—</div>
+        </div>
+        <div class="profile-info-box">
+          <div class="lbl">Department</div>
+          <div class="val" id="profInfoDept">—</div>
+        </div>
+        <div class="profile-info-box">
+          <div class="lbl">Plant</div>
+          <div class="val" id="profInfoPlant">—</div>
+        </div>
+        <div class="profile-info-box">
+          <div class="lbl">Role</div>
+          <div class="val" id="profInfoRole">—</div>
+        </div>
+      </div>
+      <div class="report-form-group" style="margin-bottom:10px;">
+        <label for="profPhone">Phone Number</label>
+        <input type="tel" id="profPhone" placeholder="Enter phone number for updates">
+      </div>
+      <div class="report-form-group" style="margin-bottom:12px;">
+        <label for="profEmail">Email ID</label>
+        <input type="email" id="profEmail" placeholder="Enter email ID for updates">
+      </div>
+      <button type="button" class="btn-send" style="width:100%;" onclick="saveOwnProfileContact()">Update Contact Details</button>
     </div>
 
     <div class="profile-actions-grid">
@@ -2904,6 +3148,73 @@ body.has-offline-banner .app { padding-top: 48px; }
           <span>End session</span>
         </div>
       </button>
+    </div>
+
+    <!-- Admin User Management (Create / Edit / Delete) -->
+    <div class="maint-card" id="adminUserMgmtCard" style="display: none;">
+      <div class="maint-header">
+        <h3>👥 Manage Users</h3>
+        <span class="maint-lock-pill" id="adminUserCountBadge">0 Users</span>
+      </div>
+
+      <div class="admin-user-form">
+        <div class="admin-user-form-title">
+          <span id="adminUserFormModeTitle">+ Create User</span>
+          <button type="button" class="btn-mini-cancel" id="adminCancelEditBtn" style="display:none;" onclick="resetAdminUserForm()">Cancel Edit</button>
+        </div>
+        <input type="hidden" id="adminEditOriginalUser" value="">
+        <div class="auth-grid-2">
+          <div class="report-form-group" style="margin-bottom:8px;">
+            <label>Name</label>
+            <input type="text" id="admUserName" placeholder="Full Name">
+          </div>
+          <div class="report-form-group" style="margin-bottom:8px;">
+            <label>Username</label>
+            <input type="text" id="admUserUsername" placeholder="username">
+          </div>
+        </div>
+        <div class="auth-grid-2">
+          <div class="report-form-group" style="margin-bottom:8px;">
+            <label>Department</label>
+            <input type="text" id="admUserDept" placeholder="Department">
+          </div>
+          <div class="report-form-group" style="margin-bottom:8px;">
+            <label>Plant</label>
+            <input type="text" id="admUserPlant" placeholder="Plant">
+          </div>
+        </div>
+        <div class="auth-grid-2">
+          <div class="report-form-group" style="margin-bottom:8px;">
+            <label>Phone Number</label>
+            <input type="tel" id="admUserPhone" placeholder="Phone">
+          </div>
+          <div class="report-form-group" style="margin-bottom:8px;">
+            <label>Email ID</label>
+            <input type="email" id="admUserEmail" placeholder="email@example.com">
+          </div>
+        </div>
+        <div class="auth-grid-2">
+          <div class="report-form-group" style="margin-bottom:10px;">
+            <label>Role</label>
+            <select id="admUserRole">
+              <option value="Operator">Operator</option>
+              <option value="QC">QC</option>
+              <option value="Production">Production</option>
+              <option value="Outer">Outer</option>
+              <option value="Insulation">Insulation</option>
+              <option value="Manager">Manager</option>
+              <option value="Admin">Admin</option>
+            </select>
+          </div>
+          <div class="report-form-group" style="margin-bottom:10px;">
+            <label>Password</label>
+            <input type="text" id="admUserPass" placeholder="Password (blank for no-pass operator)">
+          </div>
+        </div>
+        <button type="button" class="btn-send" style="width:100%;" id="adminSaveUserBtn" onclick="saveAdminUser()">+ Create User</button>
+      </div>
+
+      <div id="adminUserList"></div>
     </div>
 
     <!-- Maintenance Mode Manager (Editable by Admin only) -->
@@ -3097,6 +3408,66 @@ let loginStep = 1;
 
 /* --- STANDARD GATE PASS COUNT: 3 x 9 = 27 --- */
 const GP_STANDARD_COUNT = 27;
+
+/* --- DEFAULT & PERSISTED USERS STORE --- */
+const DEFAULT_USERS = {
+  'admin':      { name: 'Administrator', dept: 'Administration', plant: 'Main Plant', phone: '', email: '', pass: 'Admin@Tcl',     role: 'Admin',      views: ['jobcards', 'bom', 'qccalc', 'gatepass'] },
+  'rakesh':     { name: 'Rakesh',        dept: 'Operations',     plant: 'Main Plant', phone: '', email: '', pass: 'Rakesh@Tcl',    role: 'Manager',    views: ['jobcards', 'bom', 'gatepass'] },
+  'rasheed':    { name: 'Rasheed',       dept: 'Operations',     plant: 'Main Plant', phone: '', email: '', pass: 'Rasheed@Tcl',   role: 'Manager',    views: ['jobcards', 'bom', 'gatepass'] },
+  'manikanta':  { name: 'Manikanta',     dept: 'Operations',     plant: 'Main Plant', phone: '', email: '', pass: 'Manikanta@Tcl', role: 'Manager',    views: ['jobcards', 'bom', 'gatepass'] },
+  'outer':      { name: 'Outer Line',    dept: 'Outer',          plant: 'Main Plant', phone: '', email: '', pass: '',              role: 'Outer',      views: ['jobcards', 'gatepass'] },
+  'insulation': { name: 'Insulation',    dept: 'Insulation',     plant: 'Main Plant', phone: '', email: '', pass: '',              role: 'Insulation', views: ['jobcards', 'gatepass'] },
+  'qc':         { name: 'QC Team',       dept: 'QC',             plant: 'Main Plant', phone: '', email: '', pass: '',              role: 'QC',         views: ['jobcards', 'qccalc', 'gatepass'] },
+  'production': { name: 'Production',    dept: 'Production',     plant: 'Main Plant', phone: '', email: '', pass: '',              role: 'Production', views: ['jobcards', 'qccalc', 'gatepass'] }
+};
+
+function loadUsersStore() {
+  const base = {};
+  Object.keys(DEFAULT_USERS).forEach(k => {
+    base[k] = { ...DEFAULT_USERS[k], views: [...DEFAULT_USERS[k].views] };
+  });
+  try {
+    const saved = JSON.parse(localStorage.getItem('tc_users')) || {};
+    Object.keys(saved).forEach(rawKey => {
+      const k = String(rawKey || '').trim().toLowerCase();
+      if (!k) return;
+      const u = saved[rawKey];
+      base[k] = {
+        name: u.name || k,
+        dept: u.dept || 'General',
+        plant: u.plant || 'Main Plant',
+        phone: u.phone || '',
+        email: u.email || '',
+        pass: u.pass !== undefined ? u.pass : '',
+        role: u.role || 'Operator',
+        views: Array.isArray(u.views) && u.views.length ? u.views : getViewsForRole(u.role || 'Operator', u.dept || '')
+      };
+    });
+  } catch (e) {
+    console.warn('Failed to load users:', e);
+  }
+  return base;
+}
+
+function saveUsersStore() {
+  try {
+    localStorage.setItem('tc_users', JSON.stringify(USERS));
+  } catch (e) {
+    console.warn('Failed to save users:', e);
+  }
+}
+
+function getViewsForRole(role, dept) {
+  const r = String(role || '').toLowerCase();
+  const d = String(dept || '').toLowerCase();
+  if (r === 'admin') return ['jobcards', 'bom', 'qccalc', 'gatepass'];
+  if (r === 'manager') return ['jobcards', 'bom', 'gatepass'];
+  if (r === 'qc' || d.includes('qc') || d.includes('quality')) return ['jobcards', 'qccalc', 'gatepass'];
+  if (r === 'production' || d.includes('prod')) return ['jobcards', 'qccalc', 'gatepass'];
+  return ['jobcards', 'gatepass'];
+}
+
+let USERS = loadUsersStore();
 
 /* --- MAINTENANCE STATE --- */
 const MAINT_SCOPES = [
@@ -3296,21 +3667,224 @@ function applyMaintenanceLocks() {
   });
 }
 
+/* --- PROFILE CONTACT & ADMIN USER MANAGEMENT --- */
+function renderProfileContactCard() {
+  const uObj = USERS[CURRENT_USER] || {
+    name: CURRENT_USER,
+    dept: 'General',
+    plant: 'Main Plant',
+    phone: '',
+    email: '',
+    role: CURRENT_ROLE
+  };
+
+  document.getElementById('profileUsernameBadge').textContent = `@${CURRENT_USER}`;
+  document.getElementById('profInfoName').textContent = uObj.name || CURRENT_USER;
+  document.getElementById('profInfoDept').textContent = uObj.dept || '—';
+  document.getElementById('profInfoPlant').textContent = uObj.plant || '—';
+  document.getElementById('profInfoRole').textContent = uObj.role || CURRENT_ROLE;
+  document.getElementById('profPhone').value = uObj.phone || '';
+  document.getElementById('profEmail').value = uObj.email || '';
+
+  const displayName = uObj.name || (CURRENT_USER.charAt(0).toUpperCase() + CURRENT_USER.slice(1));
+  document.getElementById('profileHubAvatar').textContent = displayName.slice(0, 2).toUpperCase();
+  document.getElementById('profileHubName').textContent = displayName;
+  document.getElementById('profileHubSub').textContent = `${uObj.dept || 'General'} • ${uObj.plant || 'Main Plant'}`;
+  document.getElementById('profileHubRole').textContent = uObj.role || CURRENT_ROLE;
+}
+
+window.saveOwnProfileContact = function() {
+  if (!CURRENT_USER || !USERS[CURRENT_USER]) return;
+  const phone = document.getElementById('profPhone').value.trim();
+  const email = document.getElementById('profEmail').value.trim();
+
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    alert('Please enter a valid email address.');
+    document.getElementById('profEmail').focus();
+    return;
+  }
+
+  USERS[CURRENT_USER].phone = phone;
+  USERS[CURRENT_USER].email = email;
+  saveUsersStore();
+  renderProfileContactCard();
+  if (isAdminUser()) renderAdminUserList();
+  alert('Profile contact details updated.');
+};
+
+window.resetAdminUserForm = function() {
+  document.getElementById('adminEditOriginalUser').value = '';
+  document.getElementById('adminUserFormModeTitle').textContent = '+ Create User';
+  document.getElementById('adminCancelEditBtn').style.display = 'none';
+  document.getElementById('adminSaveUserBtn').textContent = '+ Create User';
+
+  document.getElementById('admUserName').value = '';
+  document.getElementById('admUserUsername').value = '';
+  document.getElementById('admUserUsername').disabled = false;
+  document.getElementById('admUserDept').value = '';
+  document.getElementById('admUserPlant').value = '';
+  document.getElementById('admUserPhone').value = '';
+  document.getElementById('admUserEmail').value = '';
+  document.getElementById('admUserRole').value = 'Operator';
+  document.getElementById('admUserPass').value = '';
+};
+
+window.editAdminUser = function(username) {
+  if (!isAdminUser()) return;
+  const key = String(username || '').toLowerCase();
+  const u = USERS[key];
+  if (!u) return;
+
+  document.getElementById('adminEditOriginalUser').value = key;
+  document.getElementById('adminUserFormModeTitle').textContent = `Edit User: @${key}`;
+  document.getElementById('adminCancelEditBtn').style.display = 'inline-block';
+  document.getElementById('adminSaveUserBtn').textContent = 'Save User Changes';
+
+  document.getElementById('admUserName').value = u.name || '';
+  document.getElementById('admUserUsername').value = key;
+  document.getElementById('admUserUsername').disabled = (key === 'admin');
+  document.getElementById('admUserDept').value = u.dept || '';
+  document.getElementById('admUserPlant').value = u.plant || '';
+  document.getElementById('admUserPhone').value = u.phone || '';
+  document.getElementById('admUserEmail').value = u.email || '';
+  document.getElementById('admUserRole').value = u.role || 'Operator';
+  document.getElementById('admUserPass').value = u.pass || '';
+
+  document.getElementById('admUserName').focus();
+};
+
+window.deleteAdminUser = function(username) {
+  if (!isAdminUser()) return;
+  const key = String(username || '').toLowerCase();
+  if (key === 'admin') {
+    alert('Primary admin account cannot be deleted.');
+    return;
+  }
+  if (key === CURRENT_USER) {
+    alert('You cannot delete the currently active logged-in account.');
+    return;
+  }
+  if (!confirm(`Delete user "@${key}"?`)) return;
+
+  delete USERS[key];
+  saveUsersStore();
+  renderAdminUserList();
+};
+
+window.saveAdminUser = function() {
+  if (!isAdminUser()) {
+    alert('Only Admin can manage users.');
+    return;
+  }
+
+  const origKey = document.getElementById('adminEditOriginalUser').value.trim().toLowerCase();
+  const name = document.getElementById('admUserName').value.trim();
+  const username = document.getElementById('admUserUsername').value.trim().toLowerCase();
+  const dept = document.getElementById('admUserDept').value.trim() || 'General';
+  const plant = document.getElementById('admUserPlant').value.trim() || 'Main Plant';
+  const phone = document.getElementById('admUserPhone').value.trim();
+  const email = document.getElementById('admUserEmail').value.trim();
+  const role = document.getElementById('admUserRole').value || 'Operator';
+  const pass = document.getElementById('admUserPass').value;
+
+  if (!name) {
+    alert('Please enter the user\'s Name.');
+    document.getElementById('admUserName').focus();
+    return;
+  }
+  if (!username || !/^[a-z0-9_.-]+$/.test(username)) {
+    alert('Please enter a valid username (letters, numbers, dot, underscore, hyphen).');
+    document.getElementById('admUserUsername').focus();
+    return;
+  }
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    alert('Please enter a valid email address.');
+    document.getElementById('admUserEmail').focus();
+    return;
+  }
+  if (!origKey && USERS[username]) {
+    alert(`Username "@${username}" already exists.`);
+    return;
+  }
+  if (origKey && origKey !== username && USERS[username]) {
+    alert(`Username "@${username}" already exists.`);
+    return;
+  }
+
+  const targetKey = origKey || username;
+  if (origKey && origKey !== username && origKey !== 'admin') {
+    delete USERS[origKey];
+  }
+
+  const existing = USERS[targetKey] || {};
+  USERS[targetKey] = {
+    name,
+    dept,
+    plant,
+    phone,
+    email,
+    pass: pass !== undefined ? pass : (existing.pass || ''),
+    role: targetKey === 'admin' ? 'Admin' : role,
+    views: targetKey === 'admin' ? ['jobcards', 'bom', 'qccalc', 'gatepass'] : getViewsForRole(role, dept)
+  };
+
+  saveUsersStore();
+  if (targetKey === CURRENT_USER) {
+    CURRENT_ROLE = USERS[targetKey].role;
+    ALLOWED_VIEWS = [...USERS[targetKey].views];
+    renderProfileContactCard();
+  }
+  renderAdminUserList();
+  resetAdminUserForm();
+  alert(origKey ? `User "@${targetKey}" updated.` : `User "@${targetKey}" created.`);
+};
+
+function renderAdminUserList() {
+  const card = document.getElementById('adminUserMgmtCard');
+  const listEl = document.getElementById('adminUserList');
+  const badge = document.getElementById('adminUserCountBadge');
+  if (!card || !listEl) return;
+
+  if (!isAdminUser()) {
+    card.style.display = 'none';
+    return;
+  }
+
+  card.style.display = 'block';
+  const keys = Object.keys(USERS).sort();
+  if (badge) badge.textContent = `${keys.length} Users`;
+
+  listEl.innerHTML = keys.map(k => {
+    const u = USERS[k];
+    const contactBits = [u.phone, u.email].filter(Boolean).join(' • ');
+    const delBtn = k === 'admin'
+      ? ''
+      : `<button type="button" class="btn-mini-del" onclick="deleteAdminUser('${esc(k)}')">Delete</button>`;
+
+    return `
+      <div class="admin-user-card">
+        <div class="admin-user-card-info">
+          <div class="admin-user-card-name">
+            <span>${esc(u.name || k)}</span>
+            <span style="font-size:0.74rem;color:var(--text-muted);font-weight:600;">@${esc(k)}</span>
+            <span class="admin-user-role-tag">${esc(u.role || 'Operator')}</span>
+          </div>
+          <div class="admin-user-card-sub">${esc(u.dept || 'General')} • ${esc(u.plant || 'Main Plant')}</div>
+          ${contactBits ? `<div class="admin-user-card-sub">${esc(contactBits)}</div>` : ''}
+        </div>
+        <div class="admin-user-actions">
+          <button type="button" class="btn-mini-edit" onclick="editAdminUser('${esc(k)}')">Edit</button>
+          ${delBtn}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
 /* --- BANNER STATE --- */
 let BANNERS = JSON.parse(localStorage.getItem('tc_banners')) || [];
 let CURRENT_BANNER_IDX = 0;
 let BANNER_INTERVAL = null;
-
-const USERS = {
-  'admin':      { pass: 'Admin@Tcl',     role: 'Admin',      views: ['jobcards', 'bom', 'qccalc', 'gatepass'] },
-  'rakesh':     { pass: 'Rakesh@Tcl',    role: 'Manager',    views: ['jobcards', 'bom', 'gatepass'] },
-  'rasheed':    { pass: 'Rasheed@Tcl',   role: 'Manager',    views: ['jobcards', 'bom', 'gatepass'] },
-  'manikanta':  { pass: 'Manikanta@Tcl', role: 'Manager',    views: ['jobcards', 'bom', 'gatepass'] },
-  'outer':      { pass: '',              role: 'Outer',      views: ['jobcards', 'gatepass'] },
-  'insulation': { pass: '',              role: 'Insulation', views: ['jobcards', 'gatepass'] },
-  'qc':         { pass: '',              role: 'QC',         views: ['jobcards', 'qccalc', 'gatepass'] },
-  'production': { pass: '',              role: 'Production', views: ['jobcards', 'qccalc', 'gatepass'] }
-};
 
 /* ---- Date/time formatting helpers ---- */
 function formatDateForDisplay(isoDate) {
@@ -3405,7 +3979,20 @@ function updateGatePassPreview() {
   }
 }
 
-/* ---- LOGIN ---- */
+/* ---- LOGIN & REGISTRATION ---- */
+window.setAuthMode = function(mode) {
+  const isReg = mode === 'register';
+  document.getElementById('modeLoginBtn').classList.toggle('active', !isReg);
+  document.getElementById('modeRegisterBtn').classList.toggle('active', isReg);
+  document.getElementById('loginFormWrap').style.display = isReg ? 'none' : 'block';
+  document.getElementById('registerFormWrap').style.display = isReg ? 'block' : 'none';
+  document.getElementById('authSubtitle').textContent = isReg
+    ? 'Register a new account with your plant & department details.'
+    : 'Enter your credentials to access your modules.';
+  document.getElementById('loginError').style.display = 'none';
+  document.getElementById('loginSuccess').style.display = 'none';
+};
+
 function resetLoginStep(){
   loginStep = 1;
   document.getElementById('loginPass').style.display = 'none';
@@ -3418,24 +4005,102 @@ window.handleLogin = function() {
   const u = document.getElementById('loginUser').value.trim().toLowerCase();
   const p = document.getElementById('loginPass').value;
   const err = document.getElementById('loginError');
-  const btn = document.getElementById('loginBtn');
+  const passInput = document.getElementById('loginPass');
 
   if (loginStep === 1) {
     if (USERS[u]) {
-      if (USERS[u].pass === '') { completeLogin(u); }
-      else {
-        document.getElementById('loginPass').style.display = 'block';
-        document.getElementById('loginPass').focus();
-        btn.textContent = 'Sign In'; loginStep = 2; err.style.display = 'none';
+      if (!USERS[u].pass) {
+        completeLogin(u);
+      } else {
+        passInput.style.display = 'block';
+        passInput.focus();
+        document.getElementById('loginBtn').textContent = 'Sign In';
+        loginStep = 2;
+        err.style.display = 'none';
       }
-    } else { err.style.display = 'block'; }
+    } else {
+      err.textContent = 'Invalid Username';
+      err.style.display = 'block';
+    }
   } else {
-    if (p === USERS[u].pass) { completeLogin(u); } else { err.style.display = 'block'; }
+    if (USERS[u] && p === USERS[u].pass) {
+      completeLogin(u);
+    } else {
+      err.textContent = 'Invalid Password';
+      err.style.display = 'block';
+    }
   }
 };
 
+window.handleRegister = function() {
+  const name = document.getElementById('regName').value.trim();
+  const dept = document.getElementById('regDept').value.trim();
+  const plant = document.getElementById('regPlant').value.trim();
+  const username = document.getElementById('regUsername').value.trim().toLowerCase();
+  const pass = document.getElementById('regPass').value;
+  const confirmPass = document.getElementById('regConfirmPass').value;
+
+  const err = document.getElementById('loginError');
+  const ok = document.getElementById('loginSuccess');
+  err.style.display = 'none';
+  ok.style.display = 'none';
+
+  if (!name || !dept || !plant || !username || !pass || !confirmPass) {
+    err.textContent = 'Please fill in all registration fields.';
+    err.style.display = 'block';
+    return;
+  }
+  if (!/^[a-z0-9_.-]+$/.test(username)) {
+    err.textContent = 'Username can only contain letters, numbers, dot, underscore, or hyphen.';
+    err.style.display = 'block';
+    return;
+  }
+  if (USERS[username]) {
+    err.textContent = 'This username is already taken.';
+    err.style.display = 'block';
+    return;
+  }
+  if (pass.length < 4) {
+    err.textContent = 'Password must be at least 4 characters.';
+    err.style.display = 'block';
+    return;
+  }
+  if (pass !== confirmPass) {
+    err.textContent = 'Password and Confirm Password do not match.';
+    err.style.display = 'block';
+    return;
+  }
+
+  const role = 'Operator';
+  USERS[username] = {
+    name,
+    dept,
+    plant,
+    phone: '',
+    email: '',
+    pass,
+    role,
+    views: getViewsForRole(role, dept)
+  };
+  saveUsersStore();
+
+  document.getElementById('regName').value = '';
+  document.getElementById('regDept').value = '';
+  document.getElementById('regPlant').value = '';
+  document.getElementById('regUsername').value = '';
+  document.getElementById('regPass').value = '';
+  document.getElementById('regConfirmPass').value = '';
+
+  ok.textContent = `Registration successful for @${username}. Signing you in...`;
+  ok.style.display = 'block';
+  setTimeout(() => completeLogin(username), 450);
+};
+
 function completeLogin(u) {
-  CURRENT_USER = u; CURRENT_ROLE = USERS[u].role; ALLOWED_VIEWS = USERS[u].views;
+  CURRENT_USER = u;
+  const userRec = USERS[u] || { role: 'Operator', views: ['jobcards', 'gatepass'] };
+  CURRENT_ROLE = userRec.role;
+  ALLOWED_VIEWS = Array.isArray(userRec.views) && userRec.views.length ? [...userRec.views] : ['jobcards', 'gatepass'];
   localStorage.setItem('tc_user', u);
 
   document.getElementById('loginScreen').style.display = 'none';
@@ -3444,11 +4109,7 @@ function completeLogin(u) {
   const loader = document.getElementById('globalLoader');
   if (loader) loader.classList.add('hidden');
 
-  const displayName = u.charAt(0).toUpperCase() + u.slice(1);
-  const initials = displayName.slice(0, 2).toUpperCase();
-  document.getElementById('profileHubAvatar').textContent = initials;
-  document.getElementById('profileHubName').textContent = displayName;
-  document.getElementById('profileHubRole').textContent = CURRENT_ROLE;
+  renderProfileContactCard();
 
   document.getElementById('nav-job').style.display = ALLOWED_VIEWS.includes('jobcards') ? 'flex' : 'none';
   document.getElementById('nav-bom').style.display = ALLOWED_VIEWS.includes('bom') ? 'flex' : 'none';
@@ -3459,15 +4120,17 @@ function completeLogin(u) {
     document.getElementById('adminPanel').style.display = 'block';
     document.getElementById('profileBannerTile').style.display = 'flex';
     loadAdminSettings();
+    renderAdminUserList();
   } else {
     document.getElementById('adminPanel').style.display = 'none';
     document.getElementById('profileBannerTile').style.display = 'none';
+    document.getElementById('adminUserMgmtCard').style.display = 'none';
   }
 
   MAINTENANCE_STATE = loadMaintenanceState();
   renderMaintenanceUI();
 
-  document.getElementById('welcomeName').textContent = CURRENT_ROLE;
+  document.getElementById('welcomeName').textContent = userRec.name || CURRENT_ROLE;
   document.getElementById('headerTitle').textContent = 'Thermocables';
 
   const now = new Date();
@@ -3583,13 +4246,12 @@ window.addEventListener('load', () => {
   });
 
   const savedUser = localStorage.getItem('tc_user');
-  if (savedUser) {
+  if (savedUser && USERS[savedUser]) {
     document.getElementById('loginUser').value = savedUser;
-    if (savedUser === 'admin') document.getElementById('loginPass').value = 'Admin@Tcl';
-    else if (savedUser === 'rakesh') document.getElementById('loginPass').value = 'Rakesh@Tcl';
-    else if (savedUser === 'rasheed') document.getElementById('loginPass').value = 'Rasheed@Tcl';
-    else if (savedUser === 'manikanta') document.getElementById('loginPass').value = 'Manikanta@Tcl';
-    handleLogin();
+    if (USERS[savedUser].pass) {
+      document.getElementById('loginPass').value = USERS[savedUser].pass;
+    }
+    completeLogin(savedUser);
   }
 });
 
@@ -3624,6 +4286,8 @@ window.switchMainView = function(viewName) {
     updateGatePassPreview();
   } else if (viewName === 'profile') {
     document.getElementById('nav-profile')?.classList.add('active');
+    renderProfileContactCard();
+    renderAdminUserList();
     renderMaintenanceUI();
   }
 
@@ -3929,7 +4593,7 @@ window.toggleBanner = function(i) {
 /* --- SHARED CSV HELPERS --- */
 function normalizeHeader(h){ return String(h||'').toLowerCase().replace(/[\s_\-\/\.]+/g,''); }
 function findHeader(headers, ...candidates){ for(const c of candidates){ const found = headers.find(h => normalizeHeader(h) === normalizeHeader(c)); if(found) return found; } return null; }
-function esc(s){ return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s){ return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function formatQty(n) { if(n === null || n === undefined || isNaN(n)) return '—'; return Number(n).toFixed(4).replace(/\.?0+$/, '') || '0'; }
 function formatScientific(num) { if (num === 0) return '0'; const e = Math.floor(Math.log10(Math.abs(num))); const m = num / Math.pow(10, e); return `${m.toFixed(2)}&times; 10<sup>${e}</sup>`; }
 
@@ -4412,210 +5076,195 @@ function calculateIR() {
   let irC = 0, vrC = 0;
   if (c > 0 && d > 0 && c !== d) { const logR = Math.log10(c / d); irC = (r * l) / (1000 * logR); vrC = ((2 * 3.142 * r * l) / logR) * Math.pow(10, 8); }
   document.getElementById('irResultOut').textContent = ir.toFixed(2);
-  document.getElementById('irConstOut').innerHTML = irC > 999999 ? formatScientific(irC) : irC.toFixed(2);
-  document.getElementById('vrConstOut').innerHTML = vrC > 999999 ? formatScientific(vrC) : vrC.toFixed(2);
+  document.getElementById('irConstOut').innerHTML = formatScientific(irC);
+  document.getElementById('vrConstOut').innerHTML = formatScientific(vrC);
 }
 ['irReading','irLength','irCoreDia','irCondDia'].forEach(id => document.getElementById(id).addEventListener('input', calculateIR));
 
-function calculateCap() { const r = parseFloat(document.getElementById('capReading').value) || 0, l = parseFloat(document.getElementById('capLength').value) || 0; document.getElementById('capResultOut').textContent = (l !== 0 ? (r * 1000) / l : 0).toFixed(2); }
+function calculateCap() {
+  const r = parseFloat(document.getElementById('capReading').value) || 0, l = parseFloat(document.getElementById('capLength').value) || 0;
+  document.getElementById('capResultOut').textContent = (l > 0) ? (r / l).toFixed(2) : '0.00';
+}
 ['capReading','capLength'].forEach(id => document.getElementById(id).addEventListener('input', calculateCap));
 
-function calculateHVFail() {
-  const l = parseFloat(document.getElementById('hvLength').value) || 0, t = parseFloat(document.getElementById('hvTopCr').value) || 0, b = parseFloat(document.getElementById('hvBottomCr').value) || 0;
-  const total = t + b;
-  document.getElementById('hvTotalCrOut').textContent = total.toFixed(2);
-  document.getElementById('hvTopSideOut').textContent = (total !== 0 ? (t * l) / total : 0).toFixed(2);
-  document.getElementById('hvBottomSideOut').textContent = (total !== 0 ? (b * l) / total : 0).toFixed(2);
+function calculateHvFail() {
+  const l = parseFloat(document.getElementById('hvLength').value) || 0, t = parseFloat(document.getElementById('hvTopCr').value) || 0, b = parseFloat(document.getElementById('hvBottomCr').value) || 0, tot = t + b;
+  document.getElementById('hvTotalCrOut').textContent = tot.toFixed(2);
+  let topM = 0, botM = 0;
+  if (tot > 0 && l > 0) { topM = (t / tot) * l; botM = (b / tot) * l; }
+  document.getElementById('hvTopSideOut').textContent = topM.toFixed(2);
+  document.getElementById('hvBottomSideOut').textContent = botM.toFixed(2);
 }
-['hvLength','hvTopCr','hvBottomCr'].forEach(id => document.getElementById(id).addEventListener('input', calculateHVFail));
+['hvLength','hvTopCr','hvBottomCr'].forEach(id => document.getElementById(id).addEventListener('input', calculateHvFail));
 
-function calculateThickness() {
+function calculateThick() {
   const min = parseFloat(document.getElementById('thickMin').value) || 0, max = parseFloat(document.getElementById('thickMax').value) || 0;
-  document.getElementById('thickAvgOut').textContent = ((min + max) / 2).toFixed(2);
-  document.getElementById('thickConcOut').textContent = (max !== 0 ? (min / max) * 100 : 0).toFixed(2);
+  const avg = (min + max) / 2, conc = (max > 0) ? ((max - min) / max) * 100 : 0;
+  document.getElementById('thickAvgOut').textContent = avg.toFixed(2);
+  document.getElementById('thickConcOut').textContent = conc.toFixed(2);
 }
-['thickMin','thickMax'].forEach(id => document.getElementById(id).addEventListener('input', calculateThickness));
+['thickMin','thickMax'].forEach(id => document.getElementById(id).addEventListener('input', calculateThick));
 
 function calculateBraid() {
-  const d = parseFloat(document.getElementById('brD').value) || 0, bigD = parseFloat(document.getElementById('brBigD').value) || 0, n = parseFloat(document.getElementById('brN').value) || 0, m = parseFloat(document.getElementById('brM').value) || 0, l = parseFloat(document.getElementById('brL').value) || 0;
-  document.getElementById('brTotalWiresOut').textContent = (n * m).toFixed(0);
-  let f = 0, cov = 0;
-  if (bigD !== 0 && l !== 0) { const t1 = (m * n * d) / (2 * 3.143 * bigD); const t2 = Math.sqrt(1 + ((3.143 * 3.143 * bigD * bigD) / (l * l))); f = t1 * t2; cov = (2 * f - (f * f)) * 100; }
-  document.getElementById('brFOut').textContent = f.toFixed(4);
+  const d = parseFloat(document.getElementById('brD').value) || 0, D = parseFloat(document.getElementById('brBigD').value) || 0, N = parseFloat(document.getElementById('brN').value) || 0, M = parseFloat(document.getElementById('brM').value) || 0, L = parseFloat(document.getElementById('brL').value) || 0;
+  const tot = N * M; document.getElementById('brTotalWiresOut').textContent = tot.toFixed(0);
+  let F = 0, cov = 0;
+  if (D > 0 && L > 0 && tot > 0) { const a = (2 * 3.14 * (D + 2 * d)) / M; const b = L / (N / 4); F = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2)); cov = (1 - Math.pow((1 - (tot * d) / (2 * 3.14 * (D + d) * Math.sin(Math.atan((2 * 3.14 * (D + d) * N) / (4 * M * L))))), 2)) * 100; }
+  document.getElementById('brFOut').textContent = F.toFixed(2);
   document.getElementById('brCovOut').textContent = cov.toFixed(2);
 }
 ['brD','brBigD','brN','brM','brL'].forEach(id => document.getElementById(id).addEventListener('input', calculateBraid));
 
-/* ARMOUR COVERAGE */
-function calculateArmCov() {
-  const cableDia = parseFloat(document.getElementById('covCableDia').value) || 0;
-  const wireDia = parseFloat(document.getElementById('covWireDia').value) || 0;
-  const lay = parseFloat(document.getElementById('covLay').value) || 0;
-  const wires = parseFloat(document.getElementById('covWires').value) || 0;
-  let coverage = 0;
-  if (cableDia > 0 && lay > 0) {
-    const pi = Math.PI;
-    const atanVal = Math.atan((pi * cableDia) / lay);
-    const cosVal = Math.cos(atanVal);
-    if (cosVal !== 0) coverage = (wires * wireDia) / (cosVal * pi * cableDia);
-  }
-  document.getElementById('outCov').textContent = (coverage * 100).toFixed(2);
-}
-['covCableDia','covWireDia','covLay','covWires'].forEach(id => document.getElementById(id).addEventListener('input', calculateArmCov));
-
-document.getElementById('tensileShape').addEventListener('change', (e) => { document.getElementById('tubularInputs').style.display = e.target.value === 'tubular' ? 'block' : 'none'; document.getElementById('dumbbellInputs').style.display = e.target.value === 'dumbbell' ? 'block' : 'none'; calculateTensile(); });
+document.getElementById('tensileShape').addEventListener('change', function(){ const isTub = this.value === 'tubular'; document.getElementById('tubularInputs').style.display = isTub ? 'block' : 'none'; document.getElementById('dumbbellInputs').style.display = isTub ? 'none' : 'block'; calculateTensile(); });
 function calculateTensile() {
-  const load = parseFloat(document.getElementById('tLoad').value) || 0, elong = parseFloat(document.getElementById('tElong').value) || 0, init = parseFloat(document.getElementById('tInit').value) || 0;
+  const shape = document.getElementById('tensileShape').value, load = parseFloat(document.getElementById('tLoad').value) || 0, elong = parseFloat(document.getElementById('tElong').value) || 0, init = parseFloat(document.getElementById('tInit').value) || 0;
   let area = 0;
-  if (document.getElementById('tensileShape').value === 'tubular') area = 3.142 * ((parseFloat(document.getElementById('tDia').value)||0) - (parseFloat(document.getElementById('tThick').value)||0)) * (parseFloat(document.getElementById('tThick').value)||0);
-  else area = (parseFloat(document.getElementById('dWidth').value)||0) * (parseFloat(document.getElementById('dThick').value)||0);
-  document.getElementById('tAreaOut').textContent = area.toFixed(4);
-  document.getElementById('tTsOut').textContent = (area !== 0 ? load / area : 0).toFixed(2);
-  document.getElementById('tElongOut').textContent = (init !== 0 ? ((elong - init) / init) * 100 : 0).toFixed(2);
+  if (shape === 'tubular') { const dia = parseFloat(document.getElementById('tDia').value) || 0, th = parseFloat(document.getElementById('tThick').value) || 0; if (dia > 0 && th > 0) area = 3.14 * th * (dia - th); }
+  else { const w = parseFloat(document.getElementById('dWidth').value) || 0, th = parseFloat(document.getElementById('dThick').value) || 0; if (w > 0 && th > 0) area = w * th; }
+  const ts = (area > 0) ? load / area : 0, elP = (init > 0 && elong >= init) ? ((elong - init) / init) * 100 : 0;
+  document.getElementById('tAreaOut').textContent = area.toFixed(2);
+  document.getElementById('tTsOut').textContent = ts.toFixed(2);
+  document.getElementById('tElongOut').textContent = elP.toFixed(2);
 }
 ['tDia','tThick','dWidth','dThick','tLoad','tElong','tInit'].forEach(id => document.getElementById(id).addEventListener('input', calculateTensile));
 
-document.getElementById('hotSetShape').addEventListener('change', (e) => { document.getElementById('tubularHotInputs').style.display = e.target.value === 'tubular' ? 'block' : 'none'; document.getElementById('dumbbellHotInputs').style.display = e.target.value === 'dumbbell' ? 'block' : 'none'; calculateHotSet(); });
+document.getElementById('hotSetShape').addEventListener('change', function(){ const isTub = this.value === 'tubular'; document.getElementById('tubularHotInputs').style.display = isTub ? 'block' : 'none'; document.getElementById('dumbbellHotInputs').style.display = isTub ? 'none' : 'block'; calculateHotSet(); });
 function calculateHotSet() {
-  const init = parseFloat(document.getElementById('hInit').value) || 0, elong = parseFloat(document.getElementById('hElong').value) || 0, cool = parseFloat(document.getElementById('hCool').value) || 0;
-  let weight = 0;
-  if (document.getElementById('hotSetShape').value === 'tubular') { const c = parseFloat(document.getElementById('hCoreDia').value)||0, d = parseFloat(document.getElementById('hCondDia').value)||0; weight = 0.7855 * ((c * c) - (d * d)) * 20.4; }
-  else weight = (parseFloat(document.getElementById('hThick').value)||0) * (parseFloat(document.getElementById('hWidth').value)||0) * 20.4;
-  document.getElementById('hWeightOut').textContent = weight.toFixed(2);
-  document.getElementById('hHotOut').textContent = (init !== 0 ? ((elong - init) / init) * 100 : 0).toFixed(2);
-  document.getElementById('hPermOut').textContent = (init !== 0 ? ((cool - init) / init) * 100 : 0).toFixed(2);
+  const shape = document.getElementById('hotSetShape').value, init = parseFloat(document.getElementById('hInit').value) || 0, elong = parseFloat(document.getElementById('hElong').value) || 0, cool = parseFloat(document.getElementById('hCool').value) || 0;
+  let area = 0;
+  if (shape === 'tubular') { const cDia = parseFloat(document.getElementById('hCoreDia').value) || 0, cnDia = parseFloat(document.getElementById('hCondDia').value) || 0; if (cDia > 0 && cnDia >= 0) area = (3.14 / 4) * (Math.pow(cDia, 2) - Math.pow(cnDia, 2)); }
+  else { const w = parseFloat(document.getElementById('hWidth').value) || 0, th = parseFloat(document.getElementById('hThick').value) || 0; if (w > 0 && th > 0) area = w * th; }
+  const wt = area * 20;
+  let hotE = 0, permE = 0;
+  if (init > 0) { if (elong >= init) hotE = ((elong - init) / init) * 100; if (cool >= init) permE = ((cool - init) / init) * 100; }
+  document.getElementById('hWeightOut').textContent = wt.toFixed(2);
+  document.getElementById('hHotOut').textContent = hotE.toFixed(2);
+  document.getElementById('hPermOut').textContent = permE.toFixed(2);
 }
-['hCoreDia','hCondDia','hThick','hWidth','hInit','hElong','hCool'].forEach(id => document.getElementById(id).addEventListener('input', calculateHotSet));
+['hCoreDia','hCondDia','hWidth','hThick','hInit','hElong','hCool'].forEach(id => document.getElementById(id).addEventListener('input', calculateHotSet));
 
-/* --- PRINT --- */
+function calculateArmCov() {
+  const d = parseFloat(document.getElementById('covCableDia').value) || 0;
+  const dw = parseFloat(document.getElementById('covWireDia').value) || 0;
+  const L = parseFloat(document.getElementById('covLay').value) || 0;
+  const N = parseFloat(document.getElementById('covWires').value) || 0;
+
+  let cov = 0;
+  if (d > 0 && dw > 0 && L > 0 && N > 0) {
+    const sinTheta = (Math.PI * (d + dw)) / Math.sqrt(Math.pow(Math.PI * (d + dw), 2) + Math.pow(L, 2));
+    if (sinTheta !== 0) {
+      cov = ((N * dw) / (Math.PI * (d + dw) * sinTheta)) * 100;
+    }
+  }
+  document.getElementById('outCov').textContent = cov.toFixed(2);
+}
+['covCableDia','covWireDia','covLay','covWires'].forEach(id => document.getElementById(id).addEventListener('input', calculateArmCov));
+
+/* --- PRINT ENGINE --- */
 window.triggerPrint = function(e, type) {
   if(e) e.preventDefault();
-  const now = new Date();
-  document.getElementById('pCompany').textContent = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
-  document.getElementById('pDept').textContent = localStorage.getItem('tc_dept') || 'DEPARTMENT';
-  document.getElementById('pPrepBy').textContent = localStorage.getItem('tc_prep') || '—';
-  document.getElementById('pVerBy').textContent = localStorage.getItem('tc_ver') || '—';
-  document.getElementById('pDate').textContent = now.toLocaleDateString('en-GB');
-  document.getElementById('pTime').textContent = now.toLocaleTimeString('en-US');
+  if (type === 'gatepass') {
+    const deptEl = document.getElementById('gpDept');
+    const dateEl = document.getElementById('gpDate');
+    const hourEl = document.getElementById('gpHour');
+    const minEl = document.getElementById('gpMinute');
+    const ampmEl = document.getElementById('gpAmPm');
 
-  const docTitle = document.getElementById('pDocTitle');
-  const printInputs = document.getElementById('printInputs');
-  const gpContainer = document.getElementById('gatePassPrintArea');
+    [deptEl, dateEl].forEach(el => el.classList.remove('gp-invalid'));
 
-  printInputs.innerHTML = '';
-  gpContainer.innerHTML = '';
-  document.body.classList.remove('printing-gatepass');
-
-  if (type === 'qc') {
-    docTitle.textContent = 'QC TEST REPORT';
-    const activeTab = document.querySelector('.qc-tab-btn.active').innerText;
-    const tabMap = {'CR Calc':'CR & Unbalance Report','IR Calc':'IR Test Report','Capacitance':'Capacitance Test Report','HV Fail':'HV Fail Report','Thickness':'Thickness Report','Braid':'Braid Report','Tensile':'Tensile Report','Hot Set':'Hot Set Report','Arm Coverage':'Armour Coverage Report'};
-    document.getElementById('pTestType').textContent = tabMap[activeTab] || 'QC Report';
-    let html = `<table class="print-inputs-table"><tr><th>Parameter</th><th>Value</th><th>Unit</th></tr>`;
-    function add(lbl, id, unit){ const v = document.getElementById(id).value; if(v) html += `<tr><td>${lbl}</td><td>${v}</td><td>${unit}</td></tr>`; }
-    if(activeTab === 'CR Calc'){
-      add('Spec CR','specCR','-'); add('Max CR','maxCR','-'); add('Min CR','minCR','-');
-      add('CR Obs','obsCR','-'); add('Length','lenCR','M'); add('Temp','tempCR','°C');
-    }
-    else if(activeTab === 'IR Calc'){ add('Reading','irReading','MΩ'); add('Length','irLength','M'); add('Core Dia','irCoreDia','mm'); add('Cond Dia','irCondDia','mm'); }
-    else if(activeTab === 'Capacitance'){ add('Reading','capReading','-'); add('Length','capLength','M'); }
-    else if(activeTab === 'HV Fail'){ add('Total Length','hvLength','M'); add('Top CR','hvTopCr','-'); add('Bottom CR','hvBottomCr','-'); }
-    else if(activeTab === 'Thickness'){ add('Min Thk','thickMin','mm'); add('Max Thk','thickMax','mm'); }
-    else if(activeTab === 'Braid'){ add('Wire Dia','brD','mm'); add('Dia under braid','brBigD','mm'); add('No. Wires','brN','Count'); add('No. Carriers','brM','Count'); add('Lay Length','brL','mm'); }
-    else if(activeTab === 'Tensile'){ const shp = document.getElementById('tensileShape').value; if(shp==='tubular'){ add('Diameter','tDia','mm'); add('Thickness','tThick','mm'); } else { add('Width','dWidth','mm'); add('Min Thk','dThick','mm'); } add('Load','tLoad','N'); add('Elong Length','tElong','mm'); add('Init Length','tInit','mm'); }
-    else if(activeTab === 'Hot Set'){ const shp = document.getElementById('hotSetShape').value; if(shp==='tubular'){ add('Core Dia','hCoreDia','mm'); add('Cond Dia','hCondDia','mm'); } else { add('Thickness','hThick','mm'); add('Width','hWidth','mm'); } add('Init Length','hInit','mm'); add('Elong Length','hElong','mm'); add('Cool Length','hCool','mm'); }
-    else if(activeTab === 'Arm Coverage'){ add('Cable Dia','covCableDia','mm'); add('Wire Dia','covWireDia','mm'); add('Lay Length','covLay','mm'); add('No. of Wires','covWires','Count'); }
-    printInputs.innerHTML = html + `</table>`;
-  } else if (type === 'job') {
-    docTitle.textContent = 'JOB CARD DETAILS';
-    document.getElementById('pTestType').textContent = 'Job Card';
-  } else if (type === 'bom') {
-    docTitle.textContent = 'BOM DETAILS';
-    document.getElementById('pTestType').textContent = 'BOM Report';
-    let html = `<table class="print-inputs-table"><tr><th>Search Parameter</th><th>Value</th></tr>`;
-    html += `<tr><td>SO-ITEM</td><td>${esc(bomInput.value)}</td></tr>`;
-    html += `<tr><td>Operation JDM</td><td>${esc(document.getElementById('bomOpSelect').value || 'All')}</td></tr>`;
-    html += `<tr><td>Plan Qty</td><td>${formatQty(USER_PLAN_QTY !== null ? USER_PLAN_QTY : (BOM_DATA.find(b=>b.soItem===bomInput.value.trim())?.defaultPlanQty || 0))}</td></tr></table>`;
-    printInputs.innerHTML = html;
-  } else if (type === 'gatepass') {
-    const gpDeptEl = document.getElementById('gpDept');
-    const gpDateEl = document.getElementById('gpDate');
-    const gpHourEl = document.getElementById('gpHour');
-    const gpMinuteEl = document.getElementById('gpMinute');
-    const gpAmPmEl = document.getElementById('gpAmPm');
-
-    gpDeptEl.classList.remove('gp-invalid');
-    gpDateEl.classList.remove('gp-invalid');
-
-    if (!gpDeptEl.value.trim()) {
-      gpDeptEl.classList.add('gp-invalid');
-      gpDeptEl.focus();
-      alert('Enter a department before generating.');
-      return;
-    }
-    if (!gpDateEl.value) {
-      gpDateEl.classList.add('gp-invalid');
-      gpDateEl.focus();
-      alert('Select a date before generating.');
-      return;
-    }
-    if (!gpHourEl.value || !gpMinuteEl.value || !gpAmPmEl.value) {
-      gpHourEl.focus();
-      alert('Select the out time before generating.');
+    if (!dateEl.value) {
+      dateEl.classList.add('gp-invalid');
+      dateEl.focus();
+      alert('Please select a Date for the Gate Pass.');
       return;
     }
 
-    updateGatePassPreview();
-    document.body.classList.add('printing-gatepass');
+    const deptName = (deptEl.value || '').trim().toUpperCase();
+    const formattedDate = formatDateForDisplay(dateEl.value);
+    const outTimeStr = `${hourEl.value}:${minEl.value} ${ampmEl.value}`;
 
-    const gpDept = gpDeptEl.value.trim();
-    const gpDate = formatDateForDisplay(gpDateEl.value);
-    const gpTime = `${gpHourEl.value}:${gpMinuteEl.value} ${gpAmPmEl.value}`;
-    const company = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
-    const gpCount = GP_STANDARD_COUNT;
+    const totalPasses = GP_STANDARD_COUNT;
+    const cols = 3;
+    const rows = Math.ceil(totalPasses / cols);
+    const printArea = document.getElementById('gatePassPrintArea');
+    printArea.style.setProperty('--gp-rows', rows);
+    printArea.classList.remove('gp-dense');
 
-    const rows = Math.ceil(gpCount / 3); // 9 rows for 3x9 = 27 passes
-    gpContainer.style.setProperty('--gp-rows', String(rows));
-    gpContainer.classList.remove('gp-dense');
-
-    let gpHtml = '';
-    for (let i = 0; i < gpCount; i++) {
-      const serial = String(i + 1).padStart(2, '0');
-      gpHtml += `
+    let passHtml = '';
+    for (let i = 1; i <= totalPasses; i++) {
+      const serial = `GP-${String(i).padStart(2, '0')}`;
+      passHtml += `
         <div class="gate-pass-card">
-          <div class="gp-company">${esc(company)}</div>
-          <div class="gp-dept">${esc(gpDept)}</div>
-          <div class="gp-serial">Pass ${serial} of ${gpCount}</div>
+          <div class="gp-company">THERMOCABLES</div>
+          ${deptName ? `<div class="gp-dept">${esc(deptName)}</div>` : ''}
+          <div class="gp-serial">${serial}</div>
           <div class="gp-datetime">
-            <span>Date: ${esc(gpDate)}</span>
-            <span>Out Time: ${esc(gpTime)}</span>
+            <span>Date: ${formattedDate}</span>
+            <span>Out: ${outTimeStr}</span>
           </div>
           <div class="gp-sig-area">
             <div class="gp-sig-line"></div>
-            <div class="gp-sig-label">Supervisor Sign</div>
+            <div class="gp-sig-label">Approved By</div>
           </div>
         </div>
       `;
     }
-    gpContainer.innerHTML = gpHtml;
+    printArea.innerHTML = passHtml;
+
+    document.body.classList.add('printing-gatepass');
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => {
+        document.body.classList.remove('printing-gatepass');
+        printArea.innerHTML = '';
+        printArea.style.removeProperty('--gp-rows');
+        printArea.classList.remove('gp-dense');
+      }, 200);
+    }, 100);
+    return;
   }
-  requestAnimationFrame(() => window.print());
-};
 
-window.addEventListener('afterprint', () => {
-  document.body.classList.remove('printing-gatepass');
-  const gpContainer = document.getElementById('gatePassPrintArea');
-  if (gpContainer) {
-    gpContainer.classList.remove('gp-dense');
-    gpContainer.style.removeProperty('--gp-rows');
-  }
-});
+  const now = new Date();
+  document.getElementById('pDate').textContent = now.toLocaleDateString();
+  document.getElementById('pTime').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('pCompany').textContent = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
+  document.getElementById('pDept').textContent = localStorage.getItem('tc_dept') || 'QC DEPARTMENT';
+  document.getElementById('pPrepBy').textContent = localStorage.getItem('tc_prep') || '';
+  document.getElementById('pVerBy').textContent = localStorage.getItem('tc_ver') || '';
 
-/* Initialize Gate Pass & Maintenance UI */
-initGatePassUI();
-renderMaintenanceUI();
+  let inputsHtml = '';
+  const inputsDiv = document.getElementById('printInputs');
 
-})();
-</script>
-</body>
-</html>
+  if(type === 'job') {
+    const job = jobInput.value.trim(), op = opSelect.value;
+    document.getElementById('pDocTitle').textContent = 'JOB CARD DETAILS';
+    document.getElementById('pTestType').textContent = op ? `${job} — ${op}` : job || '—';
+    inputsHtml = `<table class="print-inputs-table"><tr><th>Job Number</th><td>${esc(job||'—')}</td><th>Operation</th><td>${esc(op||'—')}</td></tr></table>`;
+  } else if(type === 'bom') {
+    const soItem = bomInput.value.trim(), op = document.getElementById('bomOpSelect').value;
+    const item = BOM_DATA.find(b => b.soItem === soItem);
+    const planQty = document.getElementById('planQtyInput') ? document.getElementById('planQtyInput').value : (item ? formatQty(item.defaultPlanQty) : '—');
+    document.getElementById('pDocTitle').textContent = 'BILL OF MATERIALS (BOM)';
+    document.getElementById('pTestType').textContent = op ? `${soItem} — ${op}` : soItem || '—';
+    inputsHtml = `
+      <table class="print-inputs-table">
+        <tr><th>SO-ITEM</th><td>${esc(soItem||'—')}</td><th>Operation JDM</th><td>${esc(op||'All Operations')}</td></tr>
+        <tr><th>PLAN/PRD QTY</th><td colspan="3"><b>${esc(planQty)}</b></td></tr>
+      </table>`;
+  } else if(type === 'qc') {
+    const activeTabBtn = document.querySelector('.qc-tab-btn.active');
+    const tabName = activeTabBtn ? activeTabBtn.textContent.trim() : 'QC CALCULATION';
+    document.getElementById('pDocTitle').textContent = `${tabName.toUpperCase()} REPORT`;
+    document.getElementById('pTestType').textContent = tabName;
+
+    const activeCard = document.querySelector('.qc-card.active');
+    if(activeCard) {
+      let rowsHtml = '';
+      activeCard.querySelectorAll('.input-group').forEach(grp => {
+        const lbl = grp.querySelector('label');
+        const inp = grp.querySelector('input, select');
+        if(lbl && inp) {
+          const cleanLabel = lbl.childNodes[0] ? lbl.childNodes[0].textContent.trim() : lbl.textContent.trim();
+          let val = inp.value;
+          if(inp.tagName === 'SELECT') val = inp.options[inp.selectedIndex]?.text || val;
+          if(val !== '') rowsHtml += `<tr><th>${esc(cleanLabel)}</th><td>${esc(val)}</td>

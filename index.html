@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#f8fafc">
-<title>Thermocables Portal</title>
+<title>Thermocables</title>
 
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIyIiBmaWxsPSIjMGIyMDQ2Ii8+PHBhdGggZD0iTTMwIDY1VjM1aDh2MjJoMjB2OEgzMHptMjgtMzBoMTJ2MzBINTgvMzV6IiBmaWxsPSJ3aGl0ZSIvPjxjaXJjbGUgY3g9IjQ2IiBjeT0iNDIiIHI9IjYiIGZpbGw9IiMzYjgyZjYiLz48L3N2Zz4=">
@@ -277,7 +277,7 @@ body {
   letter-spacing: -0.01em;
   cursor: pointer;
   box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
-  transition: transform 0.2s var(--ease-spring), box-shadow 0.2s var(--ease-smooth), filter 0.2s ease;
+  transition: transform 0.2s var(--ease-spring), box-shadow 0.2s var(--ease-smooth);
 }
 .login-btn:hover {
   transform: translateY(-1px);
@@ -298,7 +298,7 @@ body {
   display: none;
 }
 
-/* --- APP SHELL & TOPBAR --- */
+/* --- APP SHELL & HEADER --- */
 .app {
   max-width: 600px;
   margin: 0 auto;
@@ -308,183 +308,13 @@ body {
   overflow-x: hidden;
 }
 
-.user-profile {
-  position: absolute;
-  top: 25px;
-  right: 26px;
-  z-index: 50;
-  width: 42px;
-  height: 42px;
-  border-radius: 13px;
-  background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%);
-  border: 2px solid #ffffff;
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.16);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: transform 0.25s var(--ease-spring), box-shadow 0.25s var(--ease-smooth);
-}
-.user-profile:hover {
-  transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 10px 20px rgba(30, 64, 175, 0.24);
-}
-.user-profile:active {
-  transform: scale(0.95);
-}
-.user-profile .avatar-initials {
-  color: #ffffff;
-  font-weight: 800;
-  font-size: 0.85rem;
-  letter-spacing: 0.04em;
-}
-.user-profile .status-dot {
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  background: #10b981;
-  border: 2px solid #ffffff;
-}
-
-.profile-dropdown {
-  position: absolute;
-  top: 76px;
-  right: 26px;
-  z-index: 100;
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: var(--radius-lg);
-  padding: 12px;
-  box-shadow: var(--shadow-lg), 0 0 0 1px var(--border-light);
-  display: none;
-  min-width: 248px;
-  transform-origin: top right;
-  animation: popIn 0.22s var(--ease-smooth);
-}
-@keyframes popIn {
-  from { opacity: 0; transform: scale(0.94) translateY(-6px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
-}
-.profile-dropdown.show {
-  display: block;
-}
-
-.dropdown-user-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  margin-bottom: 8px;
-  background: var(--bg-app);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-}
-.dropdown-avatar-lg {
-  width: 38px;
-  height: 38px;
-  border-radius: 11px;
-  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-  color: #ffffff;
-  font-weight: 800;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.dropdown-user-info {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-.dropdown-user-name {
-  font-size: 0.92rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  line-height: 1.25;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.dropdown-role-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  margin-top: 3px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--accent-primary);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.dropdown-role-badge::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #10b981;
-}
-.dropdown-divider {
-  height: 1px;
-  background: var(--border-subtle);
-  margin: 6px 4px;
-}
-.dropdown-action-item {
-  width: 100%;
-  padding: 9px 10px;
-  border-radius: var(--radius-sm);
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  font-weight: 700;
-  font-size: 0.82rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-align: left;
-  transition: background-color 0.16s ease, color 0.16s ease, transform 0.16s var(--ease-smooth);
-  margin-bottom: 2px;
-}
-.dropdown-action-item:hover {
-  background: var(--bg-subtle);
-  color: var(--text-primary);
-  transform: translateX(2px);
-}
-.dropdown-action-item:active {
-  transform: scale(0.985);
-}
-.dropdown-action-icon {
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.dropdown-action-icon.qr { background: var(--accent-soft); color: var(--accent-primary); }
-.dropdown-action-icon.banner { background: var(--warning-bg); color: var(--warning-text); }
-.dropdown-action-icon.logout { background: var(--danger-bg); color: var(--danger-text); }
-.dropdown-action-item.danger {
-  color: var(--danger-text);
-  margin-bottom: 0;
-}
-.dropdown-action-item.danger:hover {
-  background: var(--danger-bg);
-}
-
 .topbar {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px 22px;
-  background: rgba(255, 255, 255, 0.88);
+  padding: 18px 22px;
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-light);
@@ -498,8 +328,8 @@ body {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.06), transparent 45%),
-    radial-gradient(circle at 88% 100%, rgba(14, 165, 233, 0.05), transparent 45%);
+    radial-gradient(circle at 15% 0%, rgba(37, 99, 235, 0.06), transparent 45%),
+    radial-gradient(circle at 85% 100%, rgba(14, 165, 233, 0.05), transparent 45%);
   pointer-events: none;
 }
 .brand {
@@ -507,48 +337,363 @@ body {
   z-index: 1;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 13px;
 }
 .brand-logo {
-  width: 50px;
-  height: 50px;
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.16);
   animation: logoFloat 4.5s ease-in-out infinite;
 }
 .brand-logo svg {
-  width: 100%;
-  height: 100%;
+  width: 28px;
+  height: 28px;
   display: block;
 }
 @keyframes logoFloat {
-  0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 6px 14px rgba(30, 64, 175, 0.22)); }
-  50% { transform: translateY(-2.5px) scale(1.02); filter: drop-shadow(0 10px 18px rgba(37, 99, 235, 0.28)); }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
 }
-.brand-text {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 3px;
-}
-.brand-company {
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  line-height: 1.1;
-}
-.brand-title-row {
-  line-height: 1.1;
-}
-.brand-title-row span {
+.brand-title {
   font-weight: 800;
-  font-size: 1.32rem;
+  font-size: 1.38rem;
   letter-spacing: -0.025em;
+  line-height: 1.1;
   background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* --- UNIQUE PROFILE HUB VIEW --- */
+.profile-hero {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #1e3a8a 100%);
+  border-radius: var(--radius-xl);
+  padding: 22px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.profile-hero::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -15%;
+  width: 240px;
+  height: 240px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.28) 0%, transparent 65%);
+  pointer-events: none;
+}
+.profile-badge-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #2563eb 0%, #38bdf8 100%);
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.3);
+  position: relative;
+  z-index: 1;
+}
+.profile-hero-meta {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+.profile-hero-meta h2 {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.profile-role-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #e2e8f0;
+}
+.profile-role-pill::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+}
+
+.profile-actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+@media (max-width: 440px) {
+  .profile-actions-grid { grid-template-columns: 1fr; }
+}
+.profile-tile {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 15px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: var(--shadow-xs);
+  transition: transform 0.2s var(--ease-smooth), box-shadow 0.2s var(--ease-smooth), border-color 0.2s ease;
+}
+.profile-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  border-color: #cbd5e1;
+}
+.profile-tile:active {
+  transform: scale(0.99);
+}
+.profile-tile-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+.profile-tile-icon.qr { background: var(--accent-soft); color: var(--accent-primary); }
+.profile-tile-icon.banner { background: var(--warning-bg); color: var(--warning-text); }
+.profile-tile-icon.feedback { background: var(--purple-bg); color: var(--purple-text); }
+.profile-tile-icon.logout { background: var(--danger-bg); color: var(--danger-text); }
+.profile-tile-text strong {
+  display: block;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.profile-tile-text span {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* --- MAINTENANCE SECTION --- */
+.maint-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 16px;
+}
+.maint-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.maint-header h3 {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.maint-lock-pill {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  border: 1px solid var(--border-light);
+}
+.maint-scope-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.maint-row {
+  background: var(--bg-app);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+.maint-row.is-active {
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
+}
+.maint-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.maint-scope-title {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.maint-badge {
+  font-size: 0.64rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.maint-badge.on {
+  background: #fee2e2;
+  color: var(--danger-text);
+}
+.maint-badge.off {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+.maint-toggle-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+.maint-toggle-btn.active {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+.maint-remark-input {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border-light);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 500;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.maint-remark-input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+.maint-remark-readonly {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  padding: 4px 2px;
+}
+.maint-save-btn {
+  width: 100%;
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.22);
+  transition: transform 0.18s var(--ease-smooth), box-shadow 0.18s ease;
+}
+.maint-save-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+}
+
+/* Maintenance Block Overlay / Card for Active Modules */
+.maintenance-notice-card {
+  background: var(--bg-surface);
+  border: 1.5px solid var(--warning-border);
+  border-radius: var(--radius-xl);
+  padding: 32px 24px;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  margin: 12px 0 20px;
+}
+.maintenance-notice-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 14px;
+  border-radius: 18px;
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  border: 1px solid var(--warning-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+}
+.maintenance-notice-card h3 {
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+.maintenance-notice-card p {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  max-width: 420px;
+  margin: 0 auto 16px;
+}
+.maintenance-remark-box {
+  background: var(--bg-app);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  font-size: 0.84rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  max-width: 440px;
+  margin: 0 auto 18px;
+}
+.maintenance-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 /* --- ADMIN PANEL --- */
@@ -718,19 +863,29 @@ body {
   text-transform: none;
   letter-spacing: 0;
 }
-.report-form-group input[type="text"] {
+.report-form-group input[type="text"],
+.report-form-group select,
+.report-form-group textarea {
   width: 100%;
   padding: 11px 14px;
   border-radius: var(--radius-md);
   border: 1.5px solid var(--border-light);
   background: var(--bg-app);
   color: var(--text-primary);
-  font-size: 0.9rem;
+  font-family: inherit;
+  font-size: 0.88rem;
   font-weight: 500;
   outline: none;
   transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
-.report-form-group input[type="text"]:focus {
+.report-form-group textarea {
+  min-height: 96px;
+  resize: vertical;
+  line-height: 1.5;
+}
+.report-form-group input[type="text"]:focus,
+.report-form-group select:focus,
+.report-form-group textarea:focus {
   border-color: var(--accent-primary);
   background: var(--bg-surface);
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
@@ -797,17 +952,40 @@ body {
   flex-shrink: 0;
 }
 
-/* --- VIEWS & TRANSITIONS --- */
+.feedback-log-item {
+  background: var(--bg-app);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  font-size: 0.8rem;
+}
+.feedback-log-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+/* --- SMOOTH VIEW & TAB TRANSITIONS --- */
 .view-section {
   display: none;
 }
 .view-section.active {
   display: block;
-  animation: viewFadeIn 0.28s var(--ease-smooth);
+  animation: tabSlideIn 0.32s var(--ease-smooth) both;
 }
-@keyframes viewFadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes tabSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* --- FOOTER --- */
@@ -1517,7 +1695,7 @@ body {
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
 }
 
-/* --- QC CALCULATOR --- */
+/* --- QC CALCULATOR & TAB TRANSITIONS --- */
 .qc-tabs-wrapper {
   background: var(--bg-surface);
   border-radius: var(--radius-lg);
@@ -1546,16 +1724,22 @@ body {
   font-size: 0.75rem;
   cursor: pointer;
   text-align: center;
-  transition: background-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+  transition:
+    transform 0.22s var(--ease-spring),
+    background-color 0.2s var(--ease-smooth),
+    color 0.2s var(--ease-smooth),
+    box-shadow 0.2s var(--ease-smooth);
 }
 .qc-tab-btn:hover {
   background: var(--bg-app);
   color: var(--text-primary);
+  transform: translateY(-1px);
 }
 .qc-tab-btn.active {
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   color: #ffffff;
-  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.24);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.26);
+  transform: scale(1.01);
 }
 
 .qc-card {
@@ -1569,7 +1753,17 @@ body {
 }
 .qc-card.active {
   display: block;
-  animation: viewFadeIn 0.22s var(--ease-smooth);
+  animation: qcTabEnter 0.28s var(--ease-smooth) both;
+}
+@keyframes qcTabEnter {
+  from {
+    opacity: 0;
+    transform: translateX(10px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
 }
 .qc-card-body {
   padding: 20px;
@@ -1682,22 +1876,6 @@ body {
   color: var(--text-muted);
   margin-left: 4px;
 }
-
-.status-box {
-  padding: 18px 16px;
-  border-radius: var(--radius-md);
-  text-align: center;
-  margin-top: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-.status-box .status-icon { font-size: 1.8rem; }
-.status-box .status-text { font-size: 1.15rem; font-weight: 800; }
-.status-high { background: var(--danger-bg); border: 1px solid #fecaca; color: var(--danger-text); }
-.status-low { background: var(--success-bg); border: 1px solid var(--success-border); color: var(--success-text); }
-.status-neutral { background: var(--bg-subtle); border: 1px solid var(--border-light); color: var(--text-secondary); }
 
 .btn-print {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
@@ -2001,17 +2179,18 @@ body {
 }
 .nav-item {
   flex: 1;
-  padding: 10px 4px 8px;
+  padding: 10px 3px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
   color: var(--text-muted);
-  font-size: 0.66rem;
+  font-size: 0.64rem;
   font-weight: 700;
   cursor: pointer;
-  transition: color 0.18s ease, transform 0.18s var(--ease-smooth);
+  position: relative;
+  transition: color 0.2s var(--ease-smooth), transform 0.2s var(--ease-smooth);
   min-width: 0;
 }
 .nav-item:hover {
@@ -2020,15 +2199,29 @@ body {
 .nav-item.active {
   color: var(--accent-primary);
 }
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 24px;
+  height: 3px;
+  border-radius: 0 0 999px 999px;
+  background: var(--accent-primary);
+  animation: navPillIn 0.24s var(--ease-smooth);
+}
+@keyframes navPillIn {
+  from { transform: scaleX(0.3); opacity: 0; }
+  to { transform: scaleX(1); opacity: 1; }
+}
 .nav-item.active svg {
   transform: translateY(-1px);
 }
 .nav-item svg {
-  width: 21px;
-  height: 21px;
+  width: 20px;
+  height: 20px;
   fill: currentColor;
   flex-shrink: 0;
-  transition: transform 0.18s var(--ease-smooth);
+  transition: transform 0.2s var(--ease-smooth);
 }
 .nav-item span {
   white-space: nowrap;
@@ -2046,7 +2239,7 @@ body {
   @page { margin: 10mm; size: A4 portrait; }
   html, body { width: 100% !important; margin: 0 !important; padding: 0 !important; background: #fff !important; color: #000 !important; font-size: 12px; }
   .app { max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; display: block !important; }
-  .topbar, .tabs-wrapper, .qc-tabs-wrapper, .input-group, .search-panel, .result-bar, .btn-print, .admin-panel, .user-profile, .profile-dropdown, .no-print, .bottom-nav, .dashboard-hero, .stats-grid, .module-grid, .k-feed, .tip-banner, .modal-overlay, .section-title, .app-footer, .gp-hero, .gp-form-card, .promo-banner, #globalLoader { display: none !important; }
+  .topbar, .tabs-wrapper, .qc-tabs-wrapper, .input-group, .search-panel, .result-bar, .btn-print, .admin-panel, .no-print, .bottom-nav, .dashboard-hero, .stats-grid, .module-grid, .k-feed, .tip-banner, .modal-overlay, .section-title, .app-footer, .gp-hero, .gp-form-card, .promo-banner, .maint-card, .maintenance-notice-card, #globalLoader { display: none !important; }
   .print-header, .print-inputs-section, .print-footer { display: block !important; }
   .view-section { display: none !important; }
   .card, .qc-card { display: none !important; border: none !important; box-shadow: none !important; }
@@ -2120,9 +2313,7 @@ body {
 @media (min-width: 768px) {
   .app { max-width: 920px; padding: 20px 24px; }
   .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .topbar { padding: 24px 30px; }
-  .user-profile { right: 38px; top: 29px; }
-  .profile-dropdown { right: 38px; top: 80px; }
+  .topbar { padding: 20px 28px; }
   .bottom-nav {
     left: 50%;
     right: auto;
@@ -2134,19 +2325,15 @@ body {
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     box-shadow: 0 -6px 28px rgba(15, 23, 42, 0.06);
   }
-  .nav-item { padding: 13px 0 11px; font-size: 0.7rem; gap: 5px; }
-  .nav-item svg { width: 22px; height: 22px; }
+  .nav-item { padding: 12px 4px 10px; font-size: 0.7rem; gap: 5px; }
+  .nav-item svg { width: 21px; height: 21px; }
 }
 @media (max-width: 380px) {
   .app { padding: 12px; }
-  .topbar { padding: 16px; }
-  .brand-logo { width: 44px; height: 44px; }
-  .brand-title-row span { font-size: 1.15rem; }
-  .brand-company { font-size: 0.6rem; letter-spacing: 0.1em; }
-  .user-profile { right: 18px; top: 20px; width: 38px; height: 38px; border-radius: 12px; }
-  .user-profile .avatar-initials { font-size: 0.8rem; }
-  .profile-dropdown { right: 18px; top: 66px; min-width: 225px; }
-  .bottom-nav .nav-item { font-size: 0.58rem; gap: 3px; padding: 8px 2px; }
+  .topbar { padding: 15px 16px; }
+  .brand-logo { width: 40px; height: 40px; }
+  .brand-title { font-size: 1.2rem; }
+  .bottom-nav .nav-item { font-size: 0.56rem; gap: 3px; padding: 8px 2px; }
   .bottom-nav .nav-item svg { width: 18px; height: 18px; }
   .spec { grid-template-columns: 100px 1fr; }
   .spec .k, .spec .v { padding: 9px 10px; font-size: 0.76rem; }
@@ -2176,8 +2363,6 @@ body {
   pointer-events: none;
 }
 body.has-offline-banner .app { padding-top: 48px; }
-body.has-offline-banner .user-profile { top: calc(25px + 36px); }
-body.has-offline-banner .profile-dropdown { top: calc(76px + 36px); }
 
 .update-toast {
   position: fixed;
@@ -2281,7 +2466,7 @@ body.has-offline-banner .profile-dropdown { top: calc(76px + 36px); }
 
 <div id="loginScreen">
   <div class="login-card">
-    <h2>Thermocables Portal</h2>
+    <h2>Thermocables</h2>
     <p>Enter your credentials to access your modules.</p>
     <input type="text" id="loginUser" class="login-input" placeholder="Username" autocomplete="off">
     <input type="password" id="loginPass" class="login-input" placeholder="Password (Admin only)" autocomplete="off" style="display: none;">
@@ -2292,75 +2477,22 @@ body.has-offline-banner .profile-dropdown { top: calc(76px + 36px); }
 
 <div class="app" id="appContainer">
 
-  <div class="user-profile" onclick="toggleProfile(event)" title="Account & Quick Actions">
-    <span class="avatar-initials" id="headerAvatarInitials">TC</span>
-    <span class="status-dot"></span>
-  </div>
-  <div class="profile-dropdown" id="profileDropdown">
-    <div class="dropdown-user-card">
-      <div class="dropdown-avatar-lg" id="dropAvatarInitials">TC</div>
-      <div class="dropdown-user-info">
-        <div class="dropdown-user-name" id="dropUserName">Guest</div>
-        <div class="dropdown-role-badge" id="dropUserRole">Role</div>
-      </div>
-    </div>
-
-    <button class="dropdown-action-item" onclick="openQrModal(event)">
-      <span class="dropdown-action-icon qr">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-      </span>
-      <span>Scan to Open App</span>
-    </button>
-
-    <button class="dropdown-action-item" id="nav-banner-mgmt" style="display: none;" onclick="openBannerModal(event)">
-      <span class="dropdown-action-icon banner">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-      </span>
-      <span>Manage Banners</span>
-    </button>
-
-    <div class="dropdown-divider"></div>
-
-    <button class="dropdown-action-item danger" onclick="handleLogout()">
-      <span class="dropdown-action-icon logout">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      </span>
-      <span>Sign Out</span>
-    </button>
-  </div>
-
   <div class="topbar">
     <div class="brand">
       <div class="brand-logo" aria-hidden="true">
-        <svg viewBox="0 0 100 100" role="img" aria-label="Thermocables Logo">
+        <svg viewBox="0 0 32 32" role="img" aria-label="Thermocables Logo">
           <defs>
-            <linearGradient id="logoBg" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="#0f172a"/>
-              <stop offset="1" stop-color="#1e40af"/>
-            </linearGradient>
-            <linearGradient id="logoBolt" x1="0.5" y1="0" x2="0.5" y2="1">
-              <stop offset="0" stop-color="#3b82f6"/>
-              <stop offset="0.45" stop-color="#8b5cf6"/>
-              <stop offset="1" stop-color="#fbbf24"/>
-            </linearGradient>
-            <linearGradient id="logoRing" x1="0" y1="0" x2="1" y2="1">
+            <linearGradient id="tcLogoBolt" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0" stop-color="#60a5fa"/>
+              <stop offset="0.55" stop-color="#3b82f6"/>
               <stop offset="1" stop-color="#fbbf24"/>
             </linearGradient>
           </defs>
-          <path d="M 50 3 L 92 27 L 92 73 L 50 97 L 8 73 L 8 27 Z" fill="url(#logoBg)"/>
-          <path d="M 50 3 L 92 27 L 92 73 L 50 97 L 8 73 L 8 27 Z" fill="none" stroke="url(#logoRing)" stroke-width="1.2" opacity="0.55"/>
-          <path d="M 50 12 L 82 32 L 82 68 L 50 88 L 18 68 L 18 32 Z" fill="none" stroke="#3b82f6" stroke-width="0.6" opacity="0.25"/>
-          <path d="M 58 22 L 32 56 L 46 56 L 40 80 L 68 44 L 54 44 Z" fill="url(#logoBolt)"/>
-          <circle cx="40" cy="80" r="1.6" fill="#fbbf24" opacity="0.9"/>
+          <path d="M16 3L27.26 9.5V22.5L16 29L4.74 22.5V9.5L16 3Z" fill="none" stroke="#93c5fd" stroke-width="1.8" opacity="0.8"/>
+          <path d="M18.2 7.5L10.2 17.5H15.2L13.5 24.5L21.8 14.5H16.8L18.2 7.5Z" fill="url(#tcLogoBolt)"/>
         </svg>
       </div>
-      <div class="brand-text">
-        <div class="brand-company" id="headerCompany">THERMOCABLES LTD.</div>
-        <div class="brand-title-row">
-          <span id="headerTitle">PORTAL</span>
-        </div>
-      </div>
+      <div class="brand-title" id="headerTitle">Thermocables</div>
     </div>
   </div>
 
@@ -2380,337 +2512,408 @@ body.has-offline-banner .profile-dropdown { top: calc(76px + 36px); }
   </div>
   <div class="print-inputs-section" id="printInputs"></div>
 
+  <!-- Global Whole-App Maintenance Block (Shown for non-admin users when app is in maintenance) -->
+  <div id="globalAppMaintenanceView" style="display: none;"></div>
+
   <div class="view-section active" id="view-home">
-    <!-- Promotional Banner -->
-    <div id="promoBanner" class="promo-banner" style="display: none;" onclick="handleBannerClick(event)"></div>
+    <div id="homeMaintenanceNotice"></div>
+    <div id="homeContentWrap">
+      <!-- Promotional Banner -->
+      <div id="promoBanner" class="promo-banner" style="display: none;" onclick="handleBannerClick(event)"></div>
 
-    <div class="dashboard-hero">
-      <div class="dash-greeting" id="dashGreeting">Welcome Back,</div>
-      <div class="dash-name" id="welcomeName">User</div>
-      <div class="dash-date">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-        <span id="dashDate"></span>
+      <div class="dashboard-hero">
+        <div class="dash-greeting" id="dashGreeting">Welcome Back,</div>
+        <div class="dash-name" id="welcomeName">User</div>
+        <div class="dash-date">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          <span id="dashDate"></span>
+        </div>
       </div>
-    </div>
 
-    <div class="section-title">Industrial Knowledge Hub</div>
-    <div class="k-feed">
-      <div class="k-card k-lean" onclick="openKnowledge('5s')">
-        <div class="k-icon">🏭</div><div class="k-content"><h4>The 5S Methodology</h4><p>Workplace organization for efficiency &amp; safety</p></div><div class="k-arrow">›</div>
-      </div>
-      <div class="k-card k-lean" onclick="openKnowledge('lean')">
-        <div class="k-icon">⚙️</div><div class="k-content"><h4>Lean Manufacturing</h4><p>Maximize value &amp; minimize waste (Kaizen, JIT)</p></div><div class="k-arrow">›</div>
-      </div>
-      <div class="k-card k-std" onclick="openKnowledge('standards')">
-        <div class="k-icon">📜</div><div class="k-content"><h4>IEC Cable Standards</h4><p>Essential global standards for testing &amp; construction</p></div><div class="k-arrow">›</div>
-      </div>
-      <div class="k-card k-formula" onclick="openKnowledge('formulas')">
-        <div class="k-icon">📐</div><div class="k-content"><h4>Engineering Formulas</h4><p>Calculate resistance, voltage drop &amp; capacitance</p></div><div class="k-arrow">›</div>
-      </div>
-      <div class="k-card" onclick="openKnowledge('construction')">
-        <div class="k-icon">🔌</div><div class="k-content"><h4>Cable Construction</h4><p>Anatomy of a standard power cable</p></div><div class="k-arrow">›</div>
+      <div class="section-title">Industrial Knowledge Hub</div>
+      <div class="k-feed">
+        <div class="k-card k-lean" onclick="openKnowledge('5s')">
+          <div class="k-icon">🏭</div><div class="k-content"><h4>The 5S Methodology</h4><p>Workplace organization for efficiency &amp; safety</p></div><div class="k-arrow">›</div>
+        </div>
+        <div class="k-card k-lean" onclick="openKnowledge('lean')">
+          <div class="k-icon">⚙️</div><div class="k-content"><h4>Lean Manufacturing</h4><p>Maximize value &amp; minimize waste (Kaizen, JIT)</p></div><div class="k-arrow">›</div>
+        </div>
+        <div class="k-card k-std" onclick="openKnowledge('standards')">
+          <div class="k-icon">📜</div><div class="k-content"><h4>IEC Cable Standards</h4><p>Essential global standards for testing &amp; construction</p></div><div class="k-arrow">›</div>
+        </div>
+        <div class="k-card k-formula" onclick="openKnowledge('formulas')">
+          <div class="k-icon">📐</div><div class="k-content"><h4>Engineering Formulas</h4><p>Calculate resistance, voltage drop &amp; capacitance</p></div><div class="k-arrow">›</div>
+        </div>
+        <div class="k-card" onclick="openKnowledge('construction')">
+          <div class="k-icon">🔌</div><div class="k-content"><h4>Cable Construction</h4><p>Anatomy of a standard power cable</p></div><div class="k-arrow">›</div>
+        </div>
       </div>
     </div>
   </div>
 
   <div class="view-section" id="view-jobcards">
-    <div class="search-panel">
-      <div class="field" id="jobField">
-        <label>Job Number</label>
-        <input type="text" id="jobInput" placeholder="Type job no..." autocomplete="off" inputmode="text">
-        <div class="suggest" id="suggestBox"></div>
+    <div id="jobcardsMaintenanceNotice"></div>
+    <div id="jobcardsContentWrap">
+      <div class="search-panel">
+        <div class="field" id="jobField">
+          <label>Job Number</label>
+          <input type="text" id="jobInput" placeholder="Type job no..." autocomplete="off" inputmode="text">
+          <div class="suggest" id="suggestBox"></div>
+        </div>
+        <div class="field">
+          <label>Operation</label>
+          <select id="opSelect" disabled><option value="">— Select Job First —</option></select>
+        </div>
+        <div class="search-buttons">
+          <button class="btn-search" id="searchBtn">🔍 Show</button>
+          <button class="btn-reset" id="resetBtn">Reset</button>
+        </div>
       </div>
-      <div class="field">
-        <label>Operation</label>
-        <select id="opSelect" disabled><option value="">— Select Job First —</option></select>
+      <div class="result-bar">
+        <div class="result-title" id="jobResultTitle">Enter details above</div>
+        <div class="counter" id="jobResultCount">0 records</div>
       </div>
-      <div class="search-buttons">
-        <button class="btn-search" id="searchBtn">🔍 Show</button>
-        <button class="btn-reset" id="resetBtn">Reset</button>
+      <div class="grid" id="jobGrid">
+        <div class="empty"><div class="icon">🔎</div><p>Start typing a <b>job number</b> above.</p></div>
       </div>
+      <button class="btn-print no-print" onclick="triggerPrint(event, 'job')">Save as PDF</button>
     </div>
-    <div class="result-bar">
-      <div class="result-title" id="jobResultTitle">Enter details above</div>
-      <div class="counter" id="jobResultCount">0 records</div>
-    </div>
-    <div class="grid" id="jobGrid">
-      <div class="empty"><div class="icon">🔎</div><p>Start typing a <b>job number</b> above.</p></div>
-    </div>
-    <button class="btn-print no-print" onclick="triggerPrint(event, 'job')">Save as PDF</button>
   </div>
 
   <div class="view-section" id="view-bom">
-    <div class="search-panel">
-      <div class="field" id="bomField">
-        <label>SO-ITEM / INDEX</label>
-        <input type="text" id="bomInput" placeholder="Type SO-ITEM or INDEX..." autocomplete="off" inputmode="text">
-        <div class="suggest" id="bomSuggestBox"></div>
+    <div id="bomMaintenanceNotice"></div>
+    <div id="bomContentWrap">
+      <div class="search-panel">
+        <div class="field" id="bomField">
+          <label>SO-ITEM / INDEX</label>
+          <input type="text" id="bomInput" placeholder="Type SO-ITEM or INDEX..." autocomplete="off" inputmode="text">
+          <div class="suggest" id="bomSuggestBox"></div>
+        </div>
+        <div class="field">
+          <label>Operation JDM</label>
+          <select id="bomOpSelect" disabled><option value="">— Select SO-ITEM First —</option></select>
+        </div>
+        <div class="search-buttons">
+          <button class="btn-search" id="bomSearchBtn">🔍 Show</button>
+          <button class="btn-reset" id="bomResetBtn">Reset</button>
+        </div>
       </div>
-      <div class="field">
-        <label>Operation JDM</label>
-        <select id="bomOpSelect" disabled><option value="">— Select SO-ITEM First —</option></select>
+      <div class="result-bar">
+        <div class="result-title" id="bomResultTitle">Enter details above</div>
+        <div class="result-counter counter" id="bomResultCount">0 records</div>
       </div>
-      <div class="search-buttons">
-        <button class="btn-search" id="bomSearchBtn">🔍 Show</button>
-        <button class="btn-reset" id="bomResetBtn">Reset</button>
+      <div class="grid" id="bomGrid">
+        <div class="empty"><div class="icon">📦</div><p>Start typing a <b>SO-ITEM</b> above.</p></div>
       </div>
+      <button class="btn-print no-print" onclick="triggerPrint(event, 'bom')">Save as PDF</button>
     </div>
-    <div class="result-bar">
-      <div class="result-title" id="bomResultTitle">Enter details above</div>
-      <div class="result-counter counter" id="bomResultCount">0 records</div>
-    </div>
-    <div class="grid" id="bomGrid">
-      <div class="empty"><div class="icon">📦</div><p>Start typing a <b>SO-ITEM</b> above.</p></div>
-    </div>
-    <button class="btn-print no-print" onclick="triggerPrint(event, 'bom')">Save as PDF</button>
   </div>
 
   <div class="view-section" id="view-qccalc">
-
-    <div class="admin-panel no-print" id="adminPanel">
-      <h3>⚙️ Admin Settings</h3>
-      <div class="admin-grid">
-        <input type="text" id="setCompany" placeholder="Company Name">
-        <input type="text" id="setDept" placeholder="Department">
-        <input type="text" id="setPrepBy" placeholder="Prepared By (Name)">
-        <input type="text" id="setVerBy" placeholder="Verified By (Name)">
-      </div>
-      <button class="admin-save-btn" onclick="saveAdminSettings()">Save Settings</button>
-    </div>
-
-    <div class="qc-tabs-wrapper">
-      <div class="qc-tabs">
-        <button class="qc-tab-btn active" onclick="switchQcTab('cr', event)">CR Calc</button>
-        <button class="qc-tab-btn" onclick="switchQcTab('ir', event)">IR Calc</button>
-        <button class="qc-tab-btn" onclick="switchQcTab('cap', event)">Capacitance</button>
-        <button class="qc-tab-btn" onclick="switchQcTab('hvfail', event)">HV Fail</button>
-        <button class="qc-tab-btn" onclick="switchQcTab('thick', event)">Thickness</button>
-        <button class="qc-tab-btn" onclick="switchQcTab('braid', event)">Braid</button>
-        <button class="qc-tab-btn" onclick="switchQcTab('tensile', event)">Tensile</button>
-        <button class="qc-tab-btn" onclick="switchQcTab('hotset', event)">Hot Set</button>
-        <button class="qc-tab-btn" onclick="switchQcTab('armcov', event)">Arm Coverage</button>
-      </div>
-    </div>
-
-    <!-- 1. CR CALC & UNBALANCE (Combined) -->
-    <div class="qc-card active" id="qc-card-cr">
-      <div class="qc-card-body">
-        <div class="result-title-bar">CR UNBALANCE</div>
-        <div class="input-group"><label>Spec CR</label><input type="number" id="specCR" step="any" placeholder="" oninput="calculateCRCombined()"></div>
-        <div class="input-group"><label>Max CR</label><input type="number" id="maxCR" step="any" placeholder="" oninput="calculateCRCombined()"></div>
-        <div class="input-group"><label>Min CR</label><input type="number" id="minCR" step="any" placeholder="" oninput="calculateCRCombined()"></div>
-
-        <div class="result-section">
-          <div class="result-card primary"><span class="label">CR Unbalance</span><div class="value-wrapper"><span class="value" id="outUnbalance">—</span><span class="unit">%</span></div></div>
-          <div class="result-card warning"><span class="label">CR High</span><div class="value-wrapper"><span class="value" id="outHigh">—</span><span class="unit">%</span></div></div>
-          <div class="result-card success"><span class="label">CR Low</span><div class="value-wrapper"><span class="value" id="outLow">—</span><span class="unit">%</span></div></div>
+    <div id="qccalcMaintenanceNotice"></div>
+    <div id="qccalcContentWrap">
+      <div class="admin-panel no-print" id="adminPanel">
+        <h3>⚙️ Admin Settings</h3>
+        <div class="admin-grid">
+          <input type="text" id="setCompany" placeholder="Company Name">
+          <input type="text" id="setDept" placeholder="Department">
+          <input type="text" id="setPrepBy" placeholder="Prepared By (Name)">
+          <input type="text" id="setVerBy" placeholder="Verified By (Name)">
         </div>
+        <button class="admin-save-btn" onclick="saveAdminSettings()">Save Settings</button>
+      </div>
 
-        <div class="result-title-bar" style="margin-top:16px;">CAL CR</div>
-        <div class="input-group"><label>CR Obs</label><input type="number" id="obsCR" step="any" placeholder="" oninput="calculateCRCombined()"></div>
-        <div class="input-group"><label>Length (m)</label><input type="number" id="lenCR" step="any" placeholder="" oninput="calculateCRCombined()"></div>
-        <div class="input-group"><label>Temp (°C)</label><input type="number" id="tempCR" step="any" placeholder="" oninput="calculateCRCombined()"></div>
-
-        <div class="result-section">
-          <div class="result-card primary"><span class="label">Cal CR</span><div class="value-wrapper"><span class="value" id="outCalCR">—</span></div></div>
+      <div class="qc-tabs-wrapper">
+        <div class="qc-tabs">
+          <button class="qc-tab-btn active" onclick="switchQcTab('cr', event)">CR Calc</button>
+          <button class="qc-tab-btn" onclick="switchQcTab('ir', event)">IR Calc</button>
+          <button class="qc-tab-btn" onclick="switchQcTab('cap', event)">Capacitance</button>
+          <button class="qc-tab-btn" onclick="switchQcTab('hvfail', event)">HV Fail</button>
+          <button class="qc-tab-btn" onclick="switchQcTab('thick', event)">Thickness</button>
+          <button class="qc-tab-btn" onclick="switchQcTab('braid', event)">Braid</button>
+          <button class="qc-tab-btn" onclick="switchQcTab('tensile', event)">Tensile</button>
+          <button class="qc-tab-btn" onclick="switchQcTab('hotset', event)">Hot Set</button>
+          <button class="qc-tab-btn" onclick="switchQcTab('armcov', event)">Arm Coverage</button>
         </div>
       </div>
-    </div>
 
-    <div class="qc-card" id="qc-card-ir">
-      <div class="qc-card-body">
-        <div class="input-group"><label>Reading <span class="unit-hint">(Mega Ohm - MΩ)</span></label><input type="number" id="irReading" step="any" placeholder="Enter Reading in MΩ"></div>
-        <div class="input-group"><label>Length <span class="unit-hint">(Meters)</span></label><input type="number" id="irLength" step="any" placeholder="Enter Length in Meters"></div>
-        <div class="input-group"><label>Core Dia (D) <span class="unit-hint">(mm)</span></label><input type="number" id="irCoreDia" step="any" placeholder="Enter Core Diameter in mm"></div>
-        <div class="input-group"><label>Conductor Dia (d) <span class="unit-hint">(mm)</span></label><input type="number" id="irCondDia" step="any" placeholder="Enter Conductor Diameter in mm"></div>
-        <div class="result-section">
-          <div class="result-title-bar">Results</div>
-          <div class="result-card primary"><span class="label">IR</span><div class="value-wrapper"><span class="value" id="irResultOut">—</span><span class="unit">Ω</span></div></div>
-          <div class="result-card success"><span class="label">IR Constant</span><div class="value-wrapper"><span class="value" id="irConstOut">—</span><span class="unit">MΩ·m</span></div></div>
-          <div class="result-card purple"><span class="label">VR Constant</span><div class="value-wrapper"><span class="value" id="vrConstOut">—</span><span class="unit">Ω·m</span></div></div>
+      <!-- 1. CR CALC & UNBALANCE (Combined) -->
+      <div class="qc-card active" id="qc-card-cr">
+        <div class="qc-card-body">
+          <div class="result-title-bar">CR UNBALANCE</div>
+          <div class="input-group"><label>Spec CR</label><input type="number" id="specCR" step="any" placeholder="" oninput="calculateCRCombined()"></div>
+          <div class="input-group"><label>Max CR</label><input type="number" id="maxCR" step="any" placeholder="" oninput="calculateCRCombined()"></div>
+          <div class="input-group"><label>Min CR</label><input type="number" id="minCR" step="any" placeholder="" oninput="calculateCRCombined()"></div>
+
+          <div class="result-section">
+            <div class="result-card primary"><span class="label">CR Unbalance</span><div class="value-wrapper"><span class="value" id="outUnbalance">—</span><span class="unit">%</span></div></div>
+            <div class="result-card warning"><span class="label">CR High</span><div class="value-wrapper"><span class="value" id="outHigh">—</span><span class="unit">%</span></div></div>
+            <div class="result-card success"><span class="label">CR Low</span><div class="value-wrapper"><span class="value" id="outLow">—</span><span class="unit">%</span></div></div>
+          </div>
+
+          <div class="result-title-bar" style="margin-top:16px;">CAL CR</div>
+          <div class="input-group"><label>CR Obs</label><input type="number" id="obsCR" step="any" placeholder="" oninput="calculateCRCombined()"></div>
+          <div class="input-group"><label>Length (m)</label><input type="number" id="lenCR" step="any" placeholder="" oninput="calculateCRCombined()"></div>
+          <div class="input-group"><label>Temp (°C)</label><input type="number" id="tempCR" step="any" placeholder="" oninput="calculateCRCombined()"></div>
+
+          <div class="result-section">
+            <div class="result-card primary"><span class="label">Cal CR</span><div class="value-wrapper"><span class="value" id="outCalCR">—</span></div></div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="qc-card" id="qc-card-cap">
-      <div class="qc-card-body">
-        <div class="input-group"><label>Capacitance Reading <span class="unit-hint">(Value)</span></label><input type="number" id="capReading" step="any" placeholder="Enter Capacitance Reading"></div>
-        <div class="input-group"><label>Length <span class="unit-hint">(Meters)</span></label><input type="number" id="capLength" step="any" placeholder="Enter Length in Meters"></div>
-        <div class="result-section">
-          <div class="result-title-bar">Results</div>
-          <div class="result-card primary"><span class="label">Cal. Capacitance</span><div class="value-wrapper"><span class="value" id="capResultOut">—</span><span class="unit">pF/m</span></div></div>
+      <div class="qc-card" id="qc-card-ir">
+        <div class="qc-card-body">
+          <div class="input-group"><label>Reading <span class="unit-hint">(Mega Ohm - MΩ)</span></label><input type="number" id="irReading" step="any" placeholder="Enter Reading in MΩ"></div>
+          <div class="input-group"><label>Length <span class="unit-hint">(Meters)</span></label><input type="number" id="irLength" step="any" placeholder="Enter Length in Meters"></div>
+          <div class="input-group"><label>Core Dia (D) <span class="unit-hint">(mm)</span></label><input type="number" id="irCoreDia" step="any" placeholder="Enter Core Diameter in mm"></div>
+          <div class="input-group"><label>Conductor Dia (d) <span class="unit-hint">(mm)</span></label><input type="number" id="irCondDia" step="any" placeholder="Enter Conductor Diameter in mm"></div>
+          <div class="result-section">
+            <div class="result-title-bar">Results</div>
+            <div class="result-card primary"><span class="label">IR</span><div class="value-wrapper"><span class="value" id="irResultOut">—</span><span class="unit">Ω</span></div></div>
+            <div class="result-card success"><span class="label">IR Constant</span><div class="value-wrapper"><span class="value" id="irConstOut">—</span><span class="unit">MΩ·m</span></div></div>
+            <div class="result-card purple"><span class="label">VR Constant</span><div class="value-wrapper"><span class="value" id="vrConstOut">—</span><span class="unit">Ω·m</span></div></div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="qc-card" id="qc-card-hvfail">
-      <div class="qc-card-body">
-        <div class="input-group"><label>Total Length <span class="unit-hint">(Meters)</span></label><input type="number" id="hvLength" step="any" placeholder="Enter Total Length"></div>
-        <div class="input-group"><label>Top CR Reading <span class="unit-hint">(Value)</span></label><input type="number" id="hvTopCr" step="any" placeholder="Enter Top CR Reading"></div>
-        <div class="input-group"><label>Bottom CR Reading <span class="unit-hint">(Value)</span></label><input type="number" id="hvBottomCr" step="any" placeholder="Enter Bottom CR Reading"></div>
-        <div class="result-section">
-          <div class="result-title-bar">Results</div>
-          <div class="result-card success"><span class="label">Total CR Reading</span><div class="value-wrapper"><span class="value" id="hvTotalCrOut">—</span></div></div>
-          <div class="result-card primary"><span class="label">From Top Side</span><div class="value-wrapper"><span class="value" id="hvTopSideOut">—</span><span class="unit">Meters</span></div></div>
-          <div class="result-card warning"><span class="label">From Bottom Side</span><div class="value-wrapper"><span class="value" id="hvBottomSideOut">—</span><span class="unit">Meters</span></div></div>
+      <div class="qc-card" id="qc-card-cap">
+        <div class="qc-card-body">
+          <div class="input-group"><label>Capacitance Reading <span class="unit-hint">(Value)</span></label><input type="number" id="capReading" step="any" placeholder="Enter Capacitance Reading"></div>
+          <div class="input-group"><label>Length <span class="unit-hint">(Meters)</span></label><input type="number" id="capLength" step="any" placeholder="Enter Length in Meters"></div>
+          <div class="result-section">
+            <div class="result-title-bar">Results</div>
+            <div class="result-card primary"><span class="label">Cal. Capacitance</span><div class="value-wrapper"><span class="value" id="capResultOut">—</span><span class="unit">pF/m</span></div></div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="qc-card" id="qc-card-thick">
-      <div class="qc-card-body">
-        <div class="input-group"><label>Minimum Thickness <span class="unit-hint">(mm)</span></label><input type="number" id="thickMin" step="any" placeholder="Enter Minimum Thickness"></div>
-        <div class="input-group"><label>Maximum Thickness <span class="unit-hint">(mm)</span></label><input type="number" id="thickMax" step="any" placeholder="Enter Maximum Thickness"></div>
-        <div class="result-section">
-          <div class="result-title-bar">Results</div>
-          <div class="result-card primary"><span class="label">Average Thickness</span><div class="value-wrapper"><span class="value" id="thickAvgOut">—</span><span class="unit">mm</span></div></div>
-          <div class="result-card success"><span class="label">Concentricity</span><div class="value-wrapper"><span class="value" id="thickConcOut">—</span><span class="unit">%</span></div></div>
+      <div class="qc-card" id="qc-card-hvfail">
+        <div class="qc-card-body">
+          <div class="input-group"><label>Total Length <span class="unit-hint">(Meters)</span></label><input type="number" id="hvLength" step="any" placeholder="Enter Total Length"></div>
+          <div class="input-group"><label>Top CR Reading <span class="unit-hint">(Value)</span></label><input type="number" id="hvTopCr" step="any" placeholder="Enter Top CR Reading"></div>
+          <div class="input-group"><label>Bottom CR Reading <span class="unit-hint">(Value)</span></label><input type="number" id="hvBottomCr" step="any" placeholder="Enter Bottom CR Reading"></div>
+          <div class="result-section">
+            <div class="result-title-bar">Results</div>
+            <div class="result-card success"><span class="label">Total CR Reading</span><div class="value-wrapper"><span class="value" id="hvTotalCrOut">—</span></div></div>
+            <div class="result-card primary"><span class="label">From Top Side</span><div class="value-wrapper"><span class="value" id="hvTopSideOut">—</span><span class="unit">Meters</span></div></div>
+            <div class="result-card warning"><span class="label">From Bottom Side</span><div class="value-wrapper"><span class="value" id="hvBottomSideOut">—</span><span class="unit">Meters</span></div></div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="qc-card" id="qc-card-braid">
-      <div class="qc-card-body">
-        <div class="input-group"><label>Braid Wire dia (d) <span class="unit-hint">(mm)</span></label><input type="number" id="brD" step="any" placeholder="Enter Wire Diameter"></div>
-        <div class="input-group"><label>Dia under braid (D) <span class="unit-hint">(mm)</span></label><input type="number" id="brBigD" step="any" placeholder="Enter Diameter under braid"></div>
-        <div class="input-group"><label>No. Of wires (N) <span class="unit-hint">(Count)</span></label><input type="number" id="brN" step="any" placeholder="Enter Number of wires"></div>
-        <div class="input-group"><label>No. Of carriers (M) <span class="unit-hint">(Count)</span></label><input type="number" id="brM" step="any" placeholder="Enter Number of carriers"></div>
-        <div class="input-group"><label>Lay Length (L) <span class="unit-hint">(mm)</span></label><input type="number" id="brL" step="any" placeholder="Enter Lay Length"></div>
-        <div class="result-section">
-          <div class="result-title-bar">Results</div>
-          <div class="result-card primary"><span class="label">No of Wires Total</span><div class="value-wrapper"><span class="value" id="brTotalWiresOut">—</span></div></div>
-          <div class="result-card success"><span class="label">Filling Factor (F)</span><div class="value-wrapper"><span class="value" id="brFOut">—</span></div></div>
-          <div class="result-card purple"><span class="label">% Coverage</span><div class="value-wrapper"><span class="value" id="brCovOut">—</span><span class="unit">%</span></div></div>
+      <div class="qc-card" id="qc-card-thick">
+        <div class="qc-card-body">
+          <div class="input-group"><label>Minimum Thickness <span class="unit-hint">(mm)</span></label><input type="number" id="thickMin" step="any" placeholder="Enter Minimum Thickness"></div>
+          <div class="input-group"><label>Maximum Thickness <span class="unit-hint">(mm)</span></label><input type="number" id="thickMax" step="any" placeholder="Enter Maximum Thickness"></div>
+          <div class="result-section">
+            <div class="result-title-bar">Results</div>
+            <div class="result-card primary"><span class="label">Average Thickness</span><div class="value-wrapper"><span class="value" id="thickAvgOut">—</span><span class="unit">mm</span></div></div>
+            <div class="result-card success"><span class="label">Concentricity</span><div class="value-wrapper"><span class="value" id="thickConcOut">—</span><span class="unit">%</span></div></div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="qc-card" id="qc-card-tensile">
-      <div class="qc-card-body">
-        <div class="input-group"><label>Shape <span class="unit-hint">(Select)</span></label>
-          <select id="tensileShape"><option value="tubular">Tubular</option><option value="dumbbell">Dumbbell</option></select>
-        </div>
-        <div id="tubularInputs">
-          <div class="input-group"><label>Diameter of Tubular <span class="unit-hint">(mm)</span></label><input type="number" id="tDia" step="any" placeholder="Enter Diameter"></div>
-          <div class="input-group"><label>Thickness of Tubular <span class="unit-hint">(mm)</span></label><input type="number" id="tThick" step="any" placeholder="Enter Thickness"></div>
-        </div>
-        <div id="dumbbellInputs" style="display:none;">
-          <div class="input-group"><label>Width of Dumbbell <span class="unit-hint">(mm)</span></label><input type="number" id="dWidth" step="any" placeholder="Enter Width"></div>
-          <div class="input-group"><label>Min Thickness of Dumbbell <span class="unit-hint">(mm)</span></label><input type="number" id="dThick" step="any" placeholder="Enter Min Thickness"></div>
-        </div>
-        <div class="input-group"><label>Breakdown Load <span class="unit-hint">(N)</span></label><input type="number" id="tLoad" step="any" placeholder="Enter Breakdown Load"></div>
-        <div class="input-group"><label>Elongated Gauge Length <span class="unit-hint">(mm)</span></label><input type="number" id="tElong" step="any" placeholder="Enter Elongated Length"></div>
-        <div class="input-group"><label>Initial Gauge Length <span class="unit-hint">(mm)</span></label><input type="number" id="tInit" step="any" placeholder="Enter Initial Length"></div>
-        <div class="result-section">
-          <div class="result-title-bar">Results</div>
-          <div class="result-card primary"><span class="label">Area</span><div class="value-wrapper"><span class="value" id="tAreaOut">—</span><span class="unit">mm²</span></div></div>
-          <div class="result-card success"><span class="label">Tensile Strength</span><div class="value-wrapper"><span class="value" id="tTsOut">—</span><span class="unit">N/mm²</span></div></div>
-          <div class="result-card purple"><span class="label">Elongation</span><div class="value-wrapper"><span class="value" id="tElongOut">—</span><span class="unit">%</span></div></div>
+      <div class="qc-card" id="qc-card-braid">
+        <div class="qc-card-body">
+          <div class="input-group"><label>Braid Wire dia (d) <span class="unit-hint">(mm)</span></label><input type="number" id="brD" step="any" placeholder="Enter Wire Diameter"></div>
+          <div class="input-group"><label>Dia under braid (D) <span class="unit-hint">(mm)</span></label><input type="number" id="brBigD" step="any" placeholder="Enter Diameter under braid"></div>
+          <div class="input-group"><label>No. Of wires (N) <span class="unit-hint">(Count)</span></label><input type="number" id="brN" step="any" placeholder="Enter Number of wires"></div>
+          <div class="input-group"><label>No. Of carriers (M) <span class="unit-hint">(Count)</span></label><input type="number" id="brM" step="any" placeholder="Enter Number of carriers"></div>
+          <div class="input-group"><label>Lay Length (L) <span class="unit-hint">(mm)</span></label><input type="number" id="brL" step="any" placeholder="Enter Lay Length"></div>
+          <div class="result-section">
+            <div class="result-title-bar">Results</div>
+            <div class="result-card primary"><span class="label">No of Wires Total</span><div class="value-wrapper"><span class="value" id="brTotalWiresOut">—</span></div></div>
+            <div class="result-card success"><span class="label">Filling Factor (F)</span><div class="value-wrapper"><span class="value" id="brFOut">—</span></div></div>
+            <div class="result-card purple"><span class="label">% Coverage</span><div class="value-wrapper"><span class="value" id="brCovOut">—</span><span class="unit">%</span></div></div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="qc-card" id="qc-card-hotset">
-      <div class="qc-card-body">
-        <div class="input-group"><label>Shape <span class="unit-hint">(Select)</span></label>
-          <select id="hotSetShape"><option value="tubular">Tubular</option><option value="dumbbell">Dumbbell</option></select>
-        </div>
-        <div id="tubularHotInputs">
-          <div class="input-group"><label>Core Diameter <span class="unit-hint">(mm)</span></label><input type="number" id="hCoreDia" step="any" placeholder="Enter Core Diameter"></div>
-          <div class="input-group"><label>Conductor Diameter <span class="unit-hint">(mm)</span></label><input type="number" id="hCondDia" step="any" placeholder="Enter Conductor Diameter"></div>
-        </div>
-        <div id="dumbbellHotInputs" style="display:none;">
-          <div class="input-group"><label>Thickness <span class="unit-hint">(mm)</span></label><input type="number" id="hThick" step="any" placeholder="Enter Thickness"></div>
-          <div class="input-group"><label>Width <span class="unit-hint">(mm)</span></label><input type="number" id="hWidth" step="any" placeholder="Enter Width"></div>
-        </div>
-        <div class="input-group"><label>Initial Gauge Length <span class="unit-hint">(mm)</span></label><input type="number" id="hInit" step="any" placeholder="Enter Initial Length"></div>
-        <div class="input-group"><label>Elongated Gauge Length <span class="unit-hint">(mm)</span></label><input type="number" id="hElong" step="any" placeholder="Enter Elongated Length"></div>
-        <div class="input-group"><label>After Cooling Gauge Length <span class="unit-hint">(mm)</span></label><input type="number" id="hCool" step="any" placeholder="Enter Cooled Length"></div>
-        <div class="result-section">
-          <div class="result-title-bar">Results</div>
-          <div class="result-card primary"><span class="label">Cal. Weight</span><div class="value-wrapper"><span class="value" id="hWeightOut">—</span><span class="unit">g</span></div></div>
-          <div class="result-card warning"><span class="label">Hot set Elongation</span><div class="value-wrapper"><span class="value" id="hHotOut">—</span><span class="unit">%</span></div></div>
-          <div class="result-card success"><span class="label">Permanent set Elongation</span><div class="value-wrapper"><span class="value" id="hPermOut">—</span><span class="unit">%</span></div></div>
+      <div class="qc-card" id="qc-card-tensile">
+        <div class="qc-card-body">
+          <div class="input-group"><label>Shape <span class="unit-hint">(Select)</span></label>
+            <select id="tensileShape"><option value="tubular">Tubular</option><option value="dumbbell">Dumbbell</option></select>
+          </div>
+          <div id="tubularInputs">
+            <div class="input-group"><label>Diameter of Tubular <span class="unit-hint">(mm)</span></label><input type="number" id="tDia" step="any" placeholder="Enter Diameter"></div>
+            <div class="input-group"><label>Thickness of Tubular <span class="unit-hint">(mm)</span></label><input type="number" id="tThick" step="any" placeholder="Enter Thickness"></div>
+          </div>
+          <div id="dumbbellInputs" style="display:none;">
+            <div class="input-group"><label>Width of Dumbbell <span class="unit-hint">(mm)</span></label><input type="number" id="dWidth" step="any" placeholder="Enter Width"></div>
+            <div class="input-group"><label>Min Thickness of Dumbbell <span class="unit-hint">(mm)</span></label><input type="number" id="dThick" step="any" placeholder="Enter Min Thickness"></div>
+          </div>
+          <div class="input-group"><label>Breakdown Load <span class="unit-hint">(N)</span></label><input type="number" id="tLoad" step="any" placeholder="Enter Breakdown Load"></div>
+          <div class="input-group"><label>Elongated Gauge Length <span class="unit-hint">(mm)</span></label><input type="number" id="tElong" step="any" placeholder="Enter Elongated Length"></div>
+          <div class="input-group"><label>Initial Gauge Length <span class="unit-hint">(mm)</span></label><input type="number" id="tInit" step="any" placeholder="Enter Initial Length"></div>
+          <div class="result-section">
+            <div class="result-title-bar">Results</div>
+            <div class="result-card primary"><span class="label">Area</span><div class="value-wrapper"><span class="value" id="tAreaOut">—</span><span class="unit">mm²</span></div></div>
+            <div class="result-card success"><span class="label">Tensile Strength</span><div class="value-wrapper"><span class="value" id="tTsOut">—</span><span class="unit">N/mm²</span></div></div>
+            <div class="result-card purple"><span class="label">Elongation</span><div class="value-wrapper"><span class="value" id="tElongOut">—</span><span class="unit">%</span></div></div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- 2. ARMOUR COVERAGE (New) -->
-    <div class="qc-card" id="qc-card-armcov">
-      <div class="qc-card-body">
-        <div class="input-group"><label>Cable Dia (mm)</label><input type="number" id="covCableDia" step="any" placeholder="" oninput="calculateArmCov()"></div>
-        <div class="input-group"><label>Wire Dia (mm)</label><input type="number" id="covWireDia" step="any" placeholder="" oninput="calculateArmCov()"></div>
-        <div class="input-group"><label>Lay Length (mm)</label><input type="number" id="covLay" step="any" placeholder="" oninput="calculateArmCov()"></div>
-        <div class="input-group"><label>No. of Wires</label><input type="number" id="covWires" step="any" placeholder="" oninput="calculateArmCov()"></div>
-
-        <div class="result-section">
-          <div class="result-title-bar">Results</div>
-          <div class="result-card primary"><span class="label">Arm Coverage</span><div class="value-wrapper"><span class="value" id="outCov">—</span><span class="unit">%</span></div></div>
+      <div class="qc-card" id="qc-card-hotset">
+        <div class="qc-card-body">
+          <div class="input-group"><label>Shape <span class="unit-hint">(Select)</span></label>
+            <select id="hotSetShape"><option value="tubular">Tubular</option><option value="dumbbell">Dumbbell</option></select>
+          </div>
+          <div id="tubularHotInputs">
+            <div class="input-group"><label>Core Diameter <span class="unit-hint">(mm)</span></label><input type="number" id="hCoreDia" step="any" placeholder="Enter Core Diameter"></div>
+            <div class="input-group"><label>Conductor Diameter <span class="unit-hint">(mm)</span></label><input type="number" id="hCondDia" step="any" placeholder="Enter Conductor Diameter"></div>
+          </div>
+          <div id="dumbbellHotInputs" style="display:none;">
+            <div class="input-group"><label>Thickness <span class="unit-hint">(mm)</span></label><input type="number" id="hThick" step="any" placeholder="Enter Thickness"></div>
+            <div class="input-group"><label>Width <span class="unit-hint">(mm)</span></label><input type="number" id="hWidth" step="any" placeholder="Enter Width"></div>
+          </div>
+          <div class="input-group"><label>Initial Gauge Length <span class="unit-hint">(mm)</span></label><input type="number" id="hInit" step="any" placeholder="Enter Initial Length"></div>
+          <div class="input-group"><label>Elongated Gauge Length <span class="unit-hint">(mm)</span></label><input type="number" id="hElong" step="any" placeholder="Enter Elongated Length"></div>
+          <div class="input-group"><label>After Cooling Gauge Length <span class="unit-hint">(mm)</span></label><input type="number" id="hCool" step="any" placeholder="Enter Cooled Length"></div>
+          <div class="result-section">
+            <div class="result-title-bar">Results</div>
+            <div class="result-card primary"><span class="label">Cal. Weight</span><div class="value-wrapper"><span class="value" id="hWeightOut">—</span><span class="unit">g</span></div></div>
+            <div class="result-card warning"><span class="label">Hot set Elongation</span><div class="value-wrapper"><span class="value" id="hHotOut">—</span><span class="unit">%</span></div></div>
+            <div class="result-card success"><span class="label">Permanent set Elongation</span><div class="value-wrapper"><span class="value" id="hPermOut">—</span><span class="unit">%</span></div></div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <button class="btn-print no-print" onclick="triggerPrint(event, 'qc')">Save as PDF</button>
+      <!-- 2. ARMOUR COVERAGE (New) -->
+      <div class="qc-card" id="qc-card-armcov">
+        <div class="qc-card-body">
+          <div class="input-group"><label>Cable Dia (mm)</label><input type="number" id="covCableDia" step="any" placeholder="" oninput="calculateArmCov()"></div>
+          <div class="input-group"><label>Wire Dia (mm)</label><input type="number" id="covWireDia" step="any" placeholder="" oninput="calculateArmCov()"></div>
+          <div class="input-group"><label>Lay Length (mm)</label><input type="number" id="covLay" step="any" placeholder="" oninput="calculateArmCov()"></div>
+          <div class="input-group"><label>No. of Wires</label><input type="number" id="covWires" step="any" placeholder="" oninput="calculateArmCov()"></div>
+
+          <div class="result-section">
+            <div class="result-title-bar">Results</div>
+            <div class="result-card primary"><span class="label">Arm Coverage</span><div class="value-wrapper"><span class="value" id="outCov">—</span><span class="unit">%</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-print no-print" onclick="triggerPrint(event, 'qc')">Save as PDF</button>
+    </div>
   </div>
 
   <div class="view-section" id="view-gatepass">
-    <div class="gp-hero">
-      <div class="gp-hero-icon">🎫</div>
-      <div class="gp-hero-text">
-        <h2>Gate Pass Generator</h2>
-        <p>Generate gate pass cards on a single A4 sheet (3 per row)</p>
+    <div id="gatepassMaintenanceNotice"></div>
+    <div id="gatepassContentWrap">
+      <div class="gp-hero">
+        <div class="gp-hero-icon">🎫</div>
+        <div class="gp-hero-text">
+          <h2>Gate Pass Generator</h2>
+          <p>Standard A4 sheet layout — 3 × 9 (27 passes)</p>
+        </div>
+      </div>
+
+      <div class="gp-form-card">
+        <div class="gp-form-header">
+          <span class="gp-section-icon">📝</span>
+          <span>Pass Details</span>
+        </div>
+        <div class="gp-form-body">
+          <div class="gp-field">
+            <label for="gpDept">Department</label>
+            <input type="text" id="gpDept" placeholder="e.g. PRODUCTION" maxlength="30" autocomplete="off">
+          </div>
+
+          <div class="gp-field-row">
+            <div class="gp-field">
+              <label for="gpDate">Date</label>
+              <input type="date" id="gpDate">
+            </div>
+            <div class="gp-field">
+              <label for="gpHour">Out Time <span class="gp-label-hint">(AM / PM)</span></label>
+              <div class="gp-time-picker">
+                <select id="gpHour" aria-label="Hour"></select>
+                <span class="gp-time-sep">:</span>
+                <select id="gpMinute" aria-label="Minute"></select>
+                <select id="gpAmPm" aria-label="AM or PM">
+                  <option value="AM">AM</option>
+                  <option value="PM">PM</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="gp-preview">
+            <div class="gp-preview-label">👁️ Preview</div>
+            <div class="gp-preview-content">
+              <span>Date: <b id="gpPreviewDate">—</b></span>
+              <span>Out Time: <b id="gpPreviewTime">—</b></span>
+              <span>Layout: <b id="gpPreviewCount">27 (3×9)</b></span>
+            </div>
+          </div>
+
+          <button class="gp-generate-btn" onclick="triggerPrint(event, 'gatepass')">
+            <span>🖨️</span>
+            <span>Generate &amp; Save PDF (27 Passes)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- UNIQUE PROFILE HUB VIEW -->
+  <div class="view-section" id="view-profile">
+    <div class="profile-hero">
+      <div class="profile-badge-avatar" id="profileHubAvatar">TC</div>
+      <div class="profile-hero-meta">
+        <h2 id="profileHubName">User</h2>
+        <div class="profile-role-pill" id="profileHubRole">Role</div>
       </div>
     </div>
 
-    <div class="gp-form-card">
-      <div class="gp-form-header">
-        <span class="gp-section-icon">📝</span>
-        <span>Pass Details</span>
+    <div class="profile-actions-grid">
+      <button class="profile-tile" onclick="openQrModal(event)">
+        <div class="profile-tile-icon qr">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </div>
+        <div class="profile-tile-text">
+          <strong>Scan to Open App</strong>
+          <span>Mobile QR link</span>
+        </div>
+      </button>
+
+      <button class="profile-tile" onclick="openFeedbackModal(event)">
+        <div class="profile-tile-icon feedback">💬</div>
+        <div class="profile-tile-text">
+          <strong>Report or Suggest</strong>
+          <span>Issue or improvement</span>
+        </div>
+      </button>
+
+      <button class="profile-tile" id="profileBannerTile" style="display: none;" onclick="openBannerModal(event)">
+        <div class="profile-tile-icon banner">📢</div>
+        <div class="profile-tile-text">
+          <strong>Manage Banners</strong>
+          <span>Home promos</span>
+        </div>
+      </button>
+
+      <button class="profile-tile" onclick="handleLogout()">
+        <div class="profile-tile-icon logout">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </div>
+        <div class="profile-tile-text">
+          <strong style="color: var(--danger-text);">Sign Out</strong>
+          <span>End session</span>
+        </div>
+      </button>
+    </div>
+
+    <!-- Maintenance Mode Manager (Editable by Admin only) -->
+    <div class="maint-card" id="maintenanceSection">
+      <div class="maint-header">
+        <h3>🛠️ Maintenance Mode</h3>
+        <span class="maint-lock-pill" id="maintAccessBadge">Admin Only</span>
       </div>
-      <div class="gp-form-body">
-        <div class="gp-field">
-          <label for="gpDept">Department</label>
-          <input type="text" id="gpDept" placeholder="e.g. PRODUCTION" maxlength="30" autocomplete="off">
-        </div>
-
-        <div class="gp-field-row">
-          <div class="gp-field">
-            <label for="gpDate">Date</label>
-            <input type="date" id="gpDate">
-          </div>
-          <div class="gp-field">
-            <label for="gpHour">Out Time <span class="gp-label-hint">(AM / PM)</span></label>
-            <div class="gp-time-picker">
-              <select id="gpHour" aria-label="Hour"></select>
-              <span class="gp-time-sep">:</span>
-              <select id="gpMinute" aria-label="Minute"></select>
-              <select id="gpAmPm" aria-label="AM or PM">
-                <option value="AM">AM</option>
-                <option value="PM">PM</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="gp-field">
-          <label for="gpCount">No. of Passes <span class="gp-label-hint">(1 – 30)</span></label>
-          <input type="number" id="gpCount" min="1" max="30" step="1" inputmode="numeric">
-        </div>
-
-        <div class="gp-preview">
-          <div class="gp-preview-label">👁️ Preview</div>
-          <div class="gp-preview-content">
-            <span>Date: <b id="gpPreviewDate">—</b></span>
-            <span>Out Time: <b id="gpPreviewTime">—</b></span>
-            <span>Passes: <b id="gpPreviewCount">—</b></span>
-          </div>
-        </div>
-
-        <button class="gp-generate-btn" onclick="triggerPrint(event, 'gatepass')">
-          <span>🖨️</span>
-          <span>Generate &amp; Save PDF</span>
-        </button>
-      </div>
+      <div class="maint-scope-list" id="maintenanceScopeList"></div>
+      <button class="maint-save-btn" id="maintSaveBtn" style="display: none;" onclick="saveMaintenanceSettings()">Save Maintenance Settings</button>
     </div>
   </div>
 
@@ -2738,7 +2941,7 @@ body.has-offline-banner .profile-dropdown { top: calc(76px + 36px); }
 </div>
 
 <div class="bottom-nav" id="bottomNav">
-  <div class="nav-item" onclick="switchMainView('home')">
+  <div class="nav-item" id="nav-home" onclick="switchMainView('home')">
     <svg viewBox="0 0 24 24"><path d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" /></svg>
     <span>Home</span>
   </div>
@@ -2758,6 +2961,10 @@ body.has-offline-banner .profile-dropdown { top: calc(76px + 36px); }
     <svg viewBox="0 0 24 24"><path d="M4,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M4,6V18H20V6H4M6,8H12V12H6V8M14,8H18V10H14V8M14,12H18V14H14V12M6,14H18V16H6V14Z" /></svg>
     <span>Gate Pass</span>
   </div>
+  <div class="nav-item" id="nav-profile" onclick="switchMainView('profile')">
+    <svg viewBox="0 0 24 24"><path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" /></svg>
+    <span>Profile</span>
+  </div>
 </div>
 
 <div class="modal-overlay" id="knowledgeModal" onclick="closeKnowledge(event)">
@@ -2776,10 +2983,10 @@ body.has-offline-banner .profile-dropdown { top: calc(76px + 36px); }
   <div class="modal-content" onclick="event.stopPropagation()" style="text-align: center;">
     <button class="modal-close" onclick="closeQrModal(event)">✕</button>
     <div class="modal-header" style="justify-content: center; margin-bottom: 10px; padding-right: 0;">
-      <h3>Scan to Open Portal</h3>
+      <h3>Scan to Open Thermocables</h3>
     </div>
     <div class="modal-body" style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
-      <p style="font-size: 0.9rem; color: var(--text-muted);">Point your phone camera here to open the portal on your mobile device.</p>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">Point your phone camera here to open the app on your mobile device.</p>
       <img id="qrCodeImage" src="" alt="QR Code" style="width: 220px; height: 220px; border-radius: 14px; border: 1px solid var(--border-light); padding: 10px; box-shadow: var(--shadow-xs);">
       <button class="btn-print" onclick="closeQrModal()" style="margin-top: 10px;">Close</button>
     </div>
@@ -2810,6 +3017,42 @@ body.has-offline-banner .profile-dropdown { top: calc(76px + 36px); }
       </div>
       <button class="btn-send" style="width: 100%; margin-top: 4px;" onclick="addBanner()">+ Publish Banner</button>
       <div id="adminBannerList" style="margin-top: 18px; display: flex; flex-direction: column; gap: 8px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REPORT ISSUE / SUGGEST IMPROVEMENT MODAL -->
+<div class="modal-overlay" id="feedbackModal" onclick="closeFeedbackModal(event)">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeFeedbackModal(event)">✕</button>
+    <div class="modal-header">
+      <h3>💬 Report Issue or Suggest Improvement</h3>
+    </div>
+    <div class="modal-body">
+      <div class="report-form-group">
+        <label>Type</label>
+        <select id="fbType">
+          <option value="Issue">Report an Issue</option>
+          <option value="Improvement">Suggest Improvement</option>
+        </select>
+      </div>
+      <div class="report-form-group">
+        <label>Module</label>
+        <select id="fbModule">
+          <option value="General">General</option>
+          <option value="Home">Home</option>
+          <option value="Job Cards">Job Cards</option>
+          <option value="BOM">BOM</option>
+          <option value="QC Calc">QC Calc</option>
+          <option value="Gate Pass">Gate Pass</option>
+        </select>
+      </div>
+      <div class="report-form-group">
+        <label>Details</label>
+        <textarea id="fbMessage" placeholder="Describe the issue or suggestion clearly..."></textarea>
+      </div>
+      <button class="btn-send" style="width: 100%; margin-top: 4px;" onclick="submitFeedback()">Submit Feedback</button>
+      <div id="feedbackHistoryList" style="margin-top: 18px; display: flex; flex-direction: column; gap: 8px;"></div>
     </div>
   </div>
 </div>
@@ -2852,6 +3095,207 @@ let CURRENT_USER = '', CURRENT_ROLE = '', ALLOWED_VIEWS = [];
 let JOB_DATA = [], BOM_DATA = [], USER_PLAN_QTY = null;
 let loginStep = 1;
 
+/* --- STANDARD GATE PASS COUNT: 3 x 9 = 27 --- */
+const GP_STANDARD_COUNT = 27;
+
+/* --- MAINTENANCE STATE --- */
+const MAINT_SCOPES = [
+  { key: 'app',      label: 'Whole App' },
+  { key: 'home',     label: 'Home' },
+  { key: 'jobcards', label: 'Job Cards' },
+  { key: 'bom',      label: 'BOM' },
+  { key: 'qccalc',   label: 'QC Calc' },
+  { key: 'gatepass', label: 'Gate Pass' }
+];
+
+function getDefaultMaintenanceState() {
+  return {
+    app:      { active: false, remark: '' },
+    home:     { active: false, remark: '' },
+    jobcards: { active: false, remark: '' },
+    bom:      { active: false, remark: '' },
+    qccalc:   { active: false, remark: '' },
+    gatepass: { active: false, remark: '' }
+  };
+}
+
+let MAINTENANCE_STATE = loadMaintenanceState();
+
+function loadMaintenanceState() {
+  const def = getDefaultMaintenanceState();
+  try {
+    const saved = JSON.parse(localStorage.getItem('tc_maintenance')) || {};
+    MAINT_SCOPES.forEach(({ key }) => {
+      if (saved[key] && typeof saved[key] === 'object') {
+        def[key] = {
+          active: Boolean(saved[key].active),
+          remark: String(saved[key].remark || '')
+        };
+      }
+    });
+  } catch (e) {
+    console.warn('Failed to load maintenance settings:', e);
+  }
+  return def;
+}
+
+function isAdminUser() {
+  return CURRENT_ROLE === 'Admin' || CURRENT_USER === 'admin';
+}
+
+function renderMaintenanceUI() {
+  const listEl = document.getElementById('maintenanceScopeList');
+  const saveBtn = document.getElementById('maintSaveBtn');
+  const badgeEl = document.getElementById('maintAccessBadge');
+  if (!listEl) return;
+
+  const canEdit = isAdminUser();
+  if (badgeEl) {
+    badgeEl.textContent = canEdit ? 'Admin Editable' : 'View Only (Admin)';
+  }
+  if (saveBtn) {
+    saveBtn.style.display = canEdit ? 'block' : 'none';
+  }
+
+  listEl.innerHTML = MAINT_SCOPES.map(({ key, label }) => {
+    const item = MAINTENANCE_STATE[key] || { active: false, remark: '' };
+    const activeCls = item.active ? 'is-active' : '';
+    const badgeHtml = item.active
+      ? `<span class="maint-badge on">Maintenance ON</span>`
+      : `<span class="maint-badge off">Active</span>`;
+
+    if (canEdit) {
+      return `
+        <div class="maint-row ${activeCls}" id="maint-row-${key}">
+          <div class="maint-row-top">
+            <div class="maint-scope-title">${esc(label)} ${badgeHtml}</div>
+            <button type="button" class="maint-toggle-btn ${item.active ? 'active' : ''}" id="maint-btn-${key}" onclick="toggleMaintenanceScope('${key}')">
+              ${item.active ? 'Disable' : 'Enable'}
+            </button>
+          </div>
+          <input type="text" class="maint-remark-input" id="maint-remark-${key}" value="${esc(item.remark)}" placeholder="Remarks for ${esc(label)} maintenance (optional)...">
+        </div>
+      `;
+    }
+
+    return `
+      <div class="maint-row ${activeCls}">
+        <div class="maint-row-top">
+          <div class="maint-scope-title">${esc(label)} ${badgeHtml}</div>
+        </div>
+        ${item.remark ? `<div class="maint-remark-readonly">Remark: ${esc(item.remark)}</div>` : `<div class="maint-remark-readonly">No remarks</div>`}
+      </div>
+    `;
+  }).join('');
+
+  applyMaintenanceLocks();
+}
+
+window.toggleMaintenanceScope = function(key) {
+  if (!isAdminUser()) {
+    alert('Only Admin can update maintenance mode.');
+    return;
+  }
+  if (!MAINTENANCE_STATE[key]) MAINTENANCE_STATE[key] = { active: false, remark: '' };
+  MAINTENANCE_STATE[key].active = !MAINTENANCE_STATE[key].active;
+
+  const remarkInput = document.getElementById(`maint-remark-${key}`);
+  if (remarkInput) {
+    MAINTENANCE_STATE[key].remark = remarkInput.value;
+  }
+
+  const row = document.getElementById(`maint-row-${key}`);
+  const btn = document.getElementById(`maint-btn-${key}`);
+  if (row) row.classList.toggle('is-active', MAINTENANCE_STATE[key].active);
+  if (btn) {
+    btn.classList.toggle('active', MAINTENANCE_STATE[key].active);
+    btn.textContent = MAINTENANCE_STATE[key].active ? 'Disable' : 'Enable';
+  }
+};
+
+window.saveMaintenanceSettings = function() {
+  if (!isAdminUser()) {
+    alert('Only Admin can update maintenance mode.');
+    return;
+  }
+  MAINT_SCOPES.forEach(({ key }) => {
+    const input = document.getElementById(`maint-remark-${key}`);
+    if (!MAINTENANCE_STATE[key]) MAINTENANCE_STATE[key] = { active: false, remark: '' };
+    if (input) {
+      MAINTENANCE_STATE[key].remark = input.value.trim();
+    }
+  });
+  localStorage.setItem('tc_maintenance', JSON.stringify(MAINTENANCE_STATE));
+  renderMaintenanceUI();
+  alert('Maintenance settings updated.');
+};
+
+function buildMaintenanceNoticeHtml(scopeLabel, remark) {
+  const safeRemark = remark && remark.trim()
+    ? `<div class="maintenance-remark-box"><b>Remark:</b> ${esc(remark.trim())}</div>`
+    : `<div class="maintenance-remark-box">Scheduled maintenance is currently in progress. Please check back shortly.</div>`;
+  return `
+    <div class="maintenance-notice-card">
+      <div class="maintenance-notice-icon">🛠️</div>
+      <h3>${esc(scopeLabel)} Under Maintenance</h3>
+      <p>This ${esc(scopeLabel.toLowerCase())} is temporarily paused for updates.</p>
+      ${safeRemark}
+      <div class="maintenance-actions">
+        <button type="button" class="btn-reset" onclick="switchMainView('profile')">View Maintenance Status</button>
+      </div>
+    </div>
+  `;
+}
+
+function applyMaintenanceLocks() {
+  const globalBlock = document.getElementById('globalAppMaintenanceView');
+  const appUnderMaint = Boolean(MAINTENANCE_STATE.app && MAINTENANCE_STATE.app.active) && !isAdminUser();
+
+  const viewIds = ['view-home', 'view-jobcards', 'view-bom', 'view-qccalc', 'view-gatepass', 'view-profile'];
+  if (globalBlock) {
+    if (appUnderMaint) {
+      globalBlock.style.display = 'block';
+      globalBlock.innerHTML = buildMaintenanceNoticeHtml('Thermocables Portal', MAINTENANCE_STATE.app.remark);
+      viewIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+    } else {
+      globalBlock.style.display = 'none';
+      globalBlock.innerHTML = '';
+      viewIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = '';
+      });
+    }
+  }
+
+  const moduleMap = [
+    { key: 'home',     label: 'Home Module',     noticeId: 'homeMaintenanceNotice',     wrapId: 'homeContentWrap' },
+    { key: 'jobcards', label: 'Job Cards Module', noticeId: 'jobcardsMaintenanceNotice', wrapId: 'jobcardsContentWrap' },
+    { key: 'bom',      label: 'BOM Module',      noticeId: 'bomMaintenanceNotice',      wrapId: 'bomContentWrap' },
+    { key: 'qccalc',   label: 'QC Calc Module',  noticeId: 'qccalcMaintenanceNotice',   wrapId: 'qccalcContentWrap' },
+    { key: 'gatepass', label: 'Gate Pass Module',noticeId: 'gatepassMaintenanceNotice', wrapId: 'gatepassContentWrap' }
+  ];
+
+  moduleMap.forEach(({ key, label, noticeId, wrapId }) => {
+    const noticeEl = document.getElementById(noticeId);
+    const wrapEl = document.getElementById(wrapId);
+    const cfg = MAINTENANCE_STATE[key] || { active: false, remark: '' };
+    const blocked = Boolean(cfg.active) && !isAdminUser();
+
+    if (noticeEl && wrapEl) {
+      if (blocked) {
+        noticeEl.innerHTML = buildMaintenanceNoticeHtml(label, cfg.remark);
+        wrapEl.style.display = 'none';
+      } else {
+        noticeEl.innerHTML = '';
+        wrapEl.style.display = '';
+      }
+    }
+  });
+}
+
 /* --- BANNER STATE --- */
 let BANNERS = JSON.parse(localStorage.getItem('tc_banners')) || [];
 let CURRENT_BANNER_IDX = 0;
@@ -2873,13 +3317,6 @@ function formatDateForDisplay(isoDate) {
   if (!isoDate) return '';
   const [y, m, d] = isoDate.split('-');
   return `${d}/${m}/${y}`;
-}
-
-/* ---- Gate Pass: clamp pass count ---- */
-function clampGpCount(raw) {
-  const n = parseInt(raw, 10);
-  if (isNaN(n)) return 27;
-  return Math.min(30, Math.max(1, n));
 }
 
 /* ---- Gate Pass UI: populate dropdowns, defaults, live preview ---- */
@@ -2911,14 +3348,6 @@ function initGatePassUI() {
   deptEl.value = localStorage.getItem('tc_gp_dept') || localStorage.getItem('tc_dept') || 'PRODUCTION';
   deptEl.addEventListener('input', () => {
     localStorage.setItem('tc_gp_dept', deptEl.value);
-    updateGatePassPreview();
-  });
-
-  const countEl = document.getElementById('gpCount');
-  countEl.value = '27';
-  countEl.addEventListener('input', updateGatePassPreview);
-  countEl.addEventListener('blur', () => {
-    countEl.value = clampGpCount(countEl.value);
     updateGatePassPreview();
   });
 
@@ -2959,7 +3388,6 @@ function updateGatePassPreview() {
   const h = document.getElementById('gpHour').value;
   const m = document.getElementById('gpMinute').value;
   const ap = document.getElementById('gpAmPm').value;
-  const c = document.getElementById('gpCount').value;
 
   const dateOut = document.getElementById('gpPreviewDate');
   const timeOut = document.getElementById('gpPreviewTime');
@@ -2971,9 +3399,10 @@ function updateGatePassPreview() {
   timeOut.textContent = (h && m && ap) ? `${h}:${m} ${ap}` : 'not set';
   timeOut.classList.toggle('gp-preview-empty', !(h && m && ap));
 
-  const countVal = parseInt(c, 10);
-  countOut.textContent = (!isNaN(countVal) && countVal > 0) ? String(clampGpCount(countVal)) : 'not set';
-  countOut.classList.toggle('gp-preview-empty', isNaN(countVal) || countVal < 1);
+  if (countOut) {
+    countOut.textContent = `${GP_STANDARD_COUNT} (3×9)`;
+    countOut.classList.remove('gp-preview-empty');
+  }
 }
 
 /* ---- LOGIN ---- */
@@ -3017,27 +3446,29 @@ function completeLogin(u) {
 
   const displayName = u.charAt(0).toUpperCase() + u.slice(1);
   const initials = displayName.slice(0, 2).toUpperCase();
-  document.getElementById('headerAvatarInitials').textContent = initials;
-  document.getElementById('dropAvatarInitials').textContent = initials;
-  document.getElementById('dropUserName').textContent = displayName;
-  document.getElementById('dropUserRole').textContent = CURRENT_ROLE;
+  document.getElementById('profileHubAvatar').textContent = initials;
+  document.getElementById('profileHubName').textContent = displayName;
+  document.getElementById('profileHubRole').textContent = CURRENT_ROLE;
 
   document.getElementById('nav-job').style.display = ALLOWED_VIEWS.includes('jobcards') ? 'flex' : 'none';
   document.getElementById('nav-bom').style.display = ALLOWED_VIEWS.includes('bom') ? 'flex' : 'none';
   document.getElementById('nav-qc').style.display = ALLOWED_VIEWS.includes('qccalc') ? 'flex' : 'none';
   document.getElementById('nav-gatepass').style.display = ALLOWED_VIEWS.includes('gatepass') ? 'flex' : 'none';
 
-  if (CURRENT_ROLE === 'Admin') {
+  if (isAdminUser()) {
     document.getElementById('adminPanel').style.display = 'block';
-    document.getElementById('nav-banner-mgmt').style.display = 'block';
+    document.getElementById('profileBannerTile').style.display = 'flex';
     loadAdminSettings();
   } else {
     document.getElementById('adminPanel').style.display = 'none';
-    document.getElementById('nav-banner-mgmt').style.display = 'none';
+    document.getElementById('profileBannerTile').style.display = 'none';
   }
 
+  MAINTENANCE_STATE = loadMaintenanceState();
+  renderMaintenanceUI();
+
   document.getElementById('welcomeName').textContent = CURRENT_ROLE;
-  document.getElementById('headerCompany').textContent = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
+  document.getElementById('headerTitle').textContent = 'Thermocables';
 
   const now = new Date();
   const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -3162,18 +3593,11 @@ window.addEventListener('load', () => {
   }
 });
 
-window.toggleProfile = function(event) { if(event) event.stopPropagation(); document.getElementById('profileDropdown').classList.toggle('show'); };
-document.addEventListener('click', function(event) {
-  const drop = document.getElementById('profileDropdown'), profile = document.querySelector('.user-profile');
-  if (drop.classList.contains('show') && !profile.contains(event.target) && !drop.contains(event.target)) drop.classList.remove('show');
-});
-
 window.saveAdminSettings = function() {
   localStorage.setItem('tc_company', document.getElementById('setCompany').value);
   localStorage.setItem('tc_dept', document.getElementById('setDept').value);
   localStorage.setItem('tc_prep', document.getElementById('setPrepBy').value);
   localStorage.setItem('tc_ver', document.getElementById('setVerBy').value);
-  document.getElementById('headerCompany').textContent = document.getElementById('setCompany').value || 'THERMOCABLES LTD.';
   alert('Settings Saved Successfully!');
 };
 function loadAdminSettings() {
@@ -3185,30 +3609,35 @@ function loadAdminSettings() {
 
 window.switchMainView = function(viewName) {
   document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
-  document.getElementById(`view-${viewName}`).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const targetView = document.getElementById(`view-${viewName}`);
+  if (targetView) targetView.classList.add('active');
 
-  if(viewName === 'home') document.querySelectorAll('.nav-item')[0].classList.add('active');
-  else if(viewName === 'jobcards') document.getElementById('nav-job').classList.add('active');
-  else if(viewName === 'bom') document.getElementById('nav-bom').classList.add('active');
-  else if(viewName === 'qccalc') document.getElementById('nav-qc').classList.add('active');
-  else if(viewName === 'gatepass') {
-    document.getElementById('nav-gatepass').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (viewName === 'home') document.getElementById('nav-home')?.classList.add('active');
+  else if (viewName === 'jobcards') document.getElementById('nav-job')?.classList.add('active');
+  else if (viewName === 'bom') document.getElementById('nav-bom')?.classList.add('active');
+  else if (viewName === 'qccalc') document.getElementById('nav-qc')?.classList.add('active');
+  else if (viewName === 'gatepass') {
+    document.getElementById('nav-gatepass')?.classList.add('active');
     syncGatePassDate();
     syncGatePassClock();
     updateGatePassPreview();
+  } else if (viewName === 'profile') {
+    document.getElementById('nav-profile')?.classList.add('active');
+    renderMaintenanceUI();
   }
 
-  const title = viewName === 'home' ? 'PORTAL' : (viewName === 'jobcards' ? 'JOB CARDS' : (viewName === 'bom' ? 'BOM' : (viewName === 'qccalc' ? 'QC CALCULATOR' : 'GATE PASS')));
-  document.getElementById('headerTitle').textContent = title;
+  document.getElementById('headerTitle').textContent = 'Thermocables';
+  applyMaintenanceLocks();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 window.switchQcTab = function(tabName, event) {
   document.querySelectorAll('.qc-tab-btn').forEach(btn => btn.classList.remove('active'));
-  event.currentTarget.classList.add('active');
+  if (event && event.currentTarget) event.currentTarget.classList.add('active');
   document.querySelectorAll('.qc-card').forEach(card => card.classList.remove('active'));
-  document.getElementById(`qc-card-${tabName}`).classList.add('active');
+  const targetCard = document.getElementById(`qc-card-${tabName}`);
+  if (targetCard) targetCard.classList.add('active');
 };
 
 /* --- KNOWLEDGE MODAL LOGIC --- */
@@ -3235,7 +3664,6 @@ window.closeKnowledge = function(event) {
 /* --- QR MODAL LOGIC --- */
 window.openQrModal = function(event) {
   if(event) event.stopPropagation();
-  document.getElementById('profileDropdown').classList.remove('show');
   const currentUrl = window.location.href;
   document.getElementById('qrCodeImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(currentUrl)}`;
   document.getElementById('qrModal').classList.add('open');
@@ -3245,10 +3673,88 @@ window.closeQrModal = function(event) {
   document.getElementById('qrModal').classList.remove('open');
 };
 
+/* --- FEEDBACK / ISSUE / SUGGESTION MODAL LOGIC --- */
+window.openFeedbackModal = function(event) {
+  if(event) event.stopPropagation();
+  renderFeedbackHistory();
+  document.getElementById('feedbackModal').classList.add('open');
+};
+window.closeFeedbackModal = function(event) {
+  if(event && event.target.classList.contains('modal-content')) return;
+  document.getElementById('feedbackModal').classList.remove('open');
+};
+
+window.submitFeedback = function() {
+  const typeEl = document.getElementById('fbType');
+  const modEl = document.getElementById('fbModule');
+  const msgEl = document.getElementById('fbMessage');
+  const msg = msgEl.value.trim();
+  if (!msg) {
+    alert('Please enter your issue or improvement suggestion.');
+    msgEl.focus();
+    return;
+  }
+
+  let items = [];
+  try {
+    items = JSON.parse(localStorage.getItem('tc_feedback')) || [];
+  } catch (e) {
+    items = [];
+  }
+
+  items.unshift({
+    id: Date.now(),
+    type: typeEl.value,
+    module: modEl.value,
+    message: msg,
+    user: CURRENT_USER || 'guest',
+    createdAt: new Date().toLocaleString()
+  });
+
+  try {
+    localStorage.setItem('tc_feedback', JSON.stringify(items.slice(0, 50)));
+  } catch (e) {
+    console.warn('Could not persist feedback:', e);
+  }
+
+  msgEl.value = '';
+  renderFeedbackHistory();
+  alert('Submitted. Thank you for your feedback.');
+};
+
+function renderFeedbackHistory() {
+  const listEl = document.getElementById('feedbackHistoryList');
+  if (!listEl) return;
+  let items = [];
+  try {
+    items = JSON.parse(localStorage.getItem('tc_feedback')) || [];
+  } catch (e) {
+    items = [];
+  }
+
+  if (items.length === 0) {
+    listEl.innerHTML = `<div style="font-size:0.78rem;color:var(--text-muted);text-align:center;padding:8px;">No recent submissions yet.</div>`;
+    return;
+  }
+
+  listEl.innerHTML = items.slice(0, 8).map(item => `
+    <div class="feedback-log-item">
+      <div class="feedback-log-meta">
+        <span>${esc(item.type)} • ${esc(item.module)} (${esc(item.user)})</span>
+        <span>${esc(item.createdAt)}</span>
+      </div>
+      <div style="color:var(--text-primary);white-space:pre-wrap;">${esc(item.message)}</div>
+    </div>
+  `).join('');
+}
+
 /* --- BANNER MANAGEMENT LOGIC --- */
 window.openBannerModal = function(event) {
   if(event) event.stopPropagation();
-  document.getElementById('profileDropdown').classList.remove('show');
+  if (!isAdminUser()) {
+    alert('Only Admin can manage banners.');
+    return;
+  }
   document.getElementById('bannerModal').classList.add('open');
   renderAdminBanners();
 };
@@ -4037,11 +4543,9 @@ window.triggerPrint = function(e, type) {
     const gpHourEl = document.getElementById('gpHour');
     const gpMinuteEl = document.getElementById('gpMinute');
     const gpAmPmEl = document.getElementById('gpAmPm');
-    const gpCountEl = document.getElementById('gpCount');
 
     gpDeptEl.classList.remove('gp-invalid');
     gpDateEl.classList.remove('gp-invalid');
-    gpCountEl.classList.remove('gp-invalid');
 
     if (!gpDeptEl.value.trim()) {
       gpDeptEl.classList.add('gp-invalid');
@@ -4061,32 +4565,22 @@ window.triggerPrint = function(e, type) {
       return;
     }
 
-    const countRaw = parseInt(gpCountEl.value, 10);
-    if (isNaN(countRaw) || countRaw < 1) {
-      gpCountEl.classList.add('gp-invalid');
-      gpCountEl.focus();
-      alert('Enter how many passes to generate (1 – 30).');
-      return;
-    }
-    const gpCount = clampGpCount(countRaw);
-    gpCountEl.value = gpCount;
     updateGatePassPreview();
-
     document.body.classList.add('printing-gatepass');
 
     const gpDept = gpDeptEl.value.trim();
     const gpDate = formatDateForDisplay(gpDateEl.value);
     const gpTime = `${gpHourEl.value}:${gpMinuteEl.value} ${gpAmPmEl.value}`;
     const company = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
+    const gpCount = GP_STANDARD_COUNT;
 
-    const rows = Math.ceil(gpCount / 3);
+    const rows = Math.ceil(gpCount / 3); // 9 rows for 3x9 = 27 passes
     gpContainer.style.setProperty('--gp-rows', String(rows));
-    gpContainer.classList.toggle('gp-dense', gpCount > 27);
+    gpContainer.classList.remove('gp-dense');
 
-    const pad = gpCount > 9 ? 2 : 2;
     let gpHtml = '';
     for (let i = 0; i < gpCount; i++) {
-      const serial = String(i + 1).padStart(pad, '0');
+      const serial = String(i + 1).padStart(2, '0');
       gpHtml += `
         <div class="gate-pass-card">
           <div class="gp-company">${esc(company)}</div>
@@ -4117,8 +4611,9 @@ window.addEventListener('afterprint', () => {
   }
 });
 
-/* Initialize Gate Pass UI */
+/* Initialize Gate Pass & Maintenance UI */
 initGatePassUI();
+renderMaintenanceUI();
 
 })();
 </script>

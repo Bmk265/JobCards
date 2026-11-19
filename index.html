@@ -604,6 +604,25 @@ body {
   justify-content: space-between;
   align-items: center;
 }
+.module-access-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.module-access-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  background: var(--bg-surface);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+}
 .admin-user-card {
   background: var(--bg-app);
   border: 1px solid var(--border-light);
@@ -3150,10 +3169,10 @@ body.has-offline-banner .app { padding-top: 48px; }
       </button>
     </div>
 
-    <!-- Admin User Management (Create / Edit / Delete) -->
+    <!-- Admin User Management (Create / Edit / Delete + Module Access) -->
     <div class="maint-card" id="adminUserMgmtCard" style="display: none;">
       <div class="maint-header">
-        <h3>👥 Manage Users</h3>
+        <h3>👥 Manage Users &amp; Module Access</h3>
         <span class="maint-lock-pill" id="adminUserCountBadge">0 Users</span>
       </div>
 
@@ -3197,6 +3216,7 @@ body.has-offline-banner .app { padding-top: 48px; }
           <div class="report-form-group" style="margin-bottom:10px;">
             <label>Role</label>
             <select id="admUserRole">
+              <option value="">— Blank (Assign Later) —</option>
               <option value="Operator">Operator</option>
               <option value="QC">QC</option>
               <option value="Production">Production</option>
@@ -3211,23 +3231,38 @@ body.has-offline-banner .app { padding-top: 48px; }
             <input type="text" id="admUserPass" placeholder="Password (blank for no-pass operator)">
           </div>
         </div>
+
+        <div class="report-form-group" style="margin-bottom:10px;">
+          <label>Allowed Modules</label>
+          <div class="module-access-picker" id="admModuleAccessPicker">
+            <label class="module-access-chip"><input type="checkbox" class="adm-mod-cb" value="home" checked> Home</label>
+            <label class="module-access-chip"><input type="checkbox" class="adm-mod-cb" value="jobcards" checked> Job Cards</label>
+            <label class="module-access-chip"><input type="checkbox" class="adm-mod-cb" value="bom"> BOM</label>
+            <label class="module-access-chip"><input type="checkbox" class="adm-mod-cb" value="qccalc"> QC Calc</label>
+            <label class="module-access-chip"><input type="checkbox" class="adm-mod-cb" value="gatepass" checked> Gate Pass</label>
+          </div>
+        </div>
+
         <button type="button" class="btn-send" style="width:100%;" id="adminSaveUserBtn" onclick="saveAdminUser()">+ Create User</button>
       </div>
 
       <div id="adminUserList"></div>
     </div>
 
-    <!-- Maintenance Mode Manager (Editable by Admin only) -->
+    <!-- Maintenance Mode Manager (Shows only active maintenance items; Admin can enable/disable) -->
     <div class="maint-card" id="maintenanceSection">
       <div class="maint-header">
         <h3>🛠️ Maintenance Mode</h3>
         <span class="maint-lock-pill" id="maintAccessBadge">Admin Only</span>
       </div>
+      <div id="maintAdminAddWrap" style="display:none; margin-bottom:10px; gap:8px; align-items:center;">
+        <select id="maintScopeSelect" style="flex:1; padding:8px 10px; border-radius:8px; border:1px solid var(--border-light); background:var(--bg-app); font-size:0.82rem; font-weight:600;"></select>
+        <button type="button" class="btn-mini-edit" style="padding:8px 12px;" onclick="enableSelectedMaintenanceScope()">Enable Maintenance</button>
+      </div>
       <div class="maint-scope-list" id="maintenanceScopeList"></div>
       <button class="maint-save-btn" id="maintSaveBtn" style="display: none;" onclick="saveMaintenanceSettings()">Save Maintenance Settings</button>
     </div>
   </div>
-
   <div class="app-footer no-print">
     Made with <span class="heart">♥️</span> by <span class="author">Manikanta Bodepu</span>
   </div>
@@ -3415,18 +3450,24 @@ let loginStep = 1;
 
 /* --- STANDARD GATE PASS COUNT: 3 x 9 = 27 --- */
 const GP_STANDARD_COUNT = 27;
+const ALL_MODULE_KEYS = ['home', 'jobcards', 'bom', 'qccalc', 'gatepass'];
 
 /* --- DEFAULT & PERSISTED USERS STORE --- */
 const DEFAULT_USERS = {
-  'admin':      { name: 'Administrator', dept: 'Administration', plant: 'Main Plant', phone: '', email: '', pass: 'Admin@Tcl',     role: 'Admin',      views: ['jobcards', 'bom', 'qccalc', 'gatepass'] },
-  'rakesh':     { name: 'Rakesh',        dept: 'Operations',     plant: 'Main Plant', phone: '', email: '', pass: 'Rakesh@Tcl',    role: 'Manager',    views: ['jobcards', 'bom', 'gatepass'] },
-  'rasheed':    { name: 'Rasheed',       dept: 'Operations',     plant: 'Main Plant', phone: '', email: '', pass: 'Rasheed@Tcl',   role: 'Manager',    views: ['jobcards', 'bom', 'gatepass'] },
-  'manikanta':  { name: 'Manikanta',     dept: 'Operations',     plant: 'Main Plant', phone: '', email: '', pass: 'Manikanta@Tcl', role: 'Manager',    views: ['jobcards', 'bom', 'gatepass'] },
-  'outer':      { name: 'Outer Line',    dept: 'Outer',          plant: 'Main Plant', phone: '', email: '', pass: '',              role: 'Outer',      views: ['jobcards', 'gatepass'] },
-  'insulation': { name: 'Insulation',    dept: 'Insulation',     plant: 'Main Plant', phone: '', email: '', pass: '',              role: 'Insulation', views: ['jobcards', 'gatepass'] },
-  'qc':         { name: 'QC Team',       dept: 'QC',             plant: 'Main Plant', phone: '', email: '', pass: '',              role: 'QC',         views: ['jobcards', 'qccalc', 'gatepass'] },
-  'production': { name: 'Production',    dept: 'Production',     plant: 'Main Plant', phone: '', email: '', pass: '',              role: 'Production', views: ['jobcards', 'qccalc', 'gatepass'] }
+  'admin':      { name: 'Administrator', dept: 'Administration', plant: 'Main Plant', phone: '', email: '', pass: 'Admin@Tcl',     role: 'Admin',      views: ['home', 'jobcards', 'bom', 'qccalc', 'gatepass'] },
+  'rakesh':     { name: 'Rakesh',        dept: 'Operations',     plant: 'Main Plant', phone: '', email: '', pass: 'Rakesh@Tcl',    role: 'Manager',    views: ['home', 'jobcards', 'bom', 'gatepass'] },
+  'rasheed':    { name: 'Rasheed',       dept: 'Operations',     plant: 'Main Plant', phone: '', email: '', pass: 'Rasheed@Tcl',   role: 'Manager',    views: ['home', 'jobcards', 'bom', 'gatepass'] },
+  'manikanta':  { name: 'Manikanta',     dept: 'Operations',     plant: 'Main Plant', phone: '', email: '', pass: 'Manikanta@Tcl', role: 'Manager',    views: ['home', 'jobcards', 'bom', 'gatepass'] },
+  'outer':      { name: 'Outer Line',    dept: 'Outer',          plant: 'Main Plant', phone: '', email: '', pass: '',              role: 'Outer',      views: ['home', 'jobcards', 'gatepass'] },
+  'insulation': { name: 'Insulation',    dept: 'Insulation',     plant: 'Main Plant', phone: '', email: '', pass: '',              role: 'Insulation', views: ['home', 'jobcards', 'gatepass'] },
+  'qc':         { name: 'QC Team',       dept: 'QC',             plant: 'Main Plant', phone: '', email: '', pass: '',              role: 'QC',         views: ['home', 'jobcards', 'qccalc', 'gatepass'] },
+  'production': { name: 'Production',    dept: 'Production',     plant: 'Main Plant', phone: '', email: '', pass: '',              role: 'Production', views: ['home', 'jobcards', 'qccalc', 'gatepass'] }
 };
+
+function sanitizeViews(views) {
+  if (!Array.isArray(views)) return [];
+  return views.filter(v => ALL_MODULE_KEYS.includes(v));
+}
 
 function loadUsersStore() {
   const base = {};
@@ -3446,8 +3487,8 @@ function loadUsersStore() {
         phone: u.phone || '',
         email: u.email || '',
         pass: u.pass !== undefined ? u.pass : '',
-        role: u.role || 'Operator',
-        views: Array.isArray(u.views) && u.views.length ? u.views : getViewsForRole(u.role || 'Operator', u.dept || '')
+        role: u.role !== undefined ? u.role : '',
+        views: Array.isArray(u.views) ? sanitizeViews(u.views) : ['home', 'jobcards', 'gatepass']
       };
     });
   } catch (e) {
@@ -3462,16 +3503,6 @@ function saveUsersStore() {
   } catch (e) {
     console.warn('Failed to save users:', e);
   }
-}
-
-function getViewsForRole(role, dept) {
-  const r = String(role || '').toLowerCase();
-  const d = String(dept || '').toLowerCase();
-  if (r === 'admin') return ['jobcards', 'bom', 'qccalc', 'gatepass'];
-  if (r === 'manager') return ['jobcards', 'bom', 'gatepass'];
-  if (r === 'qc' || d.includes('qc') || d.includes('quality')) return ['jobcards', 'qccalc', 'gatepass'];
-  if (r === 'production' || d.includes('prod')) return ['jobcards', 'qccalc', 'gatepass'];
-  return ['jobcards', 'gatepass'];
 }
 
 let USERS = loadUsersStore();
@@ -3525,30 +3556,47 @@ function renderMaintenanceUI() {
   const listEl = document.getElementById('maintenanceScopeList');
   const saveBtn = document.getElementById('maintSaveBtn');
   const badgeEl = document.getElementById('maintAccessBadge');
+  const addWrap = document.getElementById('maintAdminAddWrap');
+  const scopeSelect = document.getElementById('maintScopeSelect');
   if (!listEl) return;
 
   const canEdit = isAdminUser();
   if (badgeEl) {
-    badgeEl.textContent = canEdit ? 'Admin Editable' : 'View Only (Admin)';
+    badgeEl.textContent = canEdit ? 'Admin Editable' : 'Active Notices';
   }
   if (saveBtn) {
     saveBtn.style.display = canEdit ? 'block' : 'none';
   }
 
-  listEl.innerHTML = MAINT_SCOPES.map(({ key, label }) => {
-    const item = MAINTENANCE_STATE[key] || { active: false, remark: '' };
-    const activeCls = item.active ? 'is-active' : '';
-    const badgeHtml = item.active
-      ? `<span class="maint-badge on">Maintenance ON</span>`
-      : `<span class="maint-badge off">Active</span>`;
+  const activeScopes = MAINT_SCOPES.filter(({ key }) => Boolean(MAINTENANCE_STATE[key] && MAINTENANCE_STATE[key].active));
+  const inactiveScopes = MAINT_SCOPES.filter(({ key }) => !(MAINTENANCE_STATE[key] && MAINTENANCE_STATE[key].active));
+
+  if (addWrap && scopeSelect) {
+    if (canEdit && inactiveScopes.length > 0) {
+      addWrap.style.display = 'flex';
+      scopeSelect.innerHTML = inactiveScopes.map(({ key, label }) => `<option value="${key}">${esc(label)}</option>`).join('');
+    } else {
+      addWrap.style.display = 'none';
+    }
+  }
+
+  if (activeScopes.length === 0) {
+    listEl.innerHTML = `<div style="font-size:0.8rem;color:var(--text-muted);text-align:center;padding:8px;">No modules currently under maintenance.</div>`;
+    applyMaintenanceLocks();
+    return;
+  }
+
+  listEl.innerHTML = activeScopes.map(({ key, label }) => {
+    const item = MAINTENANCE_STATE[key] || { active: true, remark: '' };
+    const badgeHtml = `<span class="maint-badge on">Maintenance ON</span>`;
 
     if (canEdit) {
       return `
-        <div class="maint-row ${activeCls}" id="maint-row-${key}">
+        <div class="maint-row is-active" id="maint-row-${key}">
           <div class="maint-row-top">
             <div class="maint-scope-title">${esc(label)} ${badgeHtml}</div>
-            <button type="button" class="maint-toggle-btn ${item.active ? 'active' : ''}" id="maint-btn-${key}" onclick="toggleMaintenanceScope('${key}')">
-              ${item.active ? 'Disable' : 'Enable'}
+            <button type="button" class="maint-toggle-btn active" id="maint-btn-${key}" onclick="toggleMaintenanceScope('${key}')">
+              Disable
             </button>
           </div>
           <input type="text" class="maint-remark-input" id="maint-remark-${key}" value="${esc(item.remark)}" placeholder="Remarks for ${esc(label)} maintenance (optional)...">
@@ -3557,17 +3605,31 @@ function renderMaintenanceUI() {
     }
 
     return `
-      <div class="maint-row ${activeCls}">
+      <div class="maint-row is-active">
         <div class="maint-row-top">
           <div class="maint-scope-title">${esc(label)} ${badgeHtml}</div>
         </div>
-        ${item.remark ? `<div class="maint-remark-readonly">Remark: ${esc(item.remark)}</div>` : `<div class="maint-remark-readonly">No remarks</div>`}
+        ${item.remark ? `<div class="maint-remark-readonly">Remark: ${esc(item.remark)}</div>` : `<div class="maint-remark-readonly">Under maintenance</div>`}
       </div>
     `;
   }).join('');
 
   applyMaintenanceLocks();
 }
+
+window.enableSelectedMaintenanceScope = function() {
+  if (!isAdminUser()) {
+    alert('Only Admin can update maintenance mode.');
+    return;
+  }
+  const scopeSelect = document.getElementById('maintScopeSelect');
+  const key = scopeSelect ? scopeSelect.value : '';
+  if (!key) return;
+  if (!MAINTENANCE_STATE[key]) MAINTENANCE_STATE[key] = { active: false, remark: '' };
+  MAINTENANCE_STATE[key].active = true;
+  localStorage.setItem('tc_maintenance', JSON.stringify(MAINTENANCE_STATE));
+  renderMaintenanceUI();
+};
 
 window.toggleMaintenanceScope = function(key) {
   if (!isAdminUser()) {
@@ -3581,14 +3643,8 @@ window.toggleMaintenanceScope = function(key) {
   if (remarkInput) {
     MAINTENANCE_STATE[key].remark = remarkInput.value;
   }
-
-  const row = document.getElementById(`maint-row-${key}`);
-  const btn = document.getElementById(`maint-btn-${key}`);
-  if (row) row.classList.toggle('is-active', MAINTENANCE_STATE[key].active);
-  if (btn) {
-    btn.classList.toggle('active', MAINTENANCE_STATE[key].active);
-    btn.textContent = MAINTENANCE_STATE[key].active ? 'Disable' : 'Enable';
-  }
+  localStorage.setItem('tc_maintenance', JSON.stringify(MAINTENANCE_STATE));
+  renderMaintenanceUI();
 };
 
 window.saveMaintenanceSettings = function() {
@@ -3674,6 +3730,27 @@ function applyMaintenanceLocks() {
   });
 }
 
+/* --- MODULE ACCESS & NAVIGATION HELPERS --- */
+function getSelectedModuleAccessFromForm() {
+  const checked = Array.from(document.querySelectorAll('.adm-mod-cb:checked')).map(cb => cb.value);
+  return sanitizeViews(checked);
+}
+
+function setModuleAccessFormCheckboxes(views) {
+  const allowed = sanitizeViews(views);
+  document.querySelectorAll('.adm-mod-cb').forEach(cb => {
+    cb.checked = allowed.includes(cb.value);
+  });
+}
+
+function applyAllowedNavigation() {
+  document.getElementById('nav-home').style.display = ALLOWED_VIEWS.includes('home') ? 'flex' : 'none';
+  document.getElementById('nav-job').style.display = ALLOWED_VIEWS.includes('jobcards') ? 'flex' : 'none';
+  document.getElementById('nav-bom').style.display = ALLOWED_VIEWS.includes('bom') ? 'flex' : 'none';
+  document.getElementById('nav-qc').style.display = ALLOWED_VIEWS.includes('qccalc') ? 'flex' : 'none';
+  document.getElementById('nav-gatepass').style.display = ALLOWED_VIEWS.includes('gatepass') ? 'flex' : 'none';
+}
+
 /* --- PROFILE CONTACT & ADMIN USER MANAGEMENT --- */
 function renderProfileContactCard() {
   const uObj = USERS[CURRENT_USER] || {
@@ -3685,11 +3762,13 @@ function renderProfileContactCard() {
     role: CURRENT_ROLE
   };
 
+  const roleDisplay = uObj.role || 'Unassigned';
+
   document.getElementById('profileUsernameBadge').textContent = `@${CURRENT_USER}`;
   document.getElementById('profInfoName').textContent = uObj.name || CURRENT_USER;
   document.getElementById('profInfoDept').textContent = uObj.dept || '—';
   document.getElementById('profInfoPlant').textContent = uObj.plant || '—';
-  document.getElementById('profInfoRole').textContent = uObj.role || CURRENT_ROLE;
+  document.getElementById('profInfoRole').textContent = roleDisplay;
   document.getElementById('profPhone').value = uObj.phone || '';
   document.getElementById('profEmail').value = uObj.email || '';
 
@@ -3697,7 +3776,7 @@ function renderProfileContactCard() {
   document.getElementById('profileHubAvatar').textContent = displayName.slice(0, 2).toUpperCase();
   document.getElementById('profileHubName').textContent = displayName;
   document.getElementById('profileHubSub').textContent = `${uObj.dept || 'General'} • ${uObj.plant || 'Main Plant'}`;
-  document.getElementById('profileHubRole').textContent = uObj.role || CURRENT_ROLE;
+  document.getElementById('profileHubRole').textContent = roleDisplay;
 }
 
 window.saveOwnProfileContact = function() {
@@ -3732,8 +3811,9 @@ window.resetAdminUserForm = function() {
   document.getElementById('admUserPlant').value = '';
   document.getElementById('admUserPhone').value = '';
   document.getElementById('admUserEmail').value = '';
-  document.getElementById('admUserRole').value = 'Operator';
+  document.getElementById('admUserRole').value = '';
   document.getElementById('admUserPass').value = '';
+  setModuleAccessFormCheckboxes(['home', 'jobcards', 'gatepass']);
 };
 
 window.editAdminUser = function(username) {
@@ -3754,8 +3834,9 @@ window.editAdminUser = function(username) {
   document.getElementById('admUserPlant').value = u.plant || '';
   document.getElementById('admUserPhone').value = u.phone || '';
   document.getElementById('admUserEmail').value = u.email || '';
-  document.getElementById('admUserRole').value = u.role || 'Operator';
+  document.getElementById('admUserRole').value = u.role || '';
   document.getElementById('admUserPass').value = u.pass || '';
+  setModuleAccessFormCheckboxes(u.views || []);
 
   document.getElementById('admUserName').focus();
 };
@@ -3791,8 +3872,9 @@ window.saveAdminUser = function() {
   const plant = document.getElementById('admUserPlant').value.trim() || 'Main Plant';
   const phone = document.getElementById('admUserPhone').value.trim();
   const email = document.getElementById('admUserEmail').value.trim();
-  const role = document.getElementById('admUserRole').value || 'Operator';
+  const role = document.getElementById('admUserRole').value;
   const pass = document.getElementById('admUserPass').value;
+  const selectedViews = getSelectedModuleAccessFromForm();
 
   if (!name) {
     alert('Please enter the user\'s Name.');
@@ -3824,6 +3906,9 @@ window.saveAdminUser = function() {
   }
 
   const existing = USERS[targetKey] || {};
+  const finalRole = targetKey === 'admin' ? 'Admin' : role;
+  const finalViews = targetKey === 'admin' ? [...ALL_MODULE_KEYS] : selectedViews;
+
   USERS[targetKey] = {
     name,
     dept,
@@ -3831,15 +3916,19 @@ window.saveAdminUser = function() {
     phone,
     email,
     pass: pass !== undefined ? pass : (existing.pass || ''),
-    role: targetKey === 'admin' ? 'Admin' : role,
-    views: targetKey === 'admin' ? ['jobcards', 'bom', 'qccalc', 'gatepass'] : getViewsForRole(role, dept)
+    role: finalRole,
+    views: finalViews
   };
 
   saveUsersStore();
   if (targetKey === CURRENT_USER) {
     CURRENT_ROLE = USERS[targetKey].role;
     ALLOWED_VIEWS = [...USERS[targetKey].views];
+    applyAllowedNavigation();
     renderProfileContactCard();
+  }
+  if (finalViews.includes('bom')) {
+    loadBomDataFromCSV();
   }
   renderAdminUserList();
   resetAdminUserForm();
@@ -3864,6 +3953,8 @@ function renderAdminUserList() {
   listEl.innerHTML = keys.map(k => {
     const u = USERS[k];
     const contactBits = [u.phone, u.email].filter(Boolean).join(' • ');
+    const modsText = (u.views && u.views.length) ? u.views.join(', ') : 'None';
+    const roleText = u.role || 'Unassigned';
     const delBtn = k === 'admin'
       ? ''
       : `<button type="button" class="btn-mini-del" onclick="deleteAdminUser('${esc(k)}')">Delete</button>`;
@@ -3874,9 +3965,10 @@ function renderAdminUserList() {
           <div class="admin-user-card-name">
             <span>${esc(u.name || k)}</span>
             <span style="font-size:0.74rem;color:var(--text-muted);font-weight:600;">@${esc(k)}</span>
-            <span class="admin-user-role-tag">${esc(u.role || 'Operator')}</span>
+            <span class="admin-user-role-tag">${esc(roleText)}</span>
           </div>
           <div class="admin-user-card-sub">${esc(u.dept || 'General')} • ${esc(u.plant || 'Main Plant')}</div>
+          <div class="admin-user-card-sub">Modules: ${esc(modsText)}</div>
           ${contactBits ? `<div class="admin-user-card-sub">${esc(contactBits)}</div>` : ''}
         </div>
         <div class="admin-user-actions">
@@ -4078,7 +4170,6 @@ window.handleRegister = function() {
     return;
   }
 
-  const role = 'Operator';
   USERS[username] = {
     name,
     dept,
@@ -4086,8 +4177,8 @@ window.handleRegister = function() {
     phone: '',
     email: '',
     pass,
-    role,
-    views: getViewsForRole(role, dept)
+    role: '',
+    views: ['home', 'jobcards', 'gatepass']
   };
   saveUsersStore();
 
@@ -4107,20 +4198,16 @@ function completeLogin(u) {
   CURRENT_USER = u;
   hideGlobalLoader();
 
-  const userRec = USERS[u] || { role: 'Operator', views: ['jobcards', 'gatepass'] };
-  CURRENT_ROLE = userRec.role;
-  ALLOWED_VIEWS = Array.isArray(userRec.views) && userRec.views.length ? [...userRec.views] : ['jobcards', 'gatepass'];
+  const userRec = USERS[u] || { role: '', views: ['home', 'jobcards', 'gatepass'] };
+  CURRENT_ROLE = userRec.role || '';
+  ALLOWED_VIEWS = Array.isArray(userRec.views) ? sanitizeViews(userRec.views) : ['home', 'jobcards', 'gatepass'];
   localStorage.setItem('tc_user', u);
 
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('appContainer').style.display = 'block';
 
   renderProfileContactCard();
-
-  document.getElementById('nav-job').style.display = ALLOWED_VIEWS.includes('jobcards') ? 'flex' : 'none';
-  document.getElementById('nav-bom').style.display = ALLOWED_VIEWS.includes('bom') ? 'flex' : 'none';
-  document.getElementById('nav-qc').style.display = ALLOWED_VIEWS.includes('qccalc') ? 'flex' : 'none';
-  document.getElementById('nav-gatepass').style.display = ALLOWED_VIEWS.includes('gatepass') ? 'flex' : 'none';
+  applyAllowedNavigation();
 
   if (isAdminUser()) {
     document.getElementById('adminPanel').style.display = 'block';
@@ -4136,7 +4223,7 @@ function completeLogin(u) {
   MAINTENANCE_STATE = loadMaintenanceState();
   renderMaintenanceUI();
 
-  document.getElementById('welcomeName').textContent = userRec.name || CURRENT_ROLE;
+  document.getElementById('welcomeName').textContent = userRec.name || CURRENT_ROLE || CURRENT_USER;
   document.getElementById('headerTitle').textContent = 'Thermocables';
 
   const now = new Date();
@@ -4153,7 +4240,8 @@ function completeLogin(u) {
   if (ALLOWED_VIEWS.includes('bom')) loadBomDataFromCSV();
 
   loadBanners();
-  switchMainView('home');
+  const initialView = ALLOWED_VIEWS.includes('home') ? 'home' : (ALLOWED_VIEWS[0] || 'profile');
+  switchMainView(initialView);
 
   if (!navigator.onLine) setSyncState('offline');
 }
@@ -4276,6 +4364,10 @@ function loadAdminSettings() {
 }
 
 window.switchMainView = function(viewName) {
+  if (viewName !== 'profile' && !ALLOWED_VIEWS.includes(viewName) && !isAdminUser()) {
+    viewName = 'profile';
+  }
+
   document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
   const targetView = document.getElementById(`view-${viewName}`);
   if (targetView) targetView.classList.add('active');
@@ -5018,30 +5110,26 @@ function renderBomResults(){
     groupMap.get(g).forEach(l => {
       orderedLines.push(l);
       const computed = (effectivePlanQty * l.bomPerKm) / 1000;
-      html += `<div class="bom-row">
-        <div>${esc(l.matCode)}</div>
-        <div>${esc(l.matDisc)}</div>
-        <div class="bom-qty-cell" data-bom-per-km="${l.bomPerKm}">${formatQty(computed)}</div>
-      </div>`;
+      html += `<div class="bom-row"><div>${esc(l.matCode)}</div><div>${esc(l.matDisc)}</div><div class="bom-calc-qty">${formatQty(computed)}</div></div>`;
     });
   });
-  CURRENT_BOM_LINES = orderedLines;
 
+  CURRENT_BOM_LINES = orderedLines;
   html += `</div></div></div>`;
   document.getElementById('bomGrid').innerHTML = html;
 }
 
-window.updateBomCalc = function(inputElement) {
-  const val = parseFloat(inputElement.value) || 0;
-  USER_PLAN_QTY = val;
-  document.querySelectorAll('.bom-qty-cell').forEach(cell => {
-    const perKm = parseFloat(cell.dataset.bomPerKm) || 0;
-    cell.textContent = formatQty((val * perKm) / 1000);
+window.updateBomCalc = function(inputEl){
+  const q = parseFloat(inputEl.value);
+  USER_PLAN_QTY = isNaN(q) ? 0 : q;
+  const qtyCells = document.querySelectorAll('#bomGrid .bom-calc-qty');
+  CURRENT_BOM_LINES.forEach((line, idx) => {
+    if(qtyCells[idx]){ qtyCells[idx].textContent = formatQty((USER_PLAN_QTY * line.bomPerKm) / 1000); }
   });
 };
 
-document.getElementById('bomSearchBtn').addEventListener('click', renderBomResults);
 document.getElementById('bomOpSelect').addEventListener('change', renderBomResults);
+document.getElementById('bomSearchBtn').addEventListener('click', renderBomResults);
 document.getElementById('bomResetBtn').addEventListener('click', () => {
   bomInput.value = '';
   document.getElementById('bomOpSelect').innerHTML = '<option value="">— Select SO-ITEM First —</option>';
@@ -5052,270 +5140,310 @@ document.getElementById('bomResetBtn').addEventListener('click', () => {
   USER_PLAN_QTY = null; LAST_BOM_ITEM = null; CURRENT_BOM_LINES = [];
 });
 
-/* QC CALC LOGIC */
+/* --- QC CALCULATOR LOGIC --- */
+function fmt(n, d = 3) {
+  if (n === null || n === undefined || isNaN(n) || !isFinite(n)) return '—';
+  return Number(n).toFixed(d).replace(/\.?0+$/, '') || '0';
+}
+
+// 1. COMBINED CR CALC (UNBALANCE + CAL CR)
 function calculateCRCombined() {
-  const spec = parseFloat(document.getElementById('specCR').value) || 0;
-  const max = parseFloat(document.getElementById('maxCR').value) || 0;
-  const min = parseFloat(document.getElementById('minCR').value) || 0;
+  const spec = parseFloat(document.getElementById('specCR').value);
+  const max = parseFloat(document.getElementById('maxCR').value);
+  const min = parseFloat(document.getElementById('minCR').value);
 
-  const unbalance = (max + min !== 0) ? ((max - min) / (max + min)) * 100 : 0;
-  document.getElementById('outUnbalance').textContent = unbalance.toFixed(2);
+  const outUnbalance = document.getElementById('outUnbalance');
+  const outHigh = document.getElementById('outHigh');
+  const outLow = document.getElementById('outLow');
 
-  const high = (spec !== 0) ? ((max - spec) / spec) * 100 : 0;
-  document.getElementById('outHigh').textContent = (high > 0 ? '+' : '') + high.toFixed(2);
-
-  const low = (spec !== 0) ? ((spec - min) / spec) * 100 : 0;
-  document.getElementById('outLow').textContent = (low > 0 ? '+' : '') + low.toFixed(2);
-
-  const obs = parseFloat(document.getElementById('obsCR').value) || 0;
-  const len = parseFloat(document.getElementById('lenCR').value) || 0;
-  const temp = parseFloat(document.getElementById('tempCR').value) || 0;
-
-  const calCR = (len !== 0 && (230 + temp) !== 0) ? (((250 / (230 + temp)) * obs) / len) * 1000 : 0;
-  document.getElementById('outCalCR').textContent = calCR.toFixed(2);
-}
-['specCR','maxCR','minCR','obsCR','lenCR','tempCR'].forEach(id => document.getElementById(id).addEventListener('input', calculateCRCombined));
-
-function calculateIR() {
-  const rIn = parseFloat(document.getElementById('irReading').value) || 0, l = parseFloat(document.getElementById('irLength').value) || 0, c = parseFloat(document.getElementById('irCoreDia').value) || 0, d = parseFloat(document.getElementById('irCondDia').value) || 0;
-  const r = rIn * 1000000, ir = (r * l) / 1000;
-  let irC = 0, vrC = 0;
-  if (c > 0 && d > 0 && c !== d) { const logR = Math.log10(c / d); irC = (r * l) / (1000 * logR); vrC = ((2 * 3.142 * r * l) / logR) * Math.pow(10, 8); }
-  document.getElementById('irResultOut').textContent = ir.toFixed(2);
-  document.getElementById('irConstOut').innerHTML = formatScientific(irC);
-  document.getElementById('vrConstOut').innerHTML = formatScientific(vrC);
-}
-['irReading','irLength','irCoreDia','irCondDia'].forEach(id => document.getElementById(id).addEventListener('input', calculateIR));
-
-function calculateCap() {
-  const r = parseFloat(document.getElementById('capReading').value) || 0, l = parseFloat(document.getElementById('capLength').value) || 0;
-  document.getElementById('capResultOut').textContent = (l > 0) ? (r / l).toFixed(2) : '0.00';
-}
-['capReading','capLength'].forEach(id => document.getElementById(id).addEventListener('input', calculateCap));
-
-function calculateHvFail() {
-  const l = parseFloat(document.getElementById('hvLength').value) || 0, t = parseFloat(document.getElementById('hvTopCr').value) || 0, b = parseFloat(document.getElementById('hvBottomCr').value) || 0;
-  const tot = t + b, topSide = (tot > 0) ? (t / tot) * l : 0, botSide = (tot > 0) ? (b / tot) * l : 0;
-  document.getElementById('hvTotalCrOut').textContent = tot.toFixed(2);
-  document.getElementById('hvTopSideOut').textContent = topSide.toFixed(2);
-  document.getElementById('hvBottomSideOut').textContent = botSide.toFixed(2);
-}
-['hvLength','hvTopCr','hvBottomCr'].forEach(id => document.getElementById(id).addEventListener('input', calculateHvFail));
-
-function calculateThick() {
-  const min = parseFloat(document.getElementById('thickMin').value) || 0, max = parseFloat(document.getElementById('thickMax').value) || 0;
-  const avg = (min + max) / 2, conc = (max > 0) ? ((max - min) / max) * 100 : 0;
-  document.getElementById('thickAvgOut').textContent = avg.toFixed(2);
-  document.getElementById('thickConcOut').textContent = conc.toFixed(2);
-}
-['thickMin','thickMax'].forEach(id => document.getElementById(id).addEventListener('input', calculateThick));
-
-function calculateBraid() {
-  const d = parseFloat(document.getElementById('brD').value) || 0, D = parseFloat(document.getElementById('brBigD').value) || 0, N = parseFloat(document.getElementById('brN').value) || 0, M = parseFloat(document.getElementById('brM').value) || 0, L = parseFloat(document.getElementById('brL').value) || 0;
-  const totW = N * M, F = totW * d;
-  let cov = 0;
-  if (D > 0 && L > 0 && F > 0) {
-    const val = (2 * 3.1416 * (D + 2 * d)) / L;
-    const sinA = Math.sin(Math.atan(val));
-    cov = sinA > 0 ? ((F / sinA) / (2 * 3.1416 * (D + 2 * d))) * 100 : 0;
-  }
-  document.getElementById('brTotalWiresOut').textContent = totW;
-  document.getElementById('brFOut').textContent = F.toFixed(2);
-  document.getElementById('brCovOut').textContent = cov.toFixed(2);
-}
-['brD','brBigD','brN','brM','brL'].forEach(id => document.getElementById(id).addEventListener('input', calculateBraid));
-
-document.getElementById('tensileShape').addEventListener('change', (e) => {
-  const isTub = e.target.value === 'tubular';
-  document.getElementById('tubularInputs').style.display = isTub ? 'block' : 'none';
-  document.getElementById('dumbbellInputs').style.display = isTub ? 'none' : 'block';
-  calculateTensile();
-});
-function calculateTensile() {
-  const shape = document.getElementById('tensileShape').value, load = parseFloat(document.getElementById('tLoad').value) || 0, elong = parseFloat(document.getElementById('tElong').value) || 0, init = parseFloat(document.getElementById('tInit').value) || 0;
-  let area = 0;
-  if (shape === 'tubular') {
-    const dia = parseFloat(document.getElementById('tDia').value) || 0, th = parseFloat(document.getElementById('tThick').value) || 0;
-    if (dia > 0 && th > 0) area = 3.1416 * th * (dia - th);
+  if (!isNaN(spec) && !isNaN(max) && !isNaN(min) && spec !== 0 && max >= min) {
+    outUnbalance.textContent = fmt(((max - min) / max) * 100, 2);
+    outHigh.textContent = fmt(((max - spec) / spec) * 100, 2);
+    outLow.textContent = fmt(((spec - min) / spec) * 100, 2);
   } else {
-    const w = parseFloat(document.getElementById('dWidth').value) || 0, th = parseFloat(document.getElementById('dThick').value) || 0;
-    area = w * th;
+    outUnbalance.textContent = '—';
+    outHigh.textContent = '—';
+    outLow.textContent = '—';
   }
-  const ts = (area > 0) ? (load / area) : 0, elP = (init > 0 && elong >= init) ? ((elong - init) / init) * 100 : 0;
-  document.getElementById('tAreaOut').textContent = area.toFixed(2);
-  document.getElementById('tTsOut').textContent = ts.toFixed(2);
-  document.getElementById('tElongOut').textContent = elP.toFixed(2);
-}
-['tDia','tThick','dWidth','dThick','tLoad','tElong','tInit'].forEach(id => document.getElementById(id).addEventListener('input', calculateTensile));
 
-document.getElementById('hotSetShape').addEventListener('change', (e) => {
-  const isTub = e.target.value === 'tubular';
-  document.getElementById('tubularHotInputs').style.display = isTub ? 'block' : 'none';
-  document.getElementById('dumbbellHotInputs').style.display = isTub ? 'none' : 'block';
-  calculateHotSet();
-});
-function calculateHotSet() {
-  const shape = document.getElementById('hotSetShape').value, init = parseFloat(document.getElementById('hInit').value) || 0, elong = parseFloat(document.getElementById('hElong').value) || 0, cool = parseFloat(document.getElementById('hCool').value) || 0;
-  let wt = 0;
-  if (shape === 'tubular') {
-    const core = parseFloat(document.getElementById('hCoreDia').value) || 0, cond = parseFloat(document.getElementById('hCondDia').value) || 0;
-    if (core > 0 && cond > 0) wt = ((3.1416 * (core * core - cond * cond)) / 4) * 20;
+  const obs = parseFloat(document.getElementById('obsCR').value);
+  const len = parseFloat(document.getElementById('lenCR').value);
+  const temp = parseFloat(document.getElementById('tempCR').value);
+  const outCalCR = document.getElementById('outCalCR');
+
+  if (!isNaN(obs) && !isNaN(len) && !isNaN(temp) && len !== 0) {
+    const denom = 1 + 0.00393 * (temp - 20);
+    if (denom !== 0) {
+      outCalCR.textContent = fmt((obs / denom) / (len / 1000), 4);
+    } else {
+      outCalCR.textContent = '—';
+    }
   } else {
-    const th = parseFloat(document.getElementById('hThick').value) || 0, w = parseFloat(document.getElementById('hWidth').value) || 0;
-    wt = (th * w) * 20;
+    outCalCR.textContent = '—';
   }
-  const hot = (init > 0 && elong >= init) ? ((elong - init) / init) * 100 : 0, perm = (init > 0 && cool >= init) ? ((cool - init) / init) * 100 : 0;
-  document.getElementById('hWeightOut').textContent = wt.toFixed(2);
-  document.getElementById('hHotOut').textContent = hot.toFixed(2);
-  document.getElementById('hPermOut').textContent = perm.toFixed(2);
 }
-['hCoreDia','hCondDia','hThick','hWidth','hInit','hElong','hCool'].forEach(id => document.getElementById(id).addEventListener('input', calculateHotSet));
 
+// 2. ARMOUR COVERAGE
 function calculateArmCov() {
-  const cableDia = parseFloat(document.getElementById('covCableDia').value) || 0;
-  const wireDia = parseFloat(document.getElementById('covWireDia').value) || 0;
-  const lay = parseFloat(document.getElementById('covLay').value) || 0;
-  const wires = parseFloat(document.getElementById('covWires').value) || 0;
+  const cableDia = parseFloat(document.getElementById('covCableDia').value);
+  const wireDia = parseFloat(document.getElementById('covWireDia').value);
+  const lay = parseFloat(document.getElementById('covLay').value);
+  const wires = parseFloat(document.getElementById('covWires').value);
+  const outCov = document.getElementById('outCov');
 
-  let cov = 0;
-  if (cableDia > 0 && wireDia > 0 && lay > 0 && wires > 0) {
-    const k = Math.PI * (cableDia + wireDia);
-    cov = ((wires * wireDia) / (k * Math.sin(Math.atan(lay / k)))) * 100;
+  if (!isNaN(cableDia) && !isNaN(wireDia) && !isNaN(lay) && !isNaN(wires) && lay !== 0 && wireDia !== 0) {
+    const dMean = cableDia + wireDia;
+    const sinAlpha = (Math.PI * dMean) / Math.sqrt(Math.pow(lay, 2) + Math.pow(Math.PI * dMean, 2));
+    if (sinAlpha !== 0) {
+      const cov = ((wires * wireDia) / (Math.PI * dMean * sinAlpha)) * 100;
+      outCov.textContent = fmt(cov, 2);
+    } else {
+      outCov.textContent = '—';
+    }
+  } else {
+    outCov.textContent = '—';
   }
-  document.getElementById('outCov').textContent = cov.toFixed(2);
 }
-['covCableDia','covWireDia','covLay','covWires'].forEach(id => document.getElementById(id).addEventListener('input', calculateArmCov));
 
-/* --- PRINT ENGINE --- */
-window.triggerPrint = function(event, mode) {
-  if(event) event.preventDefault();
+function calcIR() {
+  const R_m = parseFloat(document.getElementById('irReading').value), L = parseFloat(document.getElementById('irLength').value), D = parseFloat(document.getElementById('irCoreDia').value), d = parseFloat(document.getElementById('irCondDia').value);
+  const irOut = document.getElementById('irResultOut'), irCOut = document.getElementById('irConstOut'), vrCOut = document.getElementById('vrConstOut');
+  if(!isNaN(R_m) && !isNaN(L) && R_m > 0 && L > 0) {
+    const R_ohm = R_m * 1e6; irOut.innerHTML = formatScientific(R_ohm);
+    const irC = R_m * (L / 1000); irCOut.textContent = irC.toFixed(2);
+    if(!isNaN(D) && !isNaN(d) && D > d && d > 0) {
+      const vrC = (R_ohm * L) / (2 * Math.PI * Math.log(D / d));
+      vrCOut.innerHTML = formatScientific(vrC);
+    } else vrCOut.textContent = '—';
+  } else { irOut.textContent = '—'; irCOut.textContent = '—'; vrCOut.textContent = '—'; }
+}
+['irReading', 'irLength', 'irCoreDia', 'irCondDia'].forEach(id => document.getElementById(id).addEventListener('input', calcIR));
+
+function calcCap() {
+  const r = parseFloat(document.getElementById('capReading').value), l = parseFloat(document.getElementById('capLength').value), out = document.getElementById('capResultOut');
+  out.textContent = (!isNaN(r) && !isNaN(l) && l > 0) ? (r / l).toFixed(4) : '—';
+}
+['capReading', 'capLength'].forEach(id => document.getElementById(id).addEventListener('input', calcCap));
+
+function calcHV() {
+  const L = parseFloat(document.getElementById('hvLength').value), T = parseFloat(document.getElementById('hvTopCr').value), B = parseFloat(document.getElementById('hvBottomCr').value);
+  const tOut = document.getElementById('hvTotalCrOut'), topOut = document.getElementById('hvTopSideOut'), botOut = document.getElementById('hvBottomSideOut');
+  if(!isNaN(T) && !isNaN(B)) {
+    tOut.textContent = (T + B).toFixed(4);
+    if(!isNaN(L) && L > 0 && (T + B) > 0) {
+      topOut.textContent = (L * (T / (T + B))).toFixed(2);
+      botOut.textContent = (L * (B / (T + B))).toFixed(2);
+    } else { topOut.textContent = '—'; botOut.textContent = '—'; }
+  } else { tOut.textContent = '—'; topOut.textContent = '—'; botOut.textContent = '—'; }
+}
+['hvLength', 'hvTopCr', 'hvBottomCr'].forEach(id => document.getElementById(id).addEventListener('input', calcHV));
+
+function calcThick() {
+  const min = parseFloat(document.getElementById('thickMin').value), max = parseFloat(document.getElementById('thickMax').value);
+  const avgOut = document.getElementById('thickAvgOut'), concOut = document.getElementById('thickConcOut');
+  if(!isNaN(min) && !isNaN(max) && max > 0) {
+    avgOut.textContent = ((min + max) / 2).toFixed(2);
+    concOut.textContent = ((min / max) * 100).toFixed(1);
+  } else { avgOut.textContent = '—'; concOut.textContent = '—'; }
+}
+['thickMin', 'thickMax'].forEach(id => document.getElementById(id).addEventListener('input', calcThick));
+
+function calcBraid() {
+  const d = parseFloat(document.getElementById('brD').value), D = parseFloat(document.getElementById('brBigD').value), N = parseFloat(document.getElementById('brN').value), M = parseFloat(document.getElementById('brM').value), L = parseFloat(document.getElementById('brL').value);
+  const twOut = document.getElementById('brTotalWiresOut'), fOut = document.getElementById('brFOut'), cOut = document.getElementById('brCovOut');
+  if(!isNaN(N) && !isNaN(M)) twOut.textContent = (N * M).toFixed(0); else twOut.textContent = '—';
+  if(!isNaN(d) && !isNaN(D) && !isNaN(N) && !isNaN(M) && !isNaN(L) && L > 0 && d > 0) {
+    const F = (N * M * d) / (2 * Math.PI * (D + d));
+    const tanA = (2 * Math.PI * (D + d)) / (M * L);
+    const cosA = 1 / Math.sqrt(1 + tanA * tanA);
+    const cov = (1 - Math.pow(1 - F, 2)) * 100;
+    fOut.textContent = F.toFixed(3);
+    cOut.textContent = isNaN(cosA) ? '—' : (cov / cosA).toFixed(1);
+  } else { fOut.textContent = '—'; cOut.textContent = '—'; }
+}
+['brD', 'brBigD', 'brN', 'brM', 'brL'].forEach(id => document.getElementById(id).addEventListener('input', calcBraid));
+
+const tShape = document.getElementById('tensileShape'), tTub = document.getElementById('tubularInputs'), tDumb = document.getElementById('dumbbellInputs');
+tShape.addEventListener('change', () => {
+  tTub.style.display = tShape.value === 'tubular' ? 'block' : 'none';
+  tDumb.style.display = tShape.value === 'dumbbell' ? 'block' : 'none';
+  calcTensile();
+});
+function calcTensile() {
+  const shape = tShape.value, load = parseFloat(document.getElementById('tLoad').value), elong = parseFloat(document.getElementById('tElong').value), init = parseFloat(document.getElementById('tInit').value);
+  const areaOut = document.getElementById('tAreaOut'), tsOut = document.getElementById('tTsOut'), eOut = document.getElementById('tElongOut');
+  let area = NaN;
+  if(shape === 'tubular') {
+    const dia = parseFloat(document.getElementById('tDia').value), thick = parseFloat(document.getElementById('tThick').value);
+    if(!isNaN(dia) && !isNaN(thick) && dia > thick && thick > 0) area = Math.PI * (dia - thick) * thick;
+  } else {
+    const w = parseFloat(document.getElementById('dWidth').value), th = parseFloat(document.getElementById('dThick').value);
+    if(!isNaN(w) && !isNaN(th) && w > 0 && th > 0) area = w * th;
+  }
+  areaOut.textContent = !isNaN(area) ? area.toFixed(2) : '—';
+  tsOut.textContent = (!isNaN(load) && !isNaN(area) && area > 0) ? (load / area).toFixed(2) : '—';
+  eOut.textContent = (!isNaN(elong) && !isNaN(init) && init > 0) ? (((elong - init) / init) * 100).toFixed(1) : '—';
+}
+['tDia', 'tThick', 'dWidth', 'dThick', 'tLoad', 'tElong', 'tInit'].forEach(id => document.getElementById(id).addEventListener('input', calcTensile));
+
+const hShape = document.getElementById('hotSetShape'), hTub = document.getElementById('tubularHotInputs'), hDumb = document.getElementById('dumbbellHotInputs');
+hShape.addEventListener('change', () => {
+  hTub.style.display = hShape.value === 'tubular' ? 'block' : 'none';
+  hDumb.style.display = hShape.value === 'dumbbell' ? 'block' : 'none';
+  calcHotSet();
+});
+function calcHotSet() {
+  const shape = hShape.value, init = parseFloat(document.getElementById('hInit').value), elong = parseFloat(document.getElementById('hElong').value), cool = parseFloat(document.getElementById('hCool').value);
+  const wOut = document.getElementById('hWeightOut'), hotOut = document.getElementById('hHotOut'), permOut = document.getElementById('hPermOut');
+  let area = NaN;
+  if(shape === 'tubular') {
+    const core = parseFloat(document.getElementById('hCoreDia').value), cond = parseFloat(document.getElementById('hCondDia').value);
+    if(!isNaN(core) && !isNaN(cond) && core > cond) area = (Math.PI / 4) * (core * core - cond * cond);
+  } else {
+    const th = parseFloat(document.getElementById('hThick').value), w = parseFloat(document.getElementById('hWidth').value);
+    if(!isNaN(th) && !isNaN(w) && th > 0 && w > 0) area = th * w;
+  }
+  wOut.textContent = !isNaN(area) ? (area * 0.2).toFixed(2) : '—';
+  hotOut.textContent = (!isNaN(elong) && !isNaN(init) && init > 0) ? (((elong - init) / init) * 100).toFixed(1) : '—';
+  permOut.textContent = (!isNaN(cool) && !isNaN(init) && init > 0) ? (((cool - init) / init) * 100).toFixed(1) : '—';
+}
+['hCoreDia', 'hCondDia', 'hThick', 'hWidth', 'hInit', 'hElong', 'hCool'].forEach(id => document.getElementById(id).addEventListener('input', calcHotSet));
+
+/* --- PRINT & GATE PASS GENERATION --- */
+function renderGatePassPrintSheet() {
+  const container = document.getElementById('gatePassPrintArea');
+  const deptInput = document.getElementById('gpDept');
+  const dateInput = document.getElementById('gpDate');
+  const hourSel = document.getElementById('gpHour');
+  const minSel = document.getElementById('gpMinute');
+  const ampmSel = document.getElementById('gpAmPm');
+
+  const dept = (deptInput.value || '').trim().toUpperCase();
+  const dateVal = dateInput.value;
+  const timeVal = `${hourSel.value}:${minSel.value} ${ampmSel.value}`;
+  const count = GP_STANDARD_COUNT;
+
+  const company = (localStorage.getItem('tc_company') || 'THERMOCABLES LTD.').toUpperCase();
+
+  let html = '';
+  for (let i = 0; i < count; i++) {
+    html += `
+      <div class="gate-pass-card">
+        <div class="gp-company">${esc(company)}</div>
+        <div class="gp-dept">${dept ? esc(dept) : '&nbsp;'}</div>
+        <div class="gp-datetime">
+          <span>Date: <b>${dateVal ? esc(formatDateForDisplay(dateVal)) : '&nbsp;'}</b></span>
+          <span>Out Time: <b>${esc(timeVal)}</b></span>
+        </div>
+        <div class="gp-sig-area">
+          <div class="gp-sig-line"></div>
+          <div class="gp-sig-label">Authorized Sign</div>
+        </div>
+      </div>
+    `;
+  }
+  container.innerHTML = html;
+
+  const cols = 3;
+  const rows = Math.ceil(count / cols);
+  container.style.setProperty('--gp-rows', rows);
+  container.classList.toggle('gp-dense', rows > 9);
+}
+
+window.triggerPrint = function(event, context) {
+  if (event) event.preventDefault();
   document.body.classList.remove('printing-gatepass');
-  document.getElementById('pCompany').textContent = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
-  document.getElementById('pDept').textContent = localStorage.getItem('tc_dept') || 'QC DEPARTMENT';
-  document.getElementById('pPrepBy').textContent = localStorage.getItem('tc_prep') || '—';
-  document.getElementById('pVerBy').textContent = localStorage.getItem('tc_ver') || '—';
-  const now = new Date();
-  document.getElementById('pDate').textContent = now.toLocaleDateString();
-  document.getElementById('pTime').textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
-  if (mode === 'gatepass') {
+  if (context === 'gatepass') {
     const deptEl = document.getElementById('gpDept');
     const dateEl = document.getElementById('gpDate');
-    const hourEl = document.getElementById('gpHour');
-    const minEl = document.getElementById('gpMinute');
-    const apEl = document.getElementById('gpAmPm');
+    let missing = false;
 
-    [deptEl, dateEl].forEach(el => el.classList.remove('gp-invalid'));
+    [deptEl, dateEl].forEach(el => {
+      el.classList.remove('gp-invalid');
+      if (!el.value || !el.value.trim()) {
+        el.classList.add('gp-invalid');
+        missing = true;
+      }
+    });
 
-    const deptVal = deptEl.value.trim();
-    const rawDate = dateEl.value;
-    const hourVal = hourEl.value;
-    const minVal = minEl.value;
-    const apVal = apEl.value;
-
-    if (!deptVal) {
-      alert("Please enter a Department.");
-      deptEl.classList.add('gp-invalid');
-      deptEl.focus();
-      return;
-    }
-    if (!rawDate) {
-      alert("Please select a Date.");
-      dateEl.classList.add('gp-invalid');
-      dateEl.focus();
+    if (missing) {
+      alert('Please enter Department and select Date before generating Gate Passes.');
+      (!deptEl.value.trim() ? deptEl : dateEl).focus();
       return;
     }
 
-    const formattedDate = formatDateForDisplay(rawDate);
-    const formattedTime = `${hourVal}:${minVal} ${apVal}`;
-    const companyName = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
-
+    localStorage.setItem('tc_gp_dept', deptEl.value.trim());
+    renderGatePassPrintSheet();
     document.body.classList.add('printing-gatepass');
-    const gpArea = document.getElementById('gatePassPrintArea');
-    const cols = 3;
-    const rows = Math.ceil(GP_STANDARD_COUNT / cols);
-    gpArea.style.setProperty('--gp-rows', rows);
-    gpArea.classList.toggle('gp-dense', rows > 10);
-
-    let html = '';
-    for (let i = 1; i <= GP_STANDARD_COUNT; i++) {
-      const serial = String(i).padStart(2, '0');
-      html += `
-        <div class="gate-pass-card">
-          <div class="gp-company">${esc(companyName)}</div>
-          <div class="gp-dept">${esc(deptVal)}</div>
-          <div class="gp-serial">GATE PASS #${serial}</div>
-          <div class="gp-datetime">
-            <span>Date: ${esc(formattedDate)}</span>
-            <span>Out: ${esc(formattedTime)}</span>
-          </div>
-          <div class="gp-sig-area">
-            <div class="gp-sig-line"></div>
-            <div class="gp-sig-label">Authorized Signatory</div>
-          </div>
-        </div>
-      `;
-    }
-    gpArea.innerHTML = html;
-    setTimeout(() => { window.print(); }, 100);
+    window.print();
     return;
   }
 
-  let inputHtml = '<table class="print-inputs-table"><thead><tr><th>Parameter</th><th>Value</th></tr></thead><tbody>';
-  let typeText = '';
+  document.getElementById('pCompany').textContent = (localStorage.getItem('tc_company') || 'THERMOCABLES LTD.').toUpperCase();
+  document.getElementById('pDept').textContent = (localStorage.getItem('tc_dept') || 'QC DEPARTMENT').toUpperCase();
+  document.getElementById('pPrepBy').textContent = localStorage.getItem('tc_prep') || '—';
+  document.getElementById('pVerBy').textContent = localStorage.getItem('tc_ver') || '—';
 
-  if (mode === 'qc') {
+  const now = new Date();
+  document.getElementById('pDate').textContent = now.toLocaleDateString('en-GB');
+  document.getElementById('pTime').textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+  let inputsHtml = '<table class="print-inputs-table"><thead><tr><th>Parameter</th><th>Value</th></tr></thead><tbody>';
+  let docTitle = 'TEST REPORT', testType = 'General';
+
+  if (context === 'job') {
+    docTitle = 'JOB CARD';
+    testType = `${document.getElementById('jobInput').value || 'N/A'} - ${document.getElementById('opSelect').value || 'N/A'}`;
+    inputsHtml += `<tr><td>Job Number</td><td>${esc(document.getElementById('jobInput').value || '—')}</td></tr>`;
+    inputsHtml += `<tr><td>Operation</td><td>${esc(document.getElementById('opSelect').value || '—')}</td></tr>`;
+  } else if (context === 'bom') {
+    docTitle = 'BILL OF MATERIALS (BOM)';
+    testType = `${document.getElementById('bomInput').value || 'N/A'} - ${document.getElementById('bomOpSelect').value || 'All Operations'}`;
+    inputsHtml += `<tr><td>SO-ITEM</td><td>${esc(document.getElementById('bomInput').value || '—')}</td></tr>`;
+    inputsHtml += `<tr><td>Operation</td><td>${esc(document.getElementById('bomOpSelect').value || 'All Operations')}</td></tr>`;
+    const planQtyVal = document.getElementById('planQtyInput') ? document.getElementById('planQtyInput').value : '—';
+    inputsHtml += `<tr><td>Plan / Prd Qty</td><td>${esc(planQtyVal)}</td></tr>`;
+  } else if (context === 'qc') {
     const activeTabBtn = document.querySelector('.qc-tab-btn.active');
-    const activeTabName = activeTabBtn ? activeTabBtn.textContent.trim().toUpperCase() : 'QC REPORT';
-    typeText = activeTabName + ' TEST';
-    document.getElementById('pDocTitle').textContent = 'QC TEST REPORT';
+    const tabName = activeTabBtn ? activeTabBtn.textContent.trim() : 'QC Calculation';
+    docTitle = `${tabName.toUpperCase()} TEST REPORT`;
+    testType = tabName;
 
-    if (activeTabName.includes('CR')) {
-      inputHtml += `<tr><td>Spec CR</td><td>${document.getElementById('specCR').value || '—'}</td></tr><tr><td>Max CR</td><td>${document.getElementById('maxCR').value || '—'}</td></tr><tr><td>Min CR</td><td>${document.getElementById('minCR').value || '—'}</td></tr><tr><td>CR Obs</td><td>${document.getElementById('obsCR').value || '—'}</td></tr><tr><td>Length (m)</td><td>${document.getElementById('lenCR').value || '—'}</td></tr><tr><td>Temp (°C)</td><td>${document.getElementById('tempCR').value || '—'}</td></tr>`;
-    } else if (activeTabName.includes('IR')) {
-      inputHtml += `<tr><td>Reading (MΩ)</td><td>${document.getElementById('irReading').value || '—'}</td></tr><tr><td>Length (m)</td><td>${document.getElementById('irLength').value || '—'}</td></tr><tr><td>Core Dia (mm)</td><td>${document.getElementById('irCoreDia').value || '—'}</td></tr><tr><td>Cond Dia (mm)</td><td>${document.getElementById('irCondDia').value || '—'}</td></tr>`;
-    } else if (activeTabName.includes('CAP')) {
-      inputHtml += `<tr><td>Capacitance Reading</td><td>${document.getElementById('capReading').value || '—'}</td></tr><tr><td>Length (m)</td><td>${document.getElementById('capLength').value || '—'}</td></tr>`;
-    } else if (activeTabName.includes('HV')) {
-      inputHtml += `<tr><td>Total Length (m)</td><td>${document.getElementById('hvLength').value || '—'}</td></tr><tr><td>Top CR</td><td>${document.getElementById('hvTopCr').value || '—'}</td></tr><tr><td>Bottom CR</td><td>${document.getElementById('hvBottomCr').value || '—'}</td></tr>`;
-    } else if (activeTabName.includes('THICK')) {
-      inputHtml += `<tr><td>Min Thickness (mm)</td><td>${document.getElementById('thickMin').value || '—'}</td></tr><tr><td>Max Thickness (mm)</td><td>${document.getElementById('thickMax').value || '—'}</td></tr>`;
-    } else if (activeTabName.includes('BRAID')) {
-      inputHtml += `<tr><td>Wire Dia (d)</td><td>${document.getElementById('brD').value || '—'}</td></tr><tr><td>Dia Under Braid (D)</td><td>${document.getElementById('brBigD').value || '—'}</td></tr><tr><td>No. of Wires (N)</td><td>${document.getElementById('brN').value || '—'}</td></tr><tr><td>No. of Carriers (M)</td><td>${document.getElementById('brM').value || '—'}</td></tr><tr><td>Lay Length (L)</td><td>${document.getElementById('brL').value || '—'}</td></tr>`;
-    } else if (activeTabName.includes('TENSILE')) {
-      inputHtml += `<tr><td>Shape</td><td>${document.getElementById('tensileShape').value}</td></tr><tr><td>Breakdown Load (N)</td><td>${document.getElementById('tLoad').value || '—'}</td></tr><tr><td>Elongated Len</td><td>${document.getElementById('tElong').value || '—'}</td></tr><tr><td>Initial Len</td><td>${document.getElementById('tInit').value || '—'}</td></tr>`;
-    } else if (activeTabName.includes('HOT')) {
-      inputHtml += `<tr><td>Shape</td><td>${document.getElementById('hotSetShape').value}</td></tr><tr><td>Initial Len</td><td>${document.getElementById('hInit').value || '—'}</td></tr><tr><td>Elongated Len</td><td>${document.getElementById('hElong').value || '—'}</td></tr><tr><td>After Cooling</td><td>${document.getElementById('hCool').value || '—'}</td></tr>`;
-    } else if (activeTabName.includes('ARM')) {
-      inputHtml += `<tr><td>Cable Dia</td><td>${document.getElementById('covCableDia').value || '—'}</td></tr><tr><td>Wire Dia</td><td>${document.getElementById('covWireDia').value || '—'}</td></tr><tr><td>Lay Length</td><td>${document.getElementById('covLay').value || '—'}</td></tr><tr><td>No. of Wires</td><td>${document.getElementById('covWires').value || '—'}</td></tr>`;
+    const activeCard = document.querySelector('.qc-card.active');
+    if (activeCard) {
+      activeCard.querySelectorAll('.input-group').forEach(grp => {
+        const labelEl = grp.querySelector('label');
+        const inputEl = grp.querySelector('input, select');
+        if (labelEl && inputEl && inputEl.offsetParent !== null) {
+          const cleanLabel = labelEl.childNodes[0].textContent.trim();
+          const val = inputEl.value !== '' ? inputEl.value : '—';
+          inputsHtml += `<tr><td>${esc(cleanLabel)}</td><td>${esc(val)}</td></tr>`;
+        }
+      });
     }
-  } else if (mode === 'job') {
-    typeText = 'JOB CARD';
-    document.getElementById('pDocTitle').textContent = 'JOB CARD';
-    inputHtml += `<tr><td>Job Number</td><td>${document.getElementById('jobInput').value || '—'}</td></tr><tr><td>Operation</td><td>${document.getElementById('opSelect').value || '—'}</td></tr>`;
-  } else if (mode === 'bom') {
-    typeText = 'BILL OF MATERIALS (BOM)';
-    document.getElementById('pDocTitle').textContent = 'BILL OF MATERIALS';
-    inputHtml += `<tr><td>SO-ITEM</td><td>${document.getElementById('bomInput').value || '—'}</td></tr><tr><td>Operation JDM</td><td>${document.getElementById('bomOpSelect').value || 'All'}</td></tr><tr><td>Plan Qty</td><td>${document.getElementById('planQtyInput') ? document.getElementById('planQtyInput').value : '—'}</td></tr>`;
   }
 
-  inputHtml += '</tbody></table>';
-  document.getElementById('printInputs').innerHTML = inputHtml;
-  document.getElementById('pTestType').textContent = typeText;
+  inputsHtml += '</tbody></table>';
+  document.getElementById('pDocTitle').textContent = docTitle;
+  document.getElementById('pTestType').textContent = testType;
+  document.getElementById('printInputs').innerHTML = inputsHtml;
 
-  setTimeout(() => { window.print(); }, 100);
+  window.print();
 };
 
 window.addEventListener('afterprint', () => {
   document.body.classList.remove('printing-gatepass');
   const gpArea = document.getElementById('gatePassPrintArea');
   if (gpArea) {
-    gpArea.style.removeProperty('--gp-rows');
+    gpArea.innerHTML = '';
     gpArea.classList.remove('gp-dense');
   }
 });
 
 initGatePassUI();
+renderMaintenanceUI();
+setModuleAccessFormCheckboxes(['home', 'jobcards', 'gatepass']);
 })();
 </script>
 </body>

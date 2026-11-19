@@ -3372,14 +3372,21 @@ body.has-offline-banner .app { padding-top: 48px; }
 (function(){
 "use strict";
 
-/* --- SAFETY: Force hide loader after 4.5 seconds regardless of state --- */
+function hideGlobalLoader() {
+  const loader = document.getElementById('globalLoader');
+  if (loader) {
+    loader.classList.add('hidden');
+    loader.style.display = 'none';
+  }
+}
+
+/* --- SAFETY: Force hide loader quickly on DOMContentLoaded and load --- */
 window.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => {
-    const loader = document.getElementById('globalLoader');
-    if (loader && !loader.classList.contains('hidden')) {
-      loader.classList.add('hidden');
-    }
-  }, 4500);
+  setTimeout(hideGlobalLoader, 1500);
+});
+
+window.addEventListener('load', () => {
+  setTimeout(hideGlobalLoader, 1500);
 });
 
 /* --- SERVICE WORKER REGISTRATION (OFFLINE SUPPORT) --- */
@@ -4098,6 +4105,8 @@ window.handleRegister = function() {
 
 function completeLogin(u) {
   CURRENT_USER = u;
+  hideGlobalLoader();
+
   const userRec = USERS[u] || { role: 'Operator', views: ['jobcards', 'gatepass'] };
   CURRENT_ROLE = userRec.role;
   ALLOWED_VIEWS = Array.isArray(userRec.views) && userRec.views.length ? [...userRec.views] : ['jobcards', 'gatepass'];
@@ -4105,9 +4114,6 @@ function completeLogin(u) {
 
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('appContainer').style.display = 'block';
-
-  const loader = document.getElementById('globalLoader');
-  if (loader) loader.classList.add('hidden');
 
   renderProfileContactCard();
 
@@ -4307,7 +4313,7 @@ window.switchQcTab = function(tabName, event) {
 /* --- KNOWLEDGE MODAL LOGIC --- */
 window.openKnowledge = function(key) {
   const data = {
-    '5s': { icon: '🏭', title: 'The 5S Methodology', content: `<p>The 5S methodology is a systematic approach to workplace organization that improves efficiency, safety, and morale. It is the foundation of Lean Manufacturing.</p><h5>1. Seiri (Sort)</h5><p>Separate necessary items from unnecessary ones. Remove all tools, equipment, and materials that are not needed for current production.</p><h5>2. Seiton (Set in Order)</h5><p>Arrange necessary items in good order for easy use. "A place for everything, and everything in its place."</p><h5>3. Seiso (Shine)</h5><p>Clean your workplace completely. Cleaning also acts as an inspection to find leaks, cracks, or loose bolts.</p><h5>4. Seiketsu (Standardize)</h5><p>Maintain high standards of housekeeping. Create visual rules (like floor markings or color-coded tools).</p><h5>5. Shitsuke (Sustain)</h5><p>Make a habit of maintaining the standards. This requires discipline, training, and regular audits.</p>` },
+    '5s': { icon: '🏭', title: 'The 5S Methodology', content: `<p>The 5S methodology is a systematic approach to workplace organization that improves efficiency, safety, and morale. It is the foundation of Lean Manufacturing.</p><h5>1. Seiri (Sort)</h5><p>Separate necessary items from unnecessary ones. Remove all tools, equipment, and materials that are not needed for current production.</p><h5>2. Seiton (Set in Order)</h5><p>Arrange necessary items in good order for easy use. "A place for everything, and everything in its place."</p><h5>3. Seiso (Shine)</h5><p>Clean your workplace completely. Cleaning also acts an inspection to find leaks, cracks, or loose bolts.</p><h5>4. Seiketsu (Standardize)</h5><p>Maintain high standards of housekeeping. Create visual rules (like floor markings or color-coded tools).</p><h5>5. Shitsuke (Sustain)</h5><p>Make a habit of maintaining the standards. This requires discipline, training, and regular audits.</p>` },
     'lean': { icon: '⚙️', title: 'Lean Manufacturing', content: `<p>Lean manufacturing is a production method aimed primarily at reducing times within the production system as well as response times from suppliers and to customers. It is derived from the Toyota Production System (TPS).</p><h5>Key Principles:</h5><ul><li><b>Kaizen:</b> Continuous, incremental improvement involving everyone.</li><li><b>Poka-yoke:</b> Mistake-proofing. Designing processes so mistakes are impossible to make.</li><li><b>Just-In-Time (JIT):</b> Producing only what is needed, when it is needed.</li><li><b>Gemba:</b> "The real place." Going to the factory floor to observe and solve problems.</li></ul><h5>The 7 Wastes (Muda):</h5><ul><li>Transportation, Inventory, Motion, Waiting, Overproduction, Overprocessing, Defects.</li></ul>` },
     'standards': { icon: '📜', title: 'IEC Cable Standards', content: `<p>International Electrotechnical Commission (IEC) standards are globally recognized benchmarks for cable manufacturing and testing.</p><table><tr><th>Standard</th><th>Description</th></tr><tr><td><b>IEC 60228</b></td><td>Conductors of insulated cables. Defines Class 1 (solid), Class 2 (stranded), Class 5 (flexible), and Class 6 (extra flexible).</td></tr><tr><td><b>IEC 60502</b></td><td>Power cables with extruded insulation (PVC, XLPE, EPR) for rated voltages from 1kV to 30kV.</td></tr><tr><td><b>IEC 60332</b></td><td>Tests on electric and optical fibre cables under fire conditions. (Flame propagation).</td></tr><tr><td><b>IEC 60754</b></td><td>Test on gases evolved during combustion of materials from cables (Halogen acid gas).</td></tr><tr><td><b>IEC 61034</b></td><td>Measurement of smoke density of cables burning under defined conditions.</td></tr></table>` },
     'formulas': { icon: '📐', title: 'Engineering Formulas', content: `<p>Essential formulas used in cable design and quality control:</p><h5>1. Conductor Resistance</h5><p>The DC resistance of a conductor is calculated using:</p><div class="formula-box">R = (ρ × L) / A</div><ul><li><b>R</b> = Resistance (Ω)</li><li><b>ρ</b> = Resistivity (Copper ≈ 0.01724 Ω·mm²/m at 20°C)</li><li><b>L</b> = Length (m)</li><li><b>A</b> = Cross-sectional Area (mm²)</li></ul><h5>2. Voltage Drop</h5><p>For a single-phase circuit:</p><div class="formula-box">Vd = (2 × I × L × R) / 1000</div><ul><li><b>I</b> = Current (A)</li><li><b>L</b> = Cable Length (m)</li><li><b>R</b> = Resistance (Ω/km)</li></ul><h5>3. Capacitance</h5><p>Capacitance per unit length (pF/m) is crucial for communication cables and high-voltage cables.</p><div class="formula-box">C = (2 × π × ε) / ln(D/d)</div><ul><li><b>ε</b> = Permittivity of insulation</li><li><b>D</b> = Diameter over insulation</li><li><b>d</b> = Conductor diameter</li></ul>` },
@@ -5088,12 +5094,11 @@ function calculateCap() {
 ['capReading','capLength'].forEach(id => document.getElementById(id).addEventListener('input', calculateCap));
 
 function calculateHvFail() {
-  const l = parseFloat(document.getElementById('hvLength').value) || 0, t = parseFloat(document.getElementById('hvTopCr').value) || 0, b = parseFloat(document.getElementById('hvBottomCr').value) || 0, tot = t + b;
+  const l = parseFloat(document.getElementById('hvLength').value) || 0, t = parseFloat(document.getElementById('hvTopCr').value) || 0, b = parseFloat(document.getElementById('hvBottomCr').value) || 0;
+  const tot = t + b, topSide = (tot > 0) ? (t / tot) * l : 0, botSide = (tot > 0) ? (b / tot) * l : 0;
   document.getElementById('hvTotalCrOut').textContent = tot.toFixed(2);
-  let topM = 0, botM = 0;
-  if (tot > 0 && l > 0) { topM = (t / tot) * l; botM = (b / tot) * l; }
-  document.getElementById('hvTopSideOut').textContent = topM.toFixed(2);
-  document.getElementById('hvBottomSideOut').textContent = botM.toFixed(2);
+  document.getElementById('hvTopSideOut').textContent = topSide.toFixed(2);
+  document.getElementById('hvBottomSideOut').textContent = botSide.toFixed(2);
 }
 ['hvLength','hvTopCr','hvBottomCr'].forEach(id => document.getElementById(id).addEventListener('input', calculateHvFail));
 
@@ -5107,164 +5112,211 @@ function calculateThick() {
 
 function calculateBraid() {
   const d = parseFloat(document.getElementById('brD').value) || 0, D = parseFloat(document.getElementById('brBigD').value) || 0, N = parseFloat(document.getElementById('brN').value) || 0, M = parseFloat(document.getElementById('brM').value) || 0, L = parseFloat(document.getElementById('brL').value) || 0;
-  const tot = N * M; document.getElementById('brTotalWiresOut').textContent = tot.toFixed(0);
-  let F = 0, cov = 0;
-  if (D > 0 && L > 0 && tot > 0) { const a = (2 * 3.14 * (D + 2 * d)) / M; const b = L / (N / 4); F = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2)); cov = (1 - Math.pow((1 - (tot * d) / (2 * 3.14 * (D + d) * Math.sin(Math.atan((2 * 3.14 * (D + d) * N) / (4 * M * L))))), 2)) * 100; }
+  const totW = N * M, F = totW * d;
+  let cov = 0;
+  if (D > 0 && L > 0 && F > 0) {
+    const val = (2 * 3.1416 * (D + 2 * d)) / L;
+    const sinA = Math.sin(Math.atan(val));
+    cov = sinA > 0 ? ((F / sinA) / (2 * 3.1416 * (D + 2 * d))) * 100 : 0;
+  }
+  document.getElementById('brTotalWiresOut').textContent = totW;
   document.getElementById('brFOut').textContent = F.toFixed(2);
   document.getElementById('brCovOut').textContent = cov.toFixed(2);
 }
 ['brD','brBigD','brN','brM','brL'].forEach(id => document.getElementById(id).addEventListener('input', calculateBraid));
 
-document.getElementById('tensileShape').addEventListener('change', function(){ const isTub = this.value === 'tubular'; document.getElementById('tubularInputs').style.display = isTub ? 'block' : 'none'; document.getElementById('dumbbellInputs').style.display = isTub ? 'none' : 'block'; calculateTensile(); });
+document.getElementById('tensileShape').addEventListener('change', (e) => {
+  const isTub = e.target.value === 'tubular';
+  document.getElementById('tubularInputs').style.display = isTub ? 'block' : 'none';
+  document.getElementById('dumbbellInputs').style.display = isTub ? 'none' : 'block';
+  calculateTensile();
+});
 function calculateTensile() {
   const shape = document.getElementById('tensileShape').value, load = parseFloat(document.getElementById('tLoad').value) || 0, elong = parseFloat(document.getElementById('tElong').value) || 0, init = parseFloat(document.getElementById('tInit').value) || 0;
   let area = 0;
-  if (shape === 'tubular') { const dia = parseFloat(document.getElementById('tDia').value) || 0, th = parseFloat(document.getElementById('tThick').value) || 0; if (dia > 0 && th > 0) area = 3.14 * th * (dia - th); }
-  else { const w = parseFloat(document.getElementById('dWidth').value) || 0, th = parseFloat(document.getElementById('dThick').value) || 0; if (w > 0 && th > 0) area = w * th; }
-  const ts = (area > 0) ? load / area : 0, elP = (init > 0 && elong >= init) ? ((elong - init) / init) * 100 : 0;
+  if (shape === 'tubular') {
+    const dia = parseFloat(document.getElementById('tDia').value) || 0, th = parseFloat(document.getElementById('tThick').value) || 0;
+    if (dia > 0 && th > 0) area = 3.1416 * th * (dia - th);
+  } else {
+    const w = parseFloat(document.getElementById('dWidth').value) || 0, th = parseFloat(document.getElementById('dThick').value) || 0;
+    area = w * th;
+  }
+  const ts = (area > 0) ? (load / area) : 0, elP = (init > 0 && elong >= init) ? ((elong - init) / init) * 100 : 0;
   document.getElementById('tAreaOut').textContent = area.toFixed(2);
   document.getElementById('tTsOut').textContent = ts.toFixed(2);
   document.getElementById('tElongOut').textContent = elP.toFixed(2);
 }
 ['tDia','tThick','dWidth','dThick','tLoad','tElong','tInit'].forEach(id => document.getElementById(id).addEventListener('input', calculateTensile));
 
-document.getElementById('hotSetShape').addEventListener('change', function(){ const isTub = this.value === 'tubular'; document.getElementById('tubularHotInputs').style.display = isTub ? 'block' : 'none'; document.getElementById('dumbbellHotInputs').style.display = isTub ? 'none' : 'block'; calculateHotSet(); });
+document.getElementById('hotSetShape').addEventListener('change', (e) => {
+  const isTub = e.target.value === 'tubular';
+  document.getElementById('tubularHotInputs').style.display = isTub ? 'block' : 'none';
+  document.getElementById('dumbbellHotInputs').style.display = isTub ? 'none' : 'block';
+  calculateHotSet();
+});
 function calculateHotSet() {
   const shape = document.getElementById('hotSetShape').value, init = parseFloat(document.getElementById('hInit').value) || 0, elong = parseFloat(document.getElementById('hElong').value) || 0, cool = parseFloat(document.getElementById('hCool').value) || 0;
-  let area = 0;
-  if (shape === 'tubular') { const cDia = parseFloat(document.getElementById('hCoreDia').value) || 0, cnDia = parseFloat(document.getElementById('hCondDia').value) || 0; if (cDia > 0 && cnDia >= 0) area = (3.14 / 4) * (Math.pow(cDia, 2) - Math.pow(cnDia, 2)); }
-  else { const w = parseFloat(document.getElementById('hWidth').value) || 0, th = parseFloat(document.getElementById('hThick').value) || 0; if (w > 0 && th > 0) area = w * th; }
-  const wt = area * 20;
-  let hotE = 0, permE = 0;
-  if (init > 0) { if (elong >= init) hotE = ((elong - init) / init) * 100; if (cool >= init) permE = ((cool - init) / init) * 100; }
+  let wt = 0;
+  if (shape === 'tubular') {
+    const core = parseFloat(document.getElementById('hCoreDia').value) || 0, cond = parseFloat(document.getElementById('hCondDia').value) || 0;
+    if (core > 0 && cond > 0) wt = ((3.1416 * (core * core - cond * cond)) / 4) * 20;
+  } else {
+    const th = parseFloat(document.getElementById('hThick').value) || 0, w = parseFloat(document.getElementById('hWidth').value) || 0;
+    wt = (th * w) * 20;
+  }
+  const hot = (init > 0 && elong >= init) ? ((elong - init) / init) * 100 : 0, perm = (init > 0 && cool >= init) ? ((cool - init) / init) * 100 : 0;
   document.getElementById('hWeightOut').textContent = wt.toFixed(2);
-  document.getElementById('hHotOut').textContent = hotE.toFixed(2);
-  document.getElementById('hPermOut').textContent = permE.toFixed(2);
+  document.getElementById('hHotOut').textContent = hot.toFixed(2);
+  document.getElementById('hPermOut').textContent = perm.toFixed(2);
 }
-['hCoreDia','hCondDia','hWidth','hThick','hInit','hElong','hCool'].forEach(id => document.getElementById(id).addEventListener('input', calculateHotSet));
+['hCoreDia','hCondDia','hThick','hWidth','hInit','hElong','hCool'].forEach(id => document.getElementById(id).addEventListener('input', calculateHotSet));
 
 function calculateArmCov() {
-  const d = parseFloat(document.getElementById('covCableDia').value) || 0;
-  const dw = parseFloat(document.getElementById('covWireDia').value) || 0;
-  const L = parseFloat(document.getElementById('covLay').value) || 0;
-  const N = parseFloat(document.getElementById('covWires').value) || 0;
+  const cableDia = parseFloat(document.getElementById('covCableDia').value) || 0;
+  const wireDia = parseFloat(document.getElementById('covWireDia').value) || 0;
+  const lay = parseFloat(document.getElementById('covLay').value) || 0;
+  const wires = parseFloat(document.getElementById('covWires').value) || 0;
 
   let cov = 0;
-  if (d > 0 && dw > 0 && L > 0 && N > 0) {
-    const sinTheta = (Math.PI * (d + dw)) / Math.sqrt(Math.pow(Math.PI * (d + dw), 2) + Math.pow(L, 2));
-    if (sinTheta !== 0) {
-      cov = ((N * dw) / (Math.PI * (d + dw) * sinTheta)) * 100;
-    }
+  if (cableDia > 0 && wireDia > 0 && lay > 0 && wires > 0) {
+    const k = Math.PI * (cableDia + wireDia);
+    cov = ((wires * wireDia) / (k * Math.sin(Math.atan(lay / k)))) * 100;
   }
   document.getElementById('outCov').textContent = cov.toFixed(2);
 }
 ['covCableDia','covWireDia','covLay','covWires'].forEach(id => document.getElementById(id).addEventListener('input', calculateArmCov));
 
 /* --- PRINT ENGINE --- */
-window.triggerPrint = function(e, type) {
-  if(e) e.preventDefault();
-  if (type === 'gatepass') {
+window.triggerPrint = function(event, mode) {
+  if(event) event.preventDefault();
+  document.body.classList.remove('printing-gatepass');
+  document.getElementById('pCompany').textContent = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
+  document.getElementById('pDept').textContent = localStorage.getItem('tc_dept') || 'QC DEPARTMENT';
+  document.getElementById('pPrepBy').textContent = localStorage.getItem('tc_prep') || '—';
+  document.getElementById('pVerBy').textContent = localStorage.getItem('tc_ver') || '—';
+  const now = new Date();
+  document.getElementById('pDate').textContent = now.toLocaleDateString();
+  document.getElementById('pTime').textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+  if (mode === 'gatepass') {
     const deptEl = document.getElementById('gpDept');
     const dateEl = document.getElementById('gpDate');
     const hourEl = document.getElementById('gpHour');
     const minEl = document.getElementById('gpMinute');
-    const ampmEl = document.getElementById('gpAmPm');
+    const apEl = document.getElementById('gpAmPm');
 
     [deptEl, dateEl].forEach(el => el.classList.remove('gp-invalid'));
 
-    if (!dateEl.value) {
+    const deptVal = deptEl.value.trim();
+    const rawDate = dateEl.value;
+    const hourVal = hourEl.value;
+    const minVal = minEl.value;
+    const apVal = apEl.value;
+
+    if (!deptVal) {
+      alert("Please enter a Department.");
+      deptEl.classList.add('gp-invalid');
+      deptEl.focus();
+      return;
+    }
+    if (!rawDate) {
+      alert("Please select a Date.");
       dateEl.classList.add('gp-invalid');
       dateEl.focus();
-      alert('Please select a Date for the Gate Pass.');
       return;
     }
 
-    const deptName = (deptEl.value || '').trim().toUpperCase();
-    const formattedDate = formatDateForDisplay(dateEl.value);
-    const outTimeStr = `${hourEl.value}:${minEl.value} ${ampmEl.value}`;
+    const formattedDate = formatDateForDisplay(rawDate);
+    const formattedTime = `${hourVal}:${minVal} ${apVal}`;
+    const companyName = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
 
-    const totalPasses = GP_STANDARD_COUNT;
+    document.body.classList.add('printing-gatepass');
+    const gpArea = document.getElementById('gatePassPrintArea');
     const cols = 3;
-    const rows = Math.ceil(totalPasses / cols);
-    const printArea = document.getElementById('gatePassPrintArea');
-    printArea.style.setProperty('--gp-rows', rows);
-    printArea.classList.remove('gp-dense');
+    const rows = Math.ceil(GP_STANDARD_COUNT / cols);
+    gpArea.style.setProperty('--gp-rows', rows);
+    gpArea.classList.toggle('gp-dense', rows > 10);
 
-    let passHtml = '';
-    for (let i = 1; i <= totalPasses; i++) {
-      const serial = `GP-${String(i).padStart(2, '0')}`;
-      passHtml += `
+    let html = '';
+    for (let i = 1; i <= GP_STANDARD_COUNT; i++) {
+      const serial = String(i).padStart(2, '0');
+      html += `
         <div class="gate-pass-card">
-          <div class="gp-company">THERMOCABLES</div>
-          ${deptName ? `<div class="gp-dept">${esc(deptName)}</div>` : ''}
-          <div class="gp-serial">${serial}</div>
+          <div class="gp-company">${esc(companyName)}</div>
+          <div class="gp-dept">${esc(deptVal)}</div>
+          <div class="gp-serial">GATE PASS #${serial}</div>
           <div class="gp-datetime">
-            <span>Date: ${formattedDate}</span>
-            <span>Out: ${outTimeStr}</span>
+            <span>Date: ${esc(formattedDate)}</span>
+            <span>Out: ${esc(formattedTime)}</span>
           </div>
           <div class="gp-sig-area">
             <div class="gp-sig-line"></div>
-            <div class="gp-sig-label">Approved By</div>
+            <div class="gp-sig-label">Authorized Signatory</div>
           </div>
         </div>
       `;
     }
-    printArea.innerHTML = passHtml;
-
-    document.body.classList.add('printing-gatepass');
-    setTimeout(() => {
-      window.print();
-      setTimeout(() => {
-        document.body.classList.remove('printing-gatepass');
-        printArea.innerHTML = '';
-        printArea.style.removeProperty('--gp-rows');
-        printArea.classList.remove('gp-dense');
-      }, 200);
-    }, 100);
+    gpArea.innerHTML = html;
+    setTimeout(() => { window.print(); }, 100);
     return;
   }
 
-  const now = new Date();
-  document.getElementById('pDate').textContent = now.toLocaleDateString();
-  document.getElementById('pTime').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  document.getElementById('pCompany').textContent = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
-  document.getElementById('pDept').textContent = localStorage.getItem('tc_dept') || 'QC DEPARTMENT';
-  document.getElementById('pPrepBy').textContent = localStorage.getItem('tc_prep') || '';
-  document.getElementById('pVerBy').textContent = localStorage.getItem('tc_ver') || '';
+  let inputHtml = '<table class="print-inputs-table"><thead><tr><th>Parameter</th><th>Value</th></tr></thead><tbody>';
+  let typeText = '';
 
-  let inputsHtml = '';
-  const inputsDiv = document.getElementById('printInputs');
-
-  if(type === 'job') {
-    const job = jobInput.value.trim(), op = opSelect.value;
-    document.getElementById('pDocTitle').textContent = 'JOB CARD DETAILS';
-    document.getElementById('pTestType').textContent = op ? `${job} — ${op}` : job || '—';
-    inputsHtml = `<table class="print-inputs-table"><tr><th>Job Number</th><td>${esc(job||'—')}</td><th>Operation</th><td>${esc(op||'—')}</td></tr></table>`;
-  } else if(type === 'bom') {
-    const soItem = bomInput.value.trim(), op = document.getElementById('bomOpSelect').value;
-    const item = BOM_DATA.find(b => b.soItem === soItem);
-    const planQty = document.getElementById('planQtyInput') ? document.getElementById('planQtyInput').value : (item ? formatQty(item.defaultPlanQty) : '—');
-    document.getElementById('pDocTitle').textContent = 'BILL OF MATERIALS (BOM)';
-    document.getElementById('pTestType').textContent = op ? `${soItem} — ${op}` : soItem || '—';
-    inputsHtml = `
-      <table class="print-inputs-table">
-        <tr><th>SO-ITEM</th><td>${esc(soItem||'—')}</td><th>Operation JDM</th><td>${esc(op||'All Operations')}</td></tr>
-        <tr><th>PLAN/PRD QTY</th><td colspan="3"><b>${esc(planQty)}</b></td></tr>
-      </table>`;
-  } else if(type === 'qc') {
+  if (mode === 'qc') {
     const activeTabBtn = document.querySelector('.qc-tab-btn.active');
-    const tabName = activeTabBtn ? activeTabBtn.textContent.trim() : 'QC CALCULATION';
-    document.getElementById('pDocTitle').textContent = `${tabName.toUpperCase()} REPORT`;
-    document.getElementById('pTestType').textContent = tabName;
+    const activeTabName = activeTabBtn ? activeTabBtn.textContent.trim().toUpperCase() : 'QC REPORT';
+    typeText = activeTabName + ' TEST';
+    document.getElementById('pDocTitle').textContent = 'QC TEST REPORT';
 
-    const activeCard = document.querySelector('.qc-card.active');
-    if(activeCard) {
-      let rowsHtml = '';
-      activeCard.querySelectorAll('.input-group').forEach(grp => {
-        const lbl = grp.querySelector('label');
-        const inp = grp.querySelector('input, select');
-        if(lbl && inp) {
-          const cleanLabel = lbl.childNodes[0] ? lbl.childNodes[0].textContent.trim() : lbl.textContent.trim();
-          let val = inp.value;
-          if(inp.tagName === 'SELECT') val = inp.options[inp.selectedIndex]?.text || val;
-          if(val !== '') rowsHtml += `<tr><th>${esc(cleanLabel)}</th><td>${esc(val)}</td>
+    if (activeTabName.includes('CR')) {
+      inputHtml += `<tr><td>Spec CR</td><td>${document.getElementById('specCR').value || '—'}</td></tr><tr><td>Max CR</td><td>${document.getElementById('maxCR').value || '—'}</td></tr><tr><td>Min CR</td><td>${document.getElementById('minCR').value || '—'}</td></tr><tr><td>CR Obs</td><td>${document.getElementById('obsCR').value || '—'}</td></tr><tr><td>Length (m)</td><td>${document.getElementById('lenCR').value || '—'}</td></tr><tr><td>Temp (°C)</td><td>${document.getElementById('tempCR').value || '—'}</td></tr>`;
+    } else if (activeTabName.includes('IR')) {
+      inputHtml += `<tr><td>Reading (MΩ)</td><td>${document.getElementById('irReading').value || '—'}</td></tr><tr><td>Length (m)</td><td>${document.getElementById('irLength').value || '—'}</td></tr><tr><td>Core Dia (mm)</td><td>${document.getElementById('irCoreDia').value || '—'}</td></tr><tr><td>Cond Dia (mm)</td><td>${document.getElementById('irCondDia').value || '—'}</td></tr>`;
+    } else if (activeTabName.includes('CAP')) {
+      inputHtml += `<tr><td>Capacitance Reading</td><td>${document.getElementById('capReading').value || '—'}</td></tr><tr><td>Length (m)</td><td>${document.getElementById('capLength').value || '—'}</td></tr>`;
+    } else if (activeTabName.includes('HV')) {
+      inputHtml += `<tr><td>Total Length (m)</td><td>${document.getElementById('hvLength').value || '—'}</td></tr><tr><td>Top CR</td><td>${document.getElementById('hvTopCr').value || '—'}</td></tr><tr><td>Bottom CR</td><td>${document.getElementById('hvBottomCr').value || '—'}</td></tr>`;
+    } else if (activeTabName.includes('THICK')) {
+      inputHtml += `<tr><td>Min Thickness (mm)</td><td>${document.getElementById('thickMin').value || '—'}</td></tr><tr><td>Max Thickness (mm)</td><td>${document.getElementById('thickMax').value || '—'}</td></tr>`;
+    } else if (activeTabName.includes('BRAID')) {
+      inputHtml += `<tr><td>Wire Dia (d)</td><td>${document.getElementById('brD').value || '—'}</td></tr><tr><td>Dia Under Braid (D)</td><td>${document.getElementById('brBigD').value || '—'}</td></tr><tr><td>No. of Wires (N)</td><td>${document.getElementById('brN').value || '—'}</td></tr><tr><td>No. of Carriers (M)</td><td>${document.getElementById('brM').value || '—'}</td></tr><tr><td>Lay Length (L)</td><td>${document.getElementById('brL').value || '—'}</td></tr>`;
+    } else if (activeTabName.includes('TENSILE')) {
+      inputHtml += `<tr><td>Shape</td><td>${document.getElementById('tensileShape').value}</td></tr><tr><td>Breakdown Load (N)</td><td>${document.getElementById('tLoad').value || '—'}</td></tr><tr><td>Elongated Len</td><td>${document.getElementById('tElong').value || '—'}</td></tr><tr><td>Initial Len</td><td>${document.getElementById('tInit').value || '—'}</td></tr>`;
+    } else if (activeTabName.includes('HOT')) {
+      inputHtml += `<tr><td>Shape</td><td>${document.getElementById('hotSetShape').value}</td></tr><tr><td>Initial Len</td><td>${document.getElementById('hInit').value || '—'}</td></tr><tr><td>Elongated Len</td><td>${document.getElementById('hElong').value || '—'}</td></tr><tr><td>After Cooling</td><td>${document.getElementById('hCool').value || '—'}</td></tr>`;
+    } else if (activeTabName.includes('ARM')) {
+      inputHtml += `<tr><td>Cable Dia</td><td>${document.getElementById('covCableDia').value || '—'}</td></tr><tr><td>Wire Dia</td><td>${document.getElementById('covWireDia').value || '—'}</td></tr><tr><td>Lay Length</td><td>${document.getElementById('covLay').value || '—'}</td></tr><tr><td>No. of Wires</td><td>${document.getElementById('covWires').value || '—'}</td></tr>`;
+    }
+  } else if (mode === 'job') {
+    typeText = 'JOB CARD';
+    document.getElementById('pDocTitle').textContent = 'JOB CARD';
+    inputHtml += `<tr><td>Job Number</td><td>${document.getElementById('jobInput').value || '—'}</td></tr><tr><td>Operation</td><td>${document.getElementById('opSelect').value || '—'}</td></tr>`;
+  } else if (mode === 'bom') {
+    typeText = 'BILL OF MATERIALS (BOM)';
+    document.getElementById('pDocTitle').textContent = 'BILL OF MATERIALS';
+    inputHtml += `<tr><td>SO-ITEM</td><td>${document.getElementById('bomInput').value || '—'}</td></tr><tr><td>Operation JDM</td><td>${document.getElementById('bomOpSelect').value || 'All'}</td></tr><tr><td>Plan Qty</td><td>${document.getElementById('planQtyInput') ? document.getElementById('planQtyInput').value : '—'}</td></tr>`;
+  }
+
+  inputHtml += '</tbody></table>';
+  document.getElementById('printInputs').innerHTML = inputHtml;
+  document.getElementById('pTestType').textContent = typeText;
+
+  setTimeout(() => { window.print(); }, 100);
+};
+
+window.addEventListener('afterprint', () => {
+  document.body.classList.remove('printing-gatepass');
+  const gpArea = document.getElementById('gatePassPrintArea');
+  if (gpArea) {
+    gpArea.style.removeProperty('--gp-rows');
+    gpArea.classList.remove('gp-dense');
+  }
+});
+
+initGatePassUI();
+})();
+</script>
+</body>
+</html>

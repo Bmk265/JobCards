@@ -780,6 +780,10 @@ body {
   background: #fee2e2;
   color: var(--danger-text);
 }
+.maint-badge.off {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
 .maint-toggle-btn {
   padding: 6px 12px;
   border-radius: 8px;
@@ -2426,6 +2430,141 @@ body {
   max-width: 100%;
 }
 
+/* --- DRUM REQ MODULE --- */
+.drum-summary-boxes {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+@media (min-width: 520px) {
+  .drum-summary-boxes {
+    grid-template-columns: 1.4fr 1.6fr 1fr;
+  }
+}
+.drum-info-box {
+  background: var(--bg-app);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 11px 13px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.drum-info-box.highlight {
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+}
+.drum-info-box .lbl {
+  font-size: 0.64rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+}
+.drum-info-box.highlight .lbl {
+  color: var(--accent-primary);
+}
+.drum-info-box .val {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  word-break: break-word;
+  line-height: 1.35;
+}
+.drum-info-box.highlight .val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--accent-primary);
+}
+.drum-req-table {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+}
+.drum-req-head {
+  display: grid;
+  grid-template-columns: 1fr 90px;
+  background: var(--bg-subtle);
+  border-bottom: 1.5px solid var(--border-light);
+}
+.drum-req-head > div {
+  padding: 9px 12px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+.drum-req-head > div:last-child {
+  text-align: right;
+}
+.drum-req-row {
+  display: grid;
+  grid-template-columns: 1fr 90px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+}
+.drum-req-row:last-child {
+  border-bottom: none;
+}
+.drum-req-row > div {
+  padding: 10px 12px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+}
+.drum-req-row > div:first-child {
+  border-right: 1px solid var(--border-subtle);
+}
+.drum-req-row > div:last-child {
+  justify-content: flex-end;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 800;
+  color: var(--accent-primary);
+  background: #fafcff;
+}
+.drum-total-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--success-bg);
+  border-top: 1.5px solid var(--success-border);
+  font-weight: 800;
+  color: var(--success-text);
+  font-size: 0.88rem;
+}
+.drum-total-foot .total-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.12rem;
+  font-weight: 800;
+}
+@media print {
+  .drum-summary-boxes {
+    display: grid !important;
+    grid-template-columns: 1.4fr 1.6fr 1fr !important;
+    gap: 8px !important;
+  }
+  .drum-info-box {
+    border: 1px solid #000 !important;
+    background: #fff !important;
+  }
+  .drum-info-box * { color: #000 !important; }
+  .drum-req-table { border: 1px solid #000 !important; }
+  .drum-req-head { border-bottom: 1px solid #000 !important; background: #fff !important; }
+  .drum-req-head > div, .drum-req-row > div { color: #000 !important; border-right: 1px solid #000 !important; }
+  .drum-req-head > div:last-child, .drum-req-row > div:last-child { border-right: none !important; background: #fff !important; }
+  .drum-req-row { border-bottom: 1px solid #000 !important; }
+  .drum-total-foot { border-top: 1.5px solid #000 !important; background: #fff !important; color: #000 !important; }
+}
+
 /* --- PRINT STYLES --- */
 .print-header, .print-footer, .print-inputs-section, .gate-pass-print-container {
   display: none;
@@ -2681,7 +2820,6 @@ body.has-offline-banner .app { padding-top: 48px; }
     <!-- Registration Form -->
     <div id="registerFormWrap" style="display: none;">
       <input type="text" id="regName" class="login-input" placeholder="Full Name" autocomplete="name">
-      <input type="email" id="regEmail" class="login-input" placeholder="Email ID (e.g. name@thermocables.com)" autocomplete="email">
       <div class="auth-grid-2">
         <input type="text" id="regDept" class="login-input" placeholder="Department (e.g. QC, Production)">
         <input type="text" id="regPlant" class="login-input" placeholder="Plant (e.g. Plant 1)">
@@ -2797,20 +2935,6 @@ body.has-offline-banner .app { padding-top: 48px; }
         <div class="result-title" id="jobResultTitle">Enter details above</div>
         <div class="counter" id="jobResultCount">0 records</div>
       </div>
-      <div id="jobCsvFallbackBox" class="no-print" style="display:none;margin:10px 0 12px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,0.88);border:1px dashed #60a5fa;">
-        <div id="jobCsvStatusText" style="font-size:0.82rem;color:#1e3a8a;font-weight:600;margin-bottom:8px;"></div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
-          <label class="btn-mini-edit" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;margin:0;">
-            📂 Load data.csv
-            <input type="file" accept=".csv,text/csv" style="display:none;" onchange="handleManualCsvFile('job', this)">
-          </label>
-          <button type="button" class="btn-mini-edit" onclick="toggleCsvPasteBox('job')">📋 Paste CSV Text</button>
-        </div>
-        <div id="jobCsvPasteWrap" style="display:none;margin-top:8px;">
-          <textarea id="jobCsvPasteArea" rows="4" placeholder="Paste CSV content with headers here..." style="width:100%;padding:8px;border-radius:8px;border:1px solid #cbd5e1;font-size:0.8rem;font-family:monospace;"></textarea>
-          <button type="button" class="btn-search" style="margin-top:6px;padding:7px 14px;font-size:0.82rem;" onclick="handleManualCsvPaste('job')">Import Pasted CSV</button>
-        </div>
-      </div>
       <div class="grid" id="jobGrid">
         <div class="empty"><div class="icon">🔎</div><p>Start typing a <b>job number</b> above.</p></div>
       </div>
@@ -2840,26 +2964,38 @@ body.has-offline-banner .app { padding-top: 48px; }
         <div class="result-title" id="bomResultTitle">Enter details above</div>
         <div class="result-counter counter" id="bomResultCount">0 records</div>
       </div>
-      <div id="bomCsvFallbackBox" class="no-print" style="display:none;margin:10px 0 12px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,0.88);border:1px dashed #60a5fa;">
-        <div id="bomCsvStatusText" style="font-size:0.82rem;color:#1e3a8a;font-weight:600;margin-bottom:8px;"></div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
-          <label class="btn-mini-edit" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;margin:0;">
-            📂 Load bom.csv
-            <input type="file" accept=".csv,text/csv" style="display:none;" onchange="handleManualCsvFile('bom', this)">
-          </label>
-          <button type="button" class="btn-mini-edit" onclick="toggleCsvPasteBox('bom')">📋 Paste CSV Text</button>
-        </div>
-        <div id="bomCsvPasteWrap" style="display:none;margin-top:8px;">
-          <textarea id="bomCsvPasteArea" rows="4" placeholder="Paste BOM CSV content with headers here..." style="width:100%;padding:8px;border-radius:8px;border:1px solid #cbd5e1;font-size:0.8rem;font-family:monospace;"></textarea>
-          <button type="button" class="btn-search" style="margin-top:6px;padding:7px 14px;font-size:0.82rem;" onclick="handleManualCsvPaste('bom')">Import Pasted CSV</button>
-        </div>
-      </div>
       <div class="grid" id="bomGrid">
         <div class="empty"><div class="icon">📦</div><p>Start typing a <b>SO-ITEM</b> above.</p></div>
       </div>
       <button class="btn-print no-print" onclick="triggerPrint(event, 'bom')">Save as PDF</button>
     </div>
   </div>
+
+  <div class="view-section" id="view-drumreq">
+    <div id="drumreqMaintenanceNotice"></div>
+    <div id="drumreqContentWrap">
+      <div class="search-panel">
+        <div class="field" id="drumField" style="grid-column: 1 / -1;">
+          <label>Job No / Item No</label>
+          <input type="text" id="drumInput" placeholder="Type Job No / Item No (e.g. 338371-26)..." autocomplete="off" inputmode="text">
+          <div class="suggest" id="drumSuggestBox"></div>
+        </div>
+        <div class="search-buttons">
+          <button class="btn-search" id="drumSearchBtn">🔍 Show</button>
+          <button class="btn-reset" id="drumResetBtn">Reset</button>
+        </div>
+      </div>
+      <div class="result-bar">
+        <div class="result-title" id="drumResultTitle">Enter Job No / Item No above</div>
+        <div class="counter" id="drumResultCount">0 records</div>
+      </div>
+      <div class="grid" id="drumGrid" style="grid-template-columns: 1fr;">
+        <div class="empty"><div class="icon">🥁</div><p>Start typing a <b>Job No / Item No</b> above.</p></div>
+      </div>
+      <button class="btn-print no-print" onclick="triggerPrint(event, 'drumreq')">Save as PDF</button>
+    </div>
+  </div>
+
 
   <div class="view-section" id="view-qccalc">
     <div id="qccalcMaintenanceNotice"></div>
@@ -3198,10 +3334,7 @@ body.has-offline-banner .app { padding-top: 48px; }
     <div class="maint-card" id="adminUserMgmtCard" style="display: none;">
       <div class="maint-header">
         <h3>👥 Manage Users &amp; Module Access</h3>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <button type="button" class="btn-mini-edit" id="adminRefreshUsersBtn" onclick="loadUsersForAdmin()">🔄 Refresh</button>
-          <span class="maint-lock-pill" id="adminUserCountBadge">0 Users</span>
-        </div>
+        <span class="maint-lock-pill" id="adminUserCountBadge">0 Users</span>
       </div>
 
       <div class="admin-user-form">
@@ -3266,6 +3399,7 @@ body.has-offline-banner .app { padding-top: 48px; }
             <label class="module-access-chip"><input type="checkbox" class="adm-mod-cb" value="home" checked> Home</label>
             <label class="module-access-chip"><input type="checkbox" class="adm-mod-cb" value="jobcards" checked> Job Cards</label>
             <label class="module-access-chip"><input type="checkbox" class="adm-mod-cb" value="bom"> BOM</label>
+            <label class="module-access-chip"><input type="checkbox" class="adm-mod-cb" value="drumreq" checked> Drum Req</label>
             <label class="module-access-chip"><input type="checkbox" class="adm-mod-cb" value="qccalc"> QC Calc</label>
             <label class="module-access-chip"><input type="checkbox" class="adm-mod-cb" value="gatepass" checked> Gate Pass</label>
           </div>
@@ -3326,6 +3460,10 @@ body.has-offline-banner .app { padding-top: 48px; }
   <div class="nav-item" id="nav-bom" onclick="switchMainView('bom')">
     <svg viewBox="0 0 24 24"><path d="M19,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,19H5V5H19V19M17,17H7V15H17V17M17,13H7V11H17V13M17,9H7V7H17V9Z" /></svg>
     <span>BOM</span>
+  </div>
+  <div class="nav-item" id="nav-drumreq" onclick="switchMainView('drumreq')">
+    <svg viewBox="0 0 24 24"><path d="M12,2C7.58,2 4,3.79 4,6V18C4,20.21 7.58,22 12,22C16.42,22 20,20.21 20,18V6C20,3.79 16.42,2 12,2M12,4C15.87,4 18,5.5 18,6C18,6.5 15.87,8 12,8C8.13,8 6,6.5 6,6C6,5.5 8.13,4 12,4M6,9.12C7.64,9.68 9.75,10 12,10C14.25,10 16.36,9.68 18,9.12V13.12C16.36,13.68 14.25,14 12,14C9.75,14 7.64,13.68 6,13.12V9.12M12,20C8.13,20 6,18.5 6,18V15.12C7.64,15.68 9.75,16 12,16C14.25,16 16.36,15.68 18,15.12V18C18,18.5 15.87,20 12,20Z" /></svg>
+    <span>Drum Req</span>
   </div>
   <div class="nav-item" id="nav-qc" onclick="switchMainView('qccalc')">
     <svg viewBox="0 0 24 24"><path d="M16,4H8C6.89,4 6,4.89 6,6V18A2,2 0 0,0 8,20H16A2,2 0 0,0 18,18V6C18,4.89 17.11,4 16,4M16,18H8V6H16V18M13,8H11V12H13V8M13,14H11V16H13V14Z" /></svg>
@@ -3417,6 +3555,7 @@ body.has-offline-banner .app { padding-top: 48px; }
           <option value="Home">Home</option>
           <option value="Job Cards">Job Cards</option>
           <option value="BOM">BOM</option>
+          <option value="Drum Req">Drum Req</option>
           <option value="QC Calc">QC Calc</option>
           <option value="Gate Pass">Gate Pass</option>
         </select>
@@ -3431,126 +3570,7 @@ body.has-offline-banner .app { padding-top: 48px; }
   </div>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, set, get, update, remove, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-const firebaseConfig = {
-  databaseURL: "https://jobcardstcl-default-rtdb.firebaseio.com"
-};
-
-const firebaseApp = initializeApp(firebaseConfig);
-const rtdb = getDatabase(firebaseApp);
-
-window.FIREBASE_RTDB = {
-  db: rtdb,
-  ref,
-  set,
-  get,
-  update,
-  remove,
-  push,
-  onValue
-};
-
-window.dispatchEvent(new Event("firebase-rtdb-ready"));
-</script>
 <script>
-const FIREBASE_DB_URL = "https://jobcardstcl-default-rtdb.firebaseio.com";
-
-function sanitizeFirebaseKey(rawKey) {
-  return String(rawKey || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[.#$\[\]/]/g, "_");
-}
-
-async function fbRestRequest(path, method = "GET", body = null) {
-  if (!navigator.onLine) return null;
-  const cleanPath = String(path || "").replace(/^\/+|\/+$/g, "");
-  const url = `${FIREBASE_DB_URL}/${cleanPath}.json?_t=${Date.now()}`;
-  const opts = {
-    method,
-    headers: { "Content-Type": "application/json" }
-  };
-  if (body !== null && method !== "GET" && method !== "DELETE") {
-    opts.body = JSON.stringify(body);
-  }
-  const res = await fetch(url, opts);
-  if (!res.ok) throw new Error(`Firebase HTTP ${res.status}`);
-  return await res.json();
-}
-
-// 1. Live sync when a user submits the Registration Form
-async function registerUserToCloud(userDetails) {
-  try {
-    const uname = sanitizeFirebaseKey(userDetails.username || userDetails.name);
-    if (!uname) return null;
-    const payload = {
-      username: uname,
-      name: userDetails.name || uname,
-      email: userDetails.email || "",
-      dept: userDetails.dept || userDetails.department || "General",
-      plant: userDetails.plant || "Main Plant",
-      phone: userDetails.phone || "",
-      pass: userDetails.pass || "",
-      role: userDetails.role || "",
-      views: Array.isArray(userDetails.views) ? userDetails.views : ["home", "jobcards", "gatepass"],
-      updatedAt: new Date().toISOString()
-    };
-
-    if (window.FIREBASE_RTDB) {
-      const { db, ref, set } = window.FIREBASE_RTDB;
-      await set(ref(db, `users/${uname}`), payload);
-    } else {
-      await fbRestRequest(`users/${uname}`, "PUT", payload);
-    }
-
-    localStorage.setItem("currentUser", JSON.stringify(payload));
-    if (typeof window.syncAllFromCloud === "function") {
-      await window.syncAllFromCloud();
-    }
-    return { ok: true, user: payload };
-  } catch (error) {
-    console.error("Firebase registration sync failed (saved locally):", error);
-    return null;
-  }
-}
-
-// 2. Fetch latest users from Firebase Realtime Database for Admin
-async function loadUsersForAdmin() {
-  try {
-    if (typeof window.syncAllFromCloud === "function") {
-      await window.syncAllFromCloud();
-    }
-    let usersObj = null;
-    if (window.FIREBASE_RTDB) {
-      const { db, ref, get } = window.FIREBASE_RTDB;
-      const snap = await get(ref(db, "users"));
-      if (snap.exists()) usersObj = snap.val();
-    } else {
-      usersObj = await fbRestRequest("users", "GET");
-    }
-
-    if (usersObj && typeof usersObj === "object") {
-      const list = Array.isArray(usersObj)
-        ? usersObj.filter(Boolean)
-        : Object.keys(usersObj).map(k => ({ username: k, ...usersObj[k] }));
-      if (typeof window.mergeCloudUsersIntoStore === "function") {
-        window.mergeCloudUsersIntoStore(list, true);
-      }
-    }
-    if (typeof renderAdminUserList === "function") {
-      renderAdminUserList();
-    }
-  } catch (error) {
-    console.error("Failed to fetch users from Firebase:", error);
-    if (typeof renderAdminUserList === "function") {
-      renderAdminUserList();
-    }
-  }
-}
-
 (function(){
 "use strict";
 
@@ -3562,6 +3582,7 @@ function hideGlobalLoader() {
   }
 }
 
+/* --- SAFETY: Force hide loader quickly on DOMContentLoaded and load --- */
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(hideGlobalLoader, 1500);
 });
@@ -3591,22 +3612,23 @@ if ('serviceWorker' in navigator) {
 }
 
 let CURRENT_USER = '', CURRENT_ROLE = '', ALLOWED_VIEWS = [];
-let JOB_DATA = [], BOM_DATA = [], USER_PLAN_QTY = null;
+let JOB_DATA = [], BOM_DATA = [], DRUM_DATA = [], USER_PLAN_QTY = null;
 let loginStep = 1;
-let FIREBASE_LIVE_ATTACHED = false;
 
+/* --- STANDARD GATE PASS COUNT: 3 x 9 = 27 --- */
 const GP_STANDARD_COUNT = 27;
-const ALL_MODULE_KEYS = ['home', 'jobcards', 'bom', 'qccalc', 'gatepass'];
+const ALL_MODULE_KEYS = ['home', 'jobcards', 'bom', 'drumreq', 'qccalc', 'gatepass'];
 
+/* --- DEFAULT & PERSISTED USERS STORE --- */
 const DEFAULT_USERS = {
-  'admin':      { name: 'Administrator', dept: 'Administration', plant: 'Main Plant', phone: '', email: '', pass: 'Admin@Tcl',     role: 'Admin',      views: ['home', 'jobcards', 'bom', 'qccalc', 'gatepass'] },
-  'rakesh':     { name: 'Rakesh',        dept: 'Operations',     plant: 'Main Plant', phone: '', email: '', pass: 'Rakesh@Tcl',    role: 'Manager',    views: ['home', 'jobcards', 'bom', 'gatepass'] },
-  'rasheed':    { name: 'Rasheed',       dept: 'Operations',     plant: 'Main Plant', phone: '', email: '', pass: 'Rasheed@Tcl',   role: 'Manager',    views: ['home', 'jobcards', 'bom', 'gatepass'] },
-  'manikanta':  { name: 'Manikanta',     dept: 'Operations',     plant: 'Main Plant', phone: '', email: '', pass: 'Manikanta@Tcl', role: 'Manager',    views: ['home', 'jobcards', 'bom', 'gatepass'] },
-  'outer':      { name: 'Outer Line',    dept: 'Outer',          plant: 'Main Plant', phone: '', email: '', pass: '',              role: 'Outer',      views: ['home', 'jobcards', 'gatepass'] },
-  'insulation': { name: 'Insulation',    dept: 'Insulation',     plant: 'Main Plant', phone: '', email: '', pass: '',              role: 'Insulation', views: ['home', 'jobcards', 'gatepass'] },
-  'qc':         { name: 'QC Team',       dept: 'QC',             plant: 'Main Plant', phone: '', email: '', pass: '',              role: 'QC',         views: ['home', 'jobcards', 'qccalc', 'gatepass'] },
-  'production': { name: 'Production',    dept: 'Production',     plant: 'Main Plant', phone: '', email: '', pass: '',              role: 'Production', views: ['home', 'jobcards', 'qccalc', 'gatepass'] }
+  'admin':      { name: 'Administrator', dept: 'Administration', plant: 'Main Plant', phone: '', email: '', pass: 'Admin@Tcl',     role: 'Admin',      views: ['home', 'jobcards', 'bom', 'drumreq', 'qccalc', 'gatepass'] },
+  'rakesh':     { name: 'Rakesh',        dept: 'Operations',     plant: 'Main Plant', phone: '', email: '', pass: 'Rakesh@Tcl',    role: 'Manager',    views: ['home', 'jobcards', 'bom', 'drumreq', 'gatepass'] },
+  'rasheed':    { name: 'Rasheed',       dept: 'Operations',     plant: 'Main Plant', phone: '', email: '', pass: 'Rasheed@Tcl',   role: 'Manager',    views: ['home', 'jobcards', 'bom', 'drumreq', 'gatepass'] },
+  'manikanta':  { name: 'Manikanta',     dept: 'Operations',     plant: 'Main Plant', phone: '', email: '', pass: 'Manikanta@Tcl', role: 'Manager',    views: ['home', 'jobcards', 'bom', 'drumreq', 'gatepass'] },
+  'outer':      { name: 'Outer Line',    dept: 'Outer',          plant: 'Main Plant', phone: '', email: '', pass: '',              role: 'Outer',      views: ['home', 'jobcards', 'drumreq', 'gatepass'] },
+  'insulation': { name: 'Insulation',    dept: 'Insulation',     plant: 'Main Plant', phone: '', email: '', pass: '',              role: 'Insulation', views: ['home', 'jobcards', 'drumreq', 'gatepass'] },
+  'qc':         { name: 'QC Team',       dept: 'QC',             plant: 'Main Plant', phone: '', email: '', pass: '',              role: 'QC',         views: ['home', 'jobcards', 'drumreq', 'qccalc', 'gatepass'] },
+  'production': { name: 'Production',    dept: 'Production',     plant: 'Main Plant', phone: '', email: '', pass: '',              role: 'Production', views: ['home', 'jobcards', 'drumreq', 'qccalc', 'gatepass'] }
 };
 
 function sanitizeViews(views) {
@@ -3622,7 +3644,7 @@ function loadUsersStore() {
   try {
     const saved = JSON.parse(localStorage.getItem('tc_users')) || {};
     Object.keys(saved).forEach(rawKey => {
-      const k = sanitizeFirebaseKey(rawKey);
+      const k = String(rawKey || '').trim().toLowerCase();
       if (!k) return;
       const u = saved[rawKey];
       base[k] = {
@@ -3633,7 +3655,7 @@ function loadUsersStore() {
         email: u.email || '',
         pass: u.pass !== undefined ? u.pass : '',
         role: u.role !== undefined ? u.role : '',
-        views: Array.isArray(u.views) ? sanitizeViews(u.views) : ['home', 'jobcards', 'gatepass']
+        views: Array.isArray(u.views) ? sanitizeViews(u.views) : ['home', 'jobcards', 'drumreq', 'gatepass']
       };
     });
   } catch (e) {
@@ -3642,317 +3664,15 @@ function loadUsersStore() {
   return base;
 }
 
-function getDeletedUsersSet() {
-  try {
-    const arr = JSON.parse(localStorage.getItem('tc_deleted_users')) || [];
-    return new Set(arr.map(x => sanitizeFirebaseKey(x)).filter(Boolean));
-  } catch (e) {
-    return new Set();
-  }
-}
-
-function setDeletedUserFlag(username, removeFlag = false) {
-  const k = sanitizeFirebaseKey(username);
-  if (!k || k === 'admin') return;
-  const set = getDeletedUsersSet();
-  if (removeFlag) set.delete(k);
-  else set.add(k);
-  try {
-    localStorage.setItem('tc_deleted_users', JSON.stringify(Array.from(set)));
-  } catch (e) {
-    console.warn('Failed to persist deleted users list:', e);
-  }
-}
-
-function normalizeUserObj(rawKey, u, prev = {}) {
-  const k = sanitizeFirebaseKey(rawKey);
-  let parsedViews = null;
-  if (Array.isArray(u && u.views)) {
-    parsedViews = sanitizeViews(u.views);
-  } else if (typeof (u && u.views) === 'string' && u.views.trim()) {
-    parsedViews = sanitizeViews(u.views.split(',').map(v => v.trim().toLowerCase()));
-  }
-  const hasExplicitPass = u && Object.prototype.hasOwnProperty.call(u, 'pass');
-  const resolvedPass = hasExplicitPass ? String(u.pass ?? '') : (prev.pass || '');
-  const hasExplicitRole = u && Object.prototype.hasOwnProperty.call(u, 'role');
-  const resolvedRole = hasExplicitRole ? String(u.role ?? '') : (prev.role || '');
-
-  return {
-    name: (u && u.name) || prev.name || k,
-    dept: (u && (u.dept || u.department)) || prev.dept || 'General',
-    plant: (u && u.plant) || prev.plant || 'Main Plant',
-    phone: (u && u.phone !== undefined && u.phone !== '') ? String(u.phone) : (prev.phone || ''),
-    email: (u && u.email !== undefined && u.email !== '') ? String(u.email) : (prev.email || ''),
-    pass: resolvedPass,
-    role: resolvedRole,
-    views: (parsedViews && parsedViews.length > 0)
-      ? parsedViews
-      : (Array.isArray(prev.views) && prev.views.length > 0 ? sanitizeViews(prev.views) : ['home', 'jobcards', 'gatepass'])
-  };
-}
-
-async function saveUsersStore(changedUserKey = null, deletedUserKey = null) {
+function saveUsersStore() {
   try {
     localStorage.setItem('tc_users', JSON.stringify(USERS));
   } catch (e) {
-    console.warn('Failed to save users locally:', e);
-  }
-  if (deletedUserKey) {
-    const cleanDel = sanitizeFirebaseKey(deletedUserKey);
-    setDeletedUserFlag(cleanDel, false);
-    await cloudPost({ action: 'deleteUser', username: cleanDel });
-  } else if (changedUserKey && USERS[changedUserKey]) {
-    const cleanKey = sanitizeFirebaseKey(changedUserKey);
-    setDeletedUserFlag(cleanKey, true);
-    await cloudPost({ action: 'saveUser', username: cleanKey, user: USERS[cleanKey] });
-  } else {
-    await cloudPost({ action: 'saveAllUsers', users: USERS });
+    console.warn('Failed to save users:', e);
   }
 }
 
 let USERS = loadUsersStore();
-
-async function cloudPost(payload) {
-  if (!payload || !payload.action || !navigator.onLine) return null;
-  try {
-    const fb = window.FIREBASE_RTDB;
-    const nowIso = new Date().toISOString();
-
-    if (payload.action === 'saveUser' && payload.username && payload.user) {
-      const k = sanitizeFirebaseKey(payload.username);
-      const record = { username: k, ...payload.user, updatedAt: nowIso };
-      if (fb) {
-        await fb.set(fb.ref(fb.db, `users/${k}`), record);
-      } else {
-        await fbRestRequest(`users/${k}`, 'PUT', record);
-      }
-      return { ok: true };
-    }
-
-    if (payload.action === 'deleteUser' && payload.username) {
-      const k = sanitizeFirebaseKey(payload.username);
-      if (fb) {
-        await fb.remove(fb.ref(fb.db, `users/${k}`));
-      } else {
-        await fbRestRequest(`users/${k}`, 'DELETE');
-      }
-      return { ok: true };
-    }
-
-    if (payload.action === 'saveAllUsers' && payload.users && typeof payload.users === 'object') {
-      const cleanMap = {};
-      Object.keys(payload.users).forEach(rawK => {
-        const k = sanitizeFirebaseKey(rawK);
-        if (k) cleanMap[k] = { username: k, ...payload.users[rawK], updatedAt: nowIso };
-      });
-      if (fb) {
-        await fb.set(fb.ref(fb.db, 'users'), cleanMap);
-      } else {
-        await fbRestRequest('users', 'PUT', cleanMap);
-      }
-      return { ok: true };
-    }
-
-    if (payload.action === 'saveMaintenance' && payload.maintenance) {
-      if (fb) {
-        await fb.set(fb.ref(fb.db, 'maintenance'), payload.maintenance);
-      } else {
-        await fbRestRequest('maintenance', 'PUT', payload.maintenance);
-      }
-      return { ok: true };
-    }
-
-    if (payload.action === 'saveBanners' && Array.isArray(payload.banners)) {
-      if (fb) {
-        await fb.set(fb.ref(fb.db, 'banners'), payload.banners);
-      } else {
-        await fbRestRequest('banners', 'PUT', payload.banners);
-      }
-      return { ok: true };
-    }
-
-    if (payload.action === 'saveFeedback' && payload.feedback) {
-      const fbId = String(payload.feedback.id || Date.now());
-      if (fb) {
-        await fb.set(fb.ref(fb.db, `feedback/${fbId}`), payload.feedback);
-      } else {
-        await fbRestRequest(`feedback/${fbId}`, 'PUT', payload.feedback);
-      }
-      return { ok: true };
-    }
-
-    if (payload.action === 'saveSettings' && payload.settings) {
-      if (fb) {
-        await fb.set(fb.ref(fb.db, 'settings'), payload.settings);
-      } else {
-        await fbRestRequest('settings', 'PUT', payload.settings);
-      }
-      return { ok: true };
-    }
-
-    return null;
-  } catch (err) {
-    console.warn('[FirebaseSync] Write failed:', err);
-    return null;
-  }
-}
-
-function applyCloudSnapshot(data) {
-  if (!data || typeof data !== 'object') return;
-
-  if (data.users && typeof data.users === 'object') {
-    const deletedSet = getDeletedUsersSet();
-    const nextUsers = {};
-    Object.keys(DEFAULT_USERS).forEach(dk => {
-      if (!deletedSet.has(dk)) {
-        nextUsers[dk] = { ...DEFAULT_USERS[dk], views: [...DEFAULT_USERS[dk].views] };
-      }
-    });
-
-    if (Array.isArray(data.users)) {
-      data.users.forEach(u => {
-        const k = sanitizeFirebaseKey(u && (u.username || u.name));
-        if (!k || deletedSet.has(k)) return;
-        nextUsers[k] = normalizeUserObj(k, u, USERS[k] || nextUsers[k] || {});
-      });
-    } else {
-      Object.keys(data.users).forEach(rawKey => {
-        const k = sanitizeFirebaseKey(rawKey);
-        if (!k || deletedSet.has(k)) return;
-        const u = data.users[rawKey];
-        nextUsers[k] = normalizeUserObj(k, u, USERS[k] || nextUsers[k] || {});
-      });
-    }
-
-    USERS = nextUsers;
-    try {
-      localStorage.setItem('tc_users', JSON.stringify(USERS));
-    } catch (e) {}
-
-    if (CURRENT_USER && USERS[CURRENT_USER]) {
-      CURRENT_ROLE = USERS[CURRENT_USER].role || '';
-      ALLOWED_VIEWS = Array.isArray(USERS[CURRENT_USER].views)
-        ? sanitizeViews(USERS[CURRENT_USER].views)
-        : ['home', 'jobcards', 'gatepass'];
-      if (typeof applyAllowedNavigation === 'function') applyAllowedNavigation();
-      if (typeof renderProfileContactCard === 'function') renderProfileContactCard();
-    }
-    if (typeof renderAdminUserList === 'function') renderAdminUserList();
-  }
-
-  if (data.maintenance && typeof data.maintenance === 'object') {
-    MAINT_SCOPES.forEach(({ key }) => {
-      if (data.maintenance[key] && typeof data.maintenance[key] === 'object') {
-        MAINTENANCE_STATE[key] = {
-          active: Boolean(data.maintenance[key].active),
-          remark: String(data.maintenance[key].remark || '')
-        };
-      }
-    });
-    try {
-      localStorage.setItem('tc_maintenance', JSON.stringify(MAINTENANCE_STATE));
-    } catch (e) {}
-    if (typeof renderMaintenanceUI === 'function') renderMaintenanceUI();
-  }
-
-  if (data.banners) {
-    const arr = Array.isArray(data.banners)
-      ? data.banners.filter(Boolean)
-      : Object.values(data.banners).filter(Boolean);
-    BANNERS = arr;
-    try {
-      localStorage.setItem('tc_banners', JSON.stringify(BANNERS));
-    } catch (e) {}
-    if (typeof loadBanners === 'function') loadBanners();
-  }
-
-  if (data.feedback) {
-    const fbArr = Array.isArray(data.feedback)
-      ? data.feedback.filter(Boolean)
-      : Object.values(data.feedback).filter(Boolean);
-    fbArr.sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
-    try {
-      localStorage.setItem('tc_feedback', JSON.stringify(fbArr.slice(0, 50)));
-    } catch (e) {}
-    if (typeof renderFeedbackHistory === 'function') renderFeedbackHistory();
-  }
-
-  if (data.settings && typeof data.settings === 'object') {
-    if (data.settings.company) localStorage.setItem('tc_company', data.settings.company);
-    if (data.settings.dept) localStorage.setItem('tc_dept', data.settings.dept);
-    if (data.settings.prepBy !== undefined) localStorage.setItem('tc_prep', data.settings.prepBy);
-    if (data.settings.verBy !== undefined) localStorage.setItem('tc_ver', data.settings.verBy);
-  }
-}
-
-function attachFirebaseRealtimeListeners() {
-  if (FIREBASE_LIVE_ATTACHED || !window.FIREBASE_RTDB) return;
-  FIREBASE_LIVE_ATTACHED = true;
-  const { db, ref, onValue } = window.FIREBASE_RTDB;
-
-  onValue(ref(db, 'users'), (snap) => {
-    const val = snap.val();
-    if (!val) {
-      // Seed default users to Firebase on first ever connection if empty
-      cloudPost({ action: 'saveAllUsers', users: USERS });
-      return;
-    }
-    applyCloudSnapshot({ users: val });
-  }, (err) => {
-    console.warn('[FirebaseRTDB] Live users listener error:', err);
-  });
-
-  onValue(ref(db, 'maintenance'), (snap) => {
-    if (snap.exists()) applyCloudSnapshot({ maintenance: snap.val() });
-  });
-
-  onValue(ref(db, 'banners'), (snap) => {
-    if (snap.exists()) applyCloudSnapshot({ banners: snap.val() });
-  });
-
-  onValue(ref(db, 'feedback'), (snap) => {
-    if (snap.exists()) applyCloudSnapshot({ feedback: snap.val() });
-  });
-
-  onValue(ref(db, 'settings'), (snap) => {
-    if (snap.exists()) applyCloudSnapshot({ settings: snap.val() });
-  });
-}
-
-window.addEventListener('firebase-rtdb-ready', attachFirebaseRealtimeListeners);
-if (window.FIREBASE_RTDB) attachFirebaseRealtimeListeners();
-
-async function syncAllFromCloud() {
-  if (!navigator.onLine) return false;
-  try {
-    let data = null;
-    if (window.FIREBASE_RTDB) {
-      const { db, ref, get } = window.FIREBASE_RTDB;
-      const snap = await get(ref(db, '/'));
-      if (snap.exists()) data = snap.val();
-    } else {
-      data = await fbRestRequest('', 'GET');
-    }
-
-    if (!data || typeof data !== 'object') {
-      // Seed initial default users if Firebase root is completely empty
-      await cloudPost({ action: 'saveAllUsers', users: USERS });
-      return true;
-    }
-
-    if (!data.users) {
-      await cloudPost({ action: 'saveAllUsers', users: USERS });
-    }
-
-    applyCloudSnapshot(data);
-    return true;
-  } catch (e) {
-    console.warn('[FirebaseSync] syncAllFromCloud error:', e);
-    return false;
-  }
-}
-
-window.syncAllFromCloud = syncAllFromCloud;
 
 /* --- MAINTENANCE STATE --- */
 const MAINT_SCOPES = [
@@ -3960,6 +3680,7 @@ const MAINT_SCOPES = [
   { key: 'home',     label: 'Home' },
   { key: 'jobcards', label: 'Job Cards' },
   { key: 'bom',      label: 'BOM' },
+  { key: 'drumreq',  label: 'Drum Req' },
   { key: 'qccalc',   label: 'QC Calc' },
   { key: 'gatepass', label: 'Gate Pass' }
 ];
@@ -3970,10 +3691,13 @@ function getDefaultMaintenanceState() {
     home:     { active: false, remark: '' },
     jobcards: { active: false, remark: '' },
     bom:      { active: false, remark: '' },
+    drumreq:  { active: false, remark: '' },
     qccalc:   { active: false, remark: '' },
     gatepass: { active: false, remark: '' }
   };
 }
+
+let MAINTENANCE_STATE = loadMaintenanceState();
 
 function loadMaintenanceState() {
   const def = getDefaultMaintenanceState();
@@ -3993,8 +3717,6 @@ function loadMaintenanceState() {
   return def;
 }
 
-let MAINTENANCE_STATE = loadMaintenanceState();
-
 function isAdminUser() {
   return CURRENT_ROLE === 'Admin' || CURRENT_USER === 'admin';
 }
@@ -4008,8 +3730,12 @@ function renderMaintenanceUI() {
   if (!listEl) return;
 
   const canEdit = isAdminUser();
-  if (badgeEl) badgeEl.textContent = canEdit ? 'Admin Editable' : 'Active Notices';
-  if (saveBtn) saveBtn.style.display = canEdit ? 'block' : 'none';
+  if (badgeEl) {
+    badgeEl.textContent = canEdit ? 'Admin Editable' : 'Active Notices';
+  }
+  if (saveBtn) {
+    saveBtn.style.display = canEdit ? 'block' : 'none';
+  }
 
   const activeScopes = MAINT_SCOPES.filter(({ key }) => Boolean(MAINTENANCE_STATE[key] && MAINTENANCE_STATE[key].active));
   const inactiveScopes = MAINT_SCOPES.filter(({ key }) => !(MAINTENANCE_STATE[key] && MAINTENANCE_STATE[key].active));
@@ -4071,7 +3797,6 @@ window.enableSelectedMaintenanceScope = function() {
   if (!MAINTENANCE_STATE[key]) MAINTENANCE_STATE[key] = { active: false, remark: '' };
   MAINTENANCE_STATE[key].active = true;
   localStorage.setItem('tc_maintenance', JSON.stringify(MAINTENANCE_STATE));
-  cloudPost({ action: 'saveMaintenance', maintenance: MAINTENANCE_STATE });
   renderMaintenanceUI();
 };
 
@@ -4084,9 +3809,10 @@ window.toggleMaintenanceScope = function(key) {
   MAINTENANCE_STATE[key].active = !MAINTENANCE_STATE[key].active;
 
   const remarkInput = document.getElementById(`maint-remark-${key}`);
-  if (remarkInput) MAINTENANCE_STATE[key].remark = remarkInput.value;
+  if (remarkInput) {
+    MAINTENANCE_STATE[key].remark = remarkInput.value;
+  }
   localStorage.setItem('tc_maintenance', JSON.stringify(MAINTENANCE_STATE));
-  cloudPost({ action: 'saveMaintenance', maintenance: MAINTENANCE_STATE });
   renderMaintenanceUI();
 };
 
@@ -4098,10 +3824,11 @@ window.saveMaintenanceSettings = function() {
   MAINT_SCOPES.forEach(({ key }) => {
     const input = document.getElementById(`maint-remark-${key}`);
     if (!MAINTENANCE_STATE[key]) MAINTENANCE_STATE[key] = { active: false, remark: '' };
-    if (input) MAINTENANCE_STATE[key].remark = input.value.trim();
+    if (input) {
+      MAINTENANCE_STATE[key].remark = input.value.trim();
+    }
   });
   localStorage.setItem('tc_maintenance', JSON.stringify(MAINTENANCE_STATE));
-  cloudPost({ action: 'saveMaintenance', maintenance: MAINTENANCE_STATE });
   renderMaintenanceUI();
   alert('Maintenance settings updated.');
 };
@@ -4127,7 +3854,7 @@ function applyMaintenanceLocks() {
   const globalBlock = document.getElementById('globalAppMaintenanceView');
   const appUnderMaint = Boolean(MAINTENANCE_STATE.app && MAINTENANCE_STATE.app.active) && !isAdminUser();
 
-  const viewIds = ['view-home', 'view-jobcards', 'view-bom', 'view-qccalc', 'view-gatepass', 'view-profile'];
+  const viewIds = ['view-home', 'view-jobcards', 'view-bom', 'view-drumreq', 'view-qccalc', 'view-gatepass', 'view-profile'];
   if (globalBlock) {
     if (appUnderMaint) {
       globalBlock.style.display = 'block';
@@ -4147,11 +3874,12 @@ function applyMaintenanceLocks() {
   }
 
   const moduleMap = [
-    { key: 'home',     label: 'Home Module',      noticeId: 'homeMaintenanceNotice',     wrapId: 'homeContentWrap' },
+    { key: 'home',     label: 'Home Module',     noticeId: 'homeMaintenanceNotice',     wrapId: 'homeContentWrap' },
     { key: 'jobcards', label: 'Job Cards Module', noticeId: 'jobcardsMaintenanceNotice', wrapId: 'jobcardsContentWrap' },
-    { key: 'bom',      label: 'BOM Module',       noticeId: 'bomMaintenanceNotice',      wrapId: 'bomContentWrap' },
-    { key: 'qccalc',   label: 'QC Calc Module',   noticeId: 'qccalcMaintenanceNotice',   wrapId: 'qccalcContentWrap' },
-    { key: 'gatepass', label: 'Gate Pass Module', noticeId: 'gatepassMaintenanceNotice', wrapId: 'gatepassContentWrap' }
+    { key: 'bom',      label: 'BOM Module',      noticeId: 'bomMaintenanceNotice',      wrapId: 'bomContentWrap' },
+    { key: 'drumreq',  label: 'Drum Req Module', noticeId: 'drumreqMaintenanceNotice',  wrapId: 'drumreqContentWrap' },
+    { key: 'qccalc',   label: 'QC Calc Module',  noticeId: 'qccalcMaintenanceNotice',   wrapId: 'qccalcContentWrap' },
+    { key: 'gatepass', label: 'Gate Pass Module',noticeId: 'gatepassMaintenanceNotice', wrapId: 'gatepassContentWrap' }
   ];
 
   moduleMap.forEach(({ key, label, noticeId, wrapId }) => {
@@ -4189,6 +3917,7 @@ function applyAllowedNavigation() {
   document.getElementById('nav-home').style.display = ALLOWED_VIEWS.includes('home') ? 'flex' : 'none';
   document.getElementById('nav-job').style.display = ALLOWED_VIEWS.includes('jobcards') ? 'flex' : 'none';
   document.getElementById('nav-bom').style.display = ALLOWED_VIEWS.includes('bom') ? 'flex' : 'none';
+  document.getElementById('nav-drumreq').style.display = ALLOWED_VIEWS.includes('drumreq') ? 'flex' : 'none';
   document.getElementById('nav-qc').style.display = ALLOWED_VIEWS.includes('qccalc') ? 'flex' : 'none';
   document.getElementById('nav-gatepass').style.display = ALLOWED_VIEWS.includes('gatepass') ? 'flex' : 'none';
 }
@@ -4234,7 +3963,7 @@ window.saveOwnProfileContact = function() {
 
   USERS[CURRENT_USER].phone = phone;
   USERS[CURRENT_USER].email = email;
-  saveUsersStore(CURRENT_USER);
+  saveUsersStore();
   renderProfileContactCard();
   if (isAdminUser()) renderAdminUserList();
   alert('Profile contact details updated.');
@@ -4255,7 +3984,7 @@ window.resetAdminUserForm = function() {
   document.getElementById('admUserEmail').value = '';
   document.getElementById('admUserRole').value = '';
   document.getElementById('admUserPass').value = '';
-  setModuleAccessFormCheckboxes(['home', 'jobcards', 'gatepass']);
+  setModuleAccessFormCheckboxes(['home', 'jobcards', 'drumreq', 'gatepass']);
 };
 
 window.editAdminUser = function(username) {
@@ -4283,7 +4012,7 @@ window.editAdminUser = function(username) {
   document.getElementById('admUserName').focus();
 };
 
-window.deleteAdminUser = async function(username) {
+window.deleteAdminUser = function(username) {
   if (!isAdminUser()) return;
   const key = String(username || '').toLowerCase();
   if (key === 'admin') {
@@ -4297,12 +4026,11 @@ window.deleteAdminUser = async function(username) {
   if (!confirm(`Delete user "@${key}"?`)) return;
 
   delete USERS[key];
-  await saveUsersStore(null, key);
-  await syncAllFromCloud();
+  saveUsersStore();
   renderAdminUserList();
 };
 
-window.saveAdminUser = async function() {
+window.saveAdminUser = function() {
   if (!isAdminUser()) {
     alert('Only Admin can manage users.');
     return;
@@ -4320,7 +4048,7 @@ window.saveAdminUser = async function() {
   const selectedViews = getSelectedModuleAccessFromForm();
 
   if (!name) {
-    alert("Please enter the user's Name.");
+    alert('Please enter the user\'s Name.');
     document.getElementById('admUserName').focus();
     return;
   }
@@ -4346,7 +4074,6 @@ window.saveAdminUser = async function() {
   const targetKey = origKey || username;
   if (origKey && origKey !== username && origKey !== 'admin') {
     delete USERS[origKey];
-    await saveUsersStore(null, origKey);
   }
 
   const existing = USERS[targetKey] || {};
@@ -4364,9 +4091,8 @@ window.saveAdminUser = async function() {
     views: finalViews
   };
 
-  await saveUsersStore(targetKey);
-  await syncAllFromCloud();
-  if (targetKey === CURRENT_USER && USERS[targetKey]) {
+  saveUsersStore();
+  if (targetKey === CURRENT_USER) {
     CURRENT_ROLE = USERS[targetKey].role;
     ALLOWED_VIEWS = [...USERS[targetKey].views];
     applyAllowedNavigation();
@@ -4375,42 +4101,15 @@ window.saveAdminUser = async function() {
   if (finalViews.includes('bom')) {
     loadBomDataFromCSV();
   }
+  if (finalViews.includes('drumreq')) {
+    loadDrumDataFromFile();
+  }
   renderAdminUserList();
   resetAdminUserForm();
   alert(origKey ? `User "@${targetKey}" updated.` : `User "@${targetKey}" created.`);
 };
 
-function mergeCloudUsersIntoStore(cloudUsers, authoritativeList = false) {
-  if (!Array.isArray(cloudUsers)) return;
-  const deletedSet = getDeletedUsersSet();
-  const nextUsers = {};
-  Object.keys(DEFAULT_USERS).forEach(dk => {
-    nextUsers[dk] = { ...DEFAULT_USERS[dk], views: [...DEFAULT_USERS[dk].views] };
-  });
-
-  if (!authoritativeList) {
-    Object.keys(USERS).forEach(k => {
-      if (!deletedSet.has(k)) nextUsers[k] = USERS[k];
-    });
-  }
-
-  cloudUsers.forEach(u => {
-    const rawKey = String((u && (u.username || u.name)) || '').trim().toLowerCase();
-    if (!rawKey || deletedSet.has(rawKey)) return;
-    const prev = USERS[rawKey] || nextUsers[rawKey] || {};
-    nextUsers[rawKey] = normalizeUserObj(rawKey, u, prev);
-  });
-
-  USERS = nextUsers;
-  try {
-    localStorage.setItem('tc_users', JSON.stringify(USERS));
-  } catch (e) {
-    console.warn('Failed to cache merged users:', e);
-  }
-}
-window.mergeCloudUsersIntoStore = mergeCloudUsersIntoStore;
-
-function renderAdminUserList(cloudUsers) {
+function renderAdminUserList() {
   const card = document.getElementById('adminUserMgmtCard');
   const listEl = document.getElementById('adminUserList');
   const badge = document.getElementById('adminUserCountBadge');
@@ -4422,11 +4121,6 @@ function renderAdminUserList(cloudUsers) {
   }
 
   card.style.display = 'block';
-
-  if (Array.isArray(cloudUsers)) {
-    mergeCloudUsersIntoStore(cloudUsers);
-  }
-
   const keys = Object.keys(USERS).sort();
   if (badge) badge.textContent = `${keys.length} Users`;
 
@@ -4460,19 +4154,19 @@ function renderAdminUserList(cloudUsers) {
   }).join('');
 }
 
-window.renderAdminUserList = renderAdminUserList;
-
 /* --- BANNER STATE --- */
 let BANNERS = JSON.parse(localStorage.getItem('tc_banners')) || [];
 let CURRENT_BANNER_IDX = 0;
 let BANNER_INTERVAL = null;
 
+/* ---- Date/time formatting helpers ---- */
 function formatDateForDisplay(isoDate) {
   if (!isoDate) return '';
   const [y, m, d] = isoDate.split('-');
   return `${d}/${m}/${y}`;
 }
 
+/* ---- Gate Pass UI: populate dropdowns, defaults, live preview ---- */
 function initGatePassUI() {
   const hourSel = document.getElementById('gpHour');
   const minSel = document.getElementById('gpMinute');
@@ -4580,16 +4274,13 @@ function resetLoginStep(){
   document.getElementById('loginError').style.display = 'none';
 }
 
-window.handleLogin = async function() {
+window.handleLogin = function() {
   const u = document.getElementById('loginUser').value.trim().toLowerCase();
   const p = document.getElementById('loginPass').value;
   const err = document.getElementById('loginError');
   const passInput = document.getElementById('loginPass');
 
   if (loginStep === 1) {
-    if (!USERS[u] && navigator.onLine) {
-      await syncAllFromCloud();
-    }
     if (USERS[u]) {
       if (!USERS[u].pass) {
         completeLogin(u);
@@ -4614,9 +4305,8 @@ window.handleLogin = async function() {
   }
 };
 
-window.handleRegister = async function() {
+window.handleRegister = function() {
   const name = document.getElementById('regName').value.trim();
-  const email = document.getElementById('regEmail').value.trim();
   const dept = document.getElementById('regDept').value.trim();
   const plant = document.getElementById('regPlant').value.trim();
   const username = document.getElementById('regUsername').value.trim().toLowerCase();
@@ -4630,11 +4320,6 @@ window.handleRegister = async function() {
 
   if (!name || !dept || !plant || !username || !pass || !confirmPass) {
     err.textContent = 'Please fill in all registration fields.';
-    err.style.display = 'block';
-    return;
-  }
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    err.textContent = 'Please enter a valid email address.';
     err.style.display = 'block';
     return;
   }
@@ -4659,34 +4344,19 @@ window.handleRegister = async function() {
     return;
   }
 
-  const newUserRecord = {
+  USERS[username] = {
     name,
     dept,
     plant,
     phone: '',
-    email,
+    email: '',
     pass,
     role: '',
-    views: ['home', 'jobcards', 'gatepass']
+    views: ['home', 'jobcards', 'drumreq', 'gatepass']
   };
-  USERS[username] = newUserRecord;
-  await saveUsersStore(username);
-
-  await registerUserToCloud({
-    username,
-    name,
-    email,
-    dept,
-    department: dept,
-    plant,
-    phone: '',
-    pass,
-    role: '',
-    views: newUserRecord.views
-  });
+  saveUsersStore();
 
   document.getElementById('regName').value = '';
-  document.getElementById('regEmail').value = '';
   document.getElementById('regDept').value = '';
   document.getElementById('regPlant').value = '';
   document.getElementById('regUsername').value = '';
@@ -4718,7 +4388,6 @@ function completeLogin(u) {
     document.getElementById('profileBannerTile').style.display = 'flex';
     loadAdminSettings();
     renderAdminUserList();
-    loadUsersForAdmin();
   } else {
     document.getElementById('adminPanel').style.display = 'none';
     document.getElementById('profileBannerTile').style.display = 'none';
@@ -4737,12 +4406,13 @@ function completeLogin(u) {
 
   const hr = now.getHours();
   let greeting = 'Good Evening';
-  if (hr < 12) greeting = 'Good Morning';
-  else if (hr < 17) greeting = 'Good Afternoon';
+  if(hr < 12) greeting = 'Good Morning';
+  else if(hr < 17) greeting = 'Good Afternoon';
   document.getElementById('dashGreeting').textContent = greeting;
 
   loadJobDataFromCSV();
   if (ALLOWED_VIEWS.includes('bom')) loadBomDataFromCSV();
+  if (ALLOWED_VIEWS.includes('drumreq')) loadDrumDataFromFile();
 
   loadBanners();
   const initialView = ALLOWED_VIEWS.includes('home') ? 'home' : (ALLOWED_VIEWS[0] || 'profile');
@@ -4789,6 +4459,9 @@ function rerenderActiveDataView() {
   if (document.getElementById('view-bom')?.classList.contains('active')) {
     if (bomInput && bomInput.value.trim()) renderBomResults();
   }
+  if (document.getElementById('view-drumreq')?.classList.contains('active')) {
+    if (drumInput && drumInput.value.trim()) renderDrumResults();
+  }
 }
 
 async function refreshData() {
@@ -4798,19 +4471,10 @@ async function refreshData() {
 
   try {
     const results = await Promise.all([
-      syncAllFromCloud(),
       loadJobDataFromCSV(),
-      ALLOWED_VIEWS.includes('bom') ? loadBomDataFromCSV() : Promise.resolve(true)
+      ALLOWED_VIEWS.includes('bom') ? loadBomDataFromCSV() : Promise.resolve(true),
+      ALLOWED_VIEWS.includes('drumreq') ? loadDrumDataFromFile() : Promise.resolve(true)
     ]);
-    if (CURRENT_USER && USERS[CURRENT_USER]) {
-      CURRENT_ROLE = USERS[CURRENT_USER].role || '';
-      ALLOWED_VIEWS = Array.isArray(USERS[CURRENT_USER].views) ? sanitizeViews(USERS[CURRENT_USER].views) : ['home', 'jobcards', 'gatepass'];
-      applyAllowedNavigation();
-      renderProfileContactCard();
-      renderAdminUserList();
-      renderMaintenanceUI();
-      loadBanners();
-    }
 
     if (results.every(r => r === true)) {
       setSyncState('synced');
@@ -4844,19 +4508,7 @@ window.addEventListener('offline', () => {
 
 window.handleLogout = function() { localStorage.removeItem('tc_user'); location.reload(); };
 
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && navigator.onLine && CURRENT_USER) {
-    refreshData();
-  }
-});
-
-window.addEventListener('focus', () => {
-  if (navigator.onLine && CURRENT_USER && !isSyncing) {
-    refreshData();
-  }
-});
-
-window.addEventListener('load', async () => {
+window.addEventListener('load', () => {
   document.getElementById('loginUser').addEventListener('input', () => {
     if (loginStep === 2) resetLoginStep();
   });
@@ -4865,8 +4517,6 @@ window.addEventListener('load', async () => {
       if (e.key === 'Enter') { e.preventDefault(); handleLogin(); }
     });
   });
-
-  await syncAllFromCloud();
 
   const savedUser = localStorage.getItem('tc_user');
   if (savedUser && USERS[savedUser]) {
@@ -4879,17 +4529,10 @@ window.addEventListener('load', async () => {
 });
 
 window.saveAdminSettings = function() {
-  const settings = {
-    company: document.getElementById('setCompany').value,
-    dept: document.getElementById('setDept').value,
-    prepBy: document.getElementById('setPrepBy').value,
-    verBy: document.getElementById('setVerBy').value
-  };
-  localStorage.setItem('tc_company', settings.company);
-  localStorage.setItem('tc_dept', settings.dept);
-  localStorage.setItem('tc_prep', settings.prepBy);
-  localStorage.setItem('tc_ver', settings.verBy);
-  cloudPost({ action: 'saveSettings', settings });
+  localStorage.setItem('tc_company', document.getElementById('setCompany').value);
+  localStorage.setItem('tc_dept', document.getElementById('setDept').value);
+  localStorage.setItem('tc_prep', document.getElementById('setPrepBy').value);
+  localStorage.setItem('tc_ver', document.getElementById('setVerBy').value);
   alert('Settings Saved Successfully!');
 };
 function loadAdminSettings() {
@@ -4912,6 +4555,7 @@ window.switchMainView = function(viewName) {
   if (viewName === 'home') document.getElementById('nav-home')?.classList.add('active');
   else if (viewName === 'jobcards') document.getElementById('nav-job')?.classList.add('active');
   else if (viewName === 'bom') document.getElementById('nav-bom')?.classList.add('active');
+  else if (viewName === 'drumreq') document.getElementById('nav-drumreq')?.classList.add('active');
   else if (viewName === 'qccalc') document.getElementById('nav-qc')?.classList.add('active');
   else if (viewName === 'gatepass') {
     document.getElementById('nav-gatepass')?.classList.add('active');
@@ -4922,7 +4566,6 @@ window.switchMainView = function(viewName) {
     document.getElementById('nav-profile')?.classList.add('active');
     renderProfileContactCard();
     renderAdminUserList();
-    if (isAdminUser()) loadUsersForAdmin();
     renderMaintenanceUI();
   }
 
@@ -4942,1170 +4585,489 @@ window.switchQcTab = function(tabName, event) {
 /* --- KNOWLEDGE MODAL LOGIC --- */
 window.openKnowledge = function(key) {
   const data = {
-    '5s': { icon: '🏭', title: 'The 5S Methodology', content: `<p>The 5S methodology is a systematic approach to workplace organization that improves efficiency, safety, and morale. It is the foundation of Lean Manufacturing.</p><h5>1. Seiri (Sort)</h5><p>Separate necessary items from unnecessary ones. Remove all tools, equipment, and materials that are not needed for current production.</p><h5>2. Seiton (Set in Order)</h5><p>Arrange necessary items in good order for easy use. "A place for everything, and everything in its place."</p><h5>3. Seiso (Shine)</h5><p>Clean your workplace completely. Cleaning also acts as an inspection to find leaks, cracks, or loose bolts.</p><h5>4. Seiketsu (Standardize)</h5><p>Maintain high standards of housekeeping. Create visual rules (like floor markings or color-coded tools).</p><h5>5. Shitsuke (Sustain)</h5><p>Make a habit of maintaining the standards. This requires discipline, training, and regular audits.</p>` },
+    '5s': { icon: '🏭', title: 'The 5S Methodology', content: `<p>The 5S methodology is a systematic approach to workplace organization that improves efficiency, safety, and morale. It is the foundation of Lean Manufacturing.</p><h5>1. Seiri (Sort)</h5><p>Separate necessary items from unnecessary ones. Remove all tools, equipment, and materials that are not needed for current production.</p><h5>2. Seiton (Set in Order)</h5><p>Arrange necessary items in good order for easy use. "A place for everything, and everything in its place."</p><h5>3. Seiso (Shine)</h5><p>Clean your workplace completely. Cleaning also acts an inspection to find leaks, cracks, or loose bolts.</p><h5>4. Seiketsu (Standardize)</h5><p>Maintain high standards of housekeeping. Create visual rules (like floor markings or color-coded tools).</p><h5>5. Shitsuke (Sustain)</h5><p>Make a habit of maintaining the standards. This requires discipline, training, and regular audits.</p>` },
     'lean': { icon: '⚙️', title: 'Lean Manufacturing', content: `<p>Lean manufacturing is a production method aimed primarily at reducing times within the production system as well as response times from suppliers and to customers. It is derived from the Toyota Production System (TPS).</p><h5>Key Principles:</h5><ul><li><b>Kaizen:</b> Continuous, incremental improvement involving everyone.</li><li><b>Poka-yoke:</b> Mistake-proofing. Designing processes so mistakes are impossible to make.</li><li><b>Just-In-Time (JIT):</b> Producing only what is needed, when it is needed.</li><li><b>Gemba:</b> "The real place." Going to the factory floor to observe and solve problems.</li></ul><h5>The 7 Wastes (Muda):</h5><ul><li>Transportation, Inventory, Motion, Waiting, Overproduction, Overprocessing, Defects.</li></ul>` },
     'standards': { icon: '📜', title: 'IEC Cable Standards', content: `<p>International Electrotechnical Commission (IEC) standards are globally recognized benchmarks for cable manufacturing and testing.</p><table><tr><th>Standard</th><th>Description</th></tr><tr><td><b>IEC 60228</b></td><td>Conductors of insulated cables. Defines Class 1 (solid), Class 2 (stranded), Class 5 (flexible), and Class 6 (extra flexible).</td></tr><tr><td><b>IEC 60502</b></td><td>Power cables with extruded insulation (PVC, XLPE, EPR) for rated voltages from 1kV to 30kV.</td></tr><tr><td><b>IEC 60332</b></td><td>Tests on electric and optical fibre cables under fire conditions. (Flame propagation).</td></tr><tr><td><b>IEC 60754</b></td><td>Test on gases evolved during combustion of materials from cables (Halogen acid gas).</td></tr><tr><td><b>IEC 61034</b></td><td>Measurement of smoke density of cables burning under defined conditions.</td></tr></table>` },
     'formulas': { icon: '📐', title: 'Engineering Formulas', content: `<p>Essential formulas used in cable design and quality control:</p><h5>1. Conductor Resistance</h5><p>The DC resistance of a conductor is calculated using:</p><div class="formula-box">R = (ρ × L) / A</div><ul><li><b>R</b> = Resistance (Ω)</li><li><b>ρ</b> = Resistivity (Copper ≈ 0.01724 Ω·mm²/m at 20°C)</li><li><b>L</b> = Length (m)</li><li><b>A</b> = Cross-sectional Area (mm²)</li></ul><h5>2. Voltage Drop</h5><p>For a single-phase circuit:</p><div class="formula-box">Vd = (2 × I × L × R) / 1000</div><ul><li><b>I</b> = Current (A)</li><li><b>L</b> = Cable Length (m)</li><li><b>R</b> = Resistance (Ω/km)</li></ul><h5>3. Capacitance</h5><p>Capacitance per unit length (pF/m) is crucial for communication cables and high-voltage cables.</p><div class="formula-box">C = (2 × π × ε) / ln(D/d)</div><ul><li><b>ε</b> = Permittivity of insulation</li><li><b>D</b> = Diameter over insulation</li><li><b>d</b> = Conductor diameter</li></ul>` },
-    'construction': { icon: '🔌', title: 'Cable Construction', content: `<p>Typical layers of a power or control cable:</p><h5>1. Conductor</h5><p>Carries electrical current (solid or stranded annealed copper / aluminium).</p><h5>2. Insulation</h5><p>Electrically isolates the conductor (PVC, XLPE, or EPR) to withstand rated voltage.</p><h5>3. Inner Sheath / Bedding</h5><p>Provides a circular bed and mechanical protection over insulated cores.</p><h5>4. Armouring</h5><p>Galvanized steel wire or strip for mechanical protection against impact and crushing.</p><h5>5. Outer Sheath</h5><p>Protects against moisture, chemicals, UV, and fire (FR / FRLS / ZHFR).</p>` }
+    'construction': { icon: '🔌', title: 'Cable Construction Anatomy', content: `<p>A standard power or control cable consists of several protective layers to ensure safety and longevity.</p><h5>From Inside Out:</h5><ul><li><b>1. Conductor:</b> Annealed copper or aluminum. Carries the current. Stranded for flexibility.</li><li><b>2. Insulation:</b> XLPE, PVC, or Rubber. Prevents current leakage and protects against electric shock.</li><li><b>3. Bedding/Inner Sheath:</b> Extruded PVC or tape. Binds the cores together and prevents moisture ingress.</li><li><b>4. Armouring:</b> Steel wire (SWA) or steel tape (STA). Provides mechanical protection against crushing and rodents.</li><li><b>5. Outer Sheath:</b> Extruded PVC, PE, or LSZH (Low Smoke Zero Halogen). Protects against UV, chemicals, and fire.</li></ul><p style="margin-top:12px;"><b>Did you know?</b> The "Skin Effect" at high frequencies means AC current flows mostly on the surface of the conductor. This is why high-frequency cables use Litz wire to increase surface area.</p>` }
   };
-
   const item = data[key];
-  if (!item) return;
+  if(!item) return;
   document.getElementById('modalIcon').textContent = item.icon;
   document.getElementById('modalTitle').textContent = item.title;
   document.getElementById('modalBody').innerHTML = item.content;
   document.getElementById('knowledgeModal').classList.add('open');
 };
-
-window.closeKnowledge = function(e) {
-  if (e && e.target !== e.currentTarget && !e.target.classList.contains('modal-close')) return;
+window.closeKnowledge = function(event) {
+  if(event && event.target.classList.contains('modal-content')) return;
   document.getElementById('knowledgeModal').classList.remove('open');
 };
 
-/* --- BANNER & FEEDBACK & QR MODALS --- */
-function loadBanners() {
-  const bannerEl = document.getElementById('promoBanner');
-  if (!bannerEl) return;
-
-  if (BANNER_INTERVAL) {
-    clearInterval(BANNER_INTERVAL);
-    BANNER_INTERVAL = null;
-  }
-
-  if (!BANNERS || BANNERS.length === 0) {
-    bannerEl.style.display = 'none';
-    renderAdminBannerList();
-    return;
-  }
-
-  if (CURRENT_BANNER_IDX >= BANNERS.length) CURRENT_BANNER_IDX = 0;
-
-  function showBanner(idx) {
-    const b = BANNERS[idx];
-    if (!b) return;
-    bannerEl.style.display = 'flex';
-    if (b.image) {
-      bannerEl.style.backgroundImage = `url('${b.image.replace(/'/g, "%27")}')`;
-    } else {
-      bannerEl.style.backgroundImage = 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #2563eb 100%)';
-    }
-
-    const dotsHtml = BANNERS.length > 1
-      ? `<div class="promo-banner-dots">${BANNERS.map((_, i) => `<span class="promo-banner-dot ${i === idx ? 'active' : ''}"></span>`).join('')}</div>`
-      : '';
-    const linkBadge = b.link ? `<div class="promo-banner-link-badge">↗</div>` : '';
-
-    bannerEl.innerHTML = `
-      <div class="promo-banner-overlay"></div>
-      ${linkBadge}
-      <div class="promo-banner-content">${esc(b.text || 'Announcement')}</div>
-      ${dotsHtml}
-    `;
-  }
-
-  showBanner(CURRENT_BANNER_IDX);
-  if (BANNERS.length > 1) {
-    BANNER_INTERVAL = setInterval(() => {
-      CURRENT_BANNER_IDX = (CURRENT_BANNER_IDX + 1) % BANNERS.length;
-      showBanner(CURRENT_BANNER_IDX);
-    }, 5000);
-  }
-  renderAdminBannerList();
-}
-
-window.handleBannerClick = function() {
-  const b = BANNERS[CURRENT_BANNER_IDX];
-  if (b && b.link) {
-    const href = b.link.trim();
-    if (/^https?:\/\//i.test(href)) {
-      window.open(href, '_blank', 'noopener,noreferrer');
-    }
-  }
+/* --- QR MODAL LOGIC --- */
+window.openQrModal = function(event) {
+  if(event) event.stopPropagation();
+  const currentUrl = window.location.href;
+  document.getElementById('qrCodeImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(currentUrl)}`;
+  document.getElementById('qrModal').classList.add('open');
+};
+window.closeQrModal = function(event) {
+  if(event && event.target.classList.contains('modal-content')) return;
+  document.getElementById('qrModal').classList.remove('open');
 };
 
-window.openBannerModal = function() {
-  if (!isAdminUser()) return;
-  renderAdminBannerList();
-  document.getElementById('bannerModal').classList.add('open');
-};
-
-window.closeBannerModal = function(e) {
-  if (e && e.target !== e.currentTarget && !e.target.classList.contains('modal-close')) return;
-  document.getElementById('bannerModal').classList.remove('open');
-};
-
-window.addBanner = function() {
-  if (!isAdminUser()) return;
-  const text = document.getElementById('setBannerText').value.trim();
-  const link = document.getElementById('setBannerLink').value.trim();
-  const fileInput = document.getElementById('setBannerFile');
-  const file = fileInput && fileInput.files && fileInput.files[0];
-
-  const finishAdd = (imageDataUrl) => {
-    if (!text && !imageDataUrl) {
-      alert('Please enter a banner title or select an image.');
-      return;
-    }
-    BANNERS.unshift({
-      id: Date.now(),
-      text,
-      link,
-      image: imageDataUrl || ''
-    });
-    localStorage.setItem('tc_banners', JSON.stringify(BANNERS));
-    cloudPost({ action: 'saveBanners', banners: BANNERS });
-    document.getElementById('setBannerText').value = '';
-    document.getElementById('setBannerLink').value = '';
-    if (fileInput) fileInput.value = '';
-    CURRENT_BANNER_IDX = 0;
-    loadBanners();
-  };
-
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = () => finishAdd(String(reader.result || ''));
-    reader.readAsDataURL(file);
-  } else {
-    finishAdd('');
-  }
-};
-
-window.deleteBanner = function(id) {
-  if (!isAdminUser()) return;
-  BANNERS = BANNERS.filter(b => String(b.id) !== String(id));
-  localStorage.setItem('tc_banners', JSON.stringify(BANNERS));
-  cloudPost({ action: 'saveBanners', banners: BANNERS });
-  loadBanners();
-};
-
-function renderAdminBannerList() {
-  const listEl = document.getElementById('adminBannerList');
-  if (!listEl) return;
-  if (!BANNERS || BANNERS.length === 0) {
-    listEl.innerHTML = `<div style="font-size:0.8rem;color:var(--text-muted);text-align:center;">No active banners.</div>`;
-    return;
-  }
-  listEl.innerHTML = BANNERS.map(b => `
-    <div class="admin-banner-item">
-      <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
-        ${b.image ? `<img src="${b.image}" class="admin-banner-thumb" alt="">` : `<div class="admin-banner-thumb" style="display:flex;align-items:center;justify-content:center;">📢</div>`}
-        <div style="min-width:0;">
-          <div style="font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(b.text || 'Image Banner')}</div>
-          ${b.link ? `<div style="font-size:0.72rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(b.link)}</div>` : ''}
-        </div>
-      </div>
-      <button type="button" class="btn-mini-del" onclick="deleteBanner('${b.id}')">Delete</button>
-    </div>
-  `).join('');
-}
-
-function renderFeedbackHistory() {
-  const listEl = document.getElementById('feedbackHistoryList');
-  if (!listEl) return;
-  let logs = [];
-  try {
-    logs = JSON.parse(localStorage.getItem('tc_feedback')) || [];
-  } catch (e) {
-    logs = [];
-  }
-  if (!logs.length) {
-    listEl.innerHTML = '';
-    return;
-  }
-  listEl.innerHTML = logs.slice(0, 10).map(item => `
-    <div class="feedback-log-item">
-      <div class="feedback-log-meta">
-        <span>${esc(item.type)} • ${esc(item.module)}</span>
-        <span>${esc(item.user || '')}</span>
-      </div>
-      <div>${esc(item.message)}</div>
-    </div>
-  `).join('');
-}
-
-window.openFeedbackModal = function() {
+/* --- FEEDBACK / ISSUE / SUGGESTION MODAL LOGIC --- */
+window.openFeedbackModal = function(event) {
+  if(event) event.stopPropagation();
   renderFeedbackHistory();
   document.getElementById('feedbackModal').classList.add('open');
 };
-
-window.closeFeedbackModal = function(e) {
-  if (e && e.target !== e.currentTarget && !e.target.classList.contains('modal-close')) return;
+window.closeFeedbackModal = function(event) {
+  if(event && event.target.classList.contains('modal-content')) return;
   document.getElementById('feedbackModal').classList.remove('open');
 };
 
 window.submitFeedback = function() {
-  const type = document.getElementById('fbType').value;
-  const moduleName = document.getElementById('fbModule').value;
-  const message = document.getElementById('fbMessage').value.trim();
-  if (!message) {
-    alert('Please enter details before submitting.');
-    document.getElementById('fbMessage').focus();
+  const typeEl = document.getElementById('fbType');
+  const modEl = document.getElementById('fbModule');
+  const msgEl = document.getElementById('fbMessage');
+  const msg = msgEl.value.trim();
+  if (!msg) {
+    alert('Please enter your issue or improvement suggestion.');
+    msgEl.focus();
     return;
   }
 
-  const entry = {
-    id: Date.now(),
-    type,
-    module: moduleName,
-    message,
-    user: CURRENT_USER || 'guest',
-    time: new Date().toISOString()
-  };
-
-  let logs = [];
+  let items = [];
   try {
-    logs = JSON.parse(localStorage.getItem('tc_feedback')) || [];
+    items = JSON.parse(localStorage.getItem('tc_feedback')) || [];
   } catch (e) {
-    logs = [];
+    items = [];
   }
-  logs.unshift(entry);
-  logs = logs.slice(0, 50);
-  localStorage.setItem('tc_feedback', JSON.stringify(logs));
-  cloudPost({ action: 'saveFeedback', feedback: entry });
 
-  document.getElementById('fbMessage').value = '';
+  items.unshift({
+    id: Date.now(),
+    type: typeEl.value,
+    module: modEl.value,
+    message: msg,
+    user: CURRENT_USER || 'guest',
+    createdAt: new Date().toLocaleString()
+  });
+
+  try {
+    localStorage.setItem('tc_feedback', JSON.stringify(items.slice(0, 50)));
+  } catch (e) {
+    console.warn('Could not persist feedback:', e);
+  }
+
+  msgEl.value = '';
   renderFeedbackHistory();
-  alert('Thank you! Your feedback has been recorded.');
+  alert('Submitted. Thank you for your feedback.');
 };
 
-window.openQrModal = function() {
-  const img = document.getElementById('qrCodeImage');
-  const appUrl = window.location.href;
-  if (img) {
-    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(appUrl)}`;
+function renderFeedbackHistory() {
+  const listEl = document.getElementById('feedbackHistoryList');
+  if (!listEl) return;
+  let items = [];
+  try {
+    items = JSON.parse(localStorage.getItem('tc_feedback')) || [];
+  } catch (e) {
+    items = [];
   }
-  document.getElementById('qrModal').classList.add('open');
-};
 
-window.closeQrModal = function(e) {
-  if (e && e.target !== e.currentTarget && !e.target.classList.contains('modal-close')) return;
-  document.getElementById('qrModal').classList.remove('open');
-};
-
-/* --- CSV DATA LOADING & JOB CARDS / BOM --- */
-function esc(v) {
-  if (v === null || v === undefined) return '';
-  return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function stripExt(n) {
-  return String(n || '').replace(/\.[^/.]+$/, '').trim();
-}
-
-function parseTable(rows) {
-  if (!rows || rows.length < 2) return [];
-  let headerIdx = -1;
-  for (let i = 0; i < Math.min(20, rows.length); i++) {
-    const nonEmpty = rows[i].filter(c => c !== '' && c !== null && c !== undefined);
-    if (nonEmpty.length >= 2) { headerIdx = i; break; }
-  }
-  if (headerIdx === -1) return [];
-  const rawHeaders = rows[headerIdx].map(h => String(h || '').trim());
-  const headers = rawHeaders.map((h, idx) => h || `Column_${idx + 1}`);
-  const out = [];
-  for (let r = headerIdx + 1; r < rows.length; r++) {
-    const row = rows[r];
-    if (!row || row.every(c => c === '' || c === null || c === undefined)) continue;
-    const obj = {};
-    headers.forEach((h, i) => {
-      const v = row[i];
-      obj[h] = (v === null || v === undefined) ? '' : String(v).trim();
-    });
-    out.push(obj);
-  }
-  return out;
-}
-
-function getField(row, names) {
-  const keys = Object.keys(row);
-  for (const n of names) {
-    if (row[n] !== undefined && row[n] !== '') return row[n];
-    const target = n.toLowerCase().replace(/[^a-z0-9]/g, '');
-    for (const k of keys) {
-      if (k.toLowerCase().replace(/[^a-z0-9]/g, '') === target && row[k] !== '') {
-        return row[k];
-      }
-    }
-  }
-  return '';
-}
-
-function normalizeParsedRows(rows) {
-  if (!Array.isArray(rows)) return [];
-  return rows
-    .map(r => {
-      const clean = {};
-      Object.keys(r || {}).forEach(k => {
-        const cleanKey = String(k || '').replace(/^\uFEFF/, '').trim();
-        if (cleanKey) clean[cleanKey] = String(r[k] ?? '').trim();
-      });
-      return clean;
-    })
-    .filter(r => Object.values(r).some(v => v !== ''));
-}
-
-function updateCsvFallbackUI(type, loadedFromCacheOrError) {
-  const box = document.getElementById(type === 'job' ? 'jobCsvFallbackBox' : 'bomCsvFallbackBox');
-  const status = document.getElementById(type === 'job' ? 'jobCsvStatusText' : 'bomCsvStatusText');
-  const count = type === 'job' ? JOB_DATA.length : BOM_DATA.length;
-  if (!box) return;
-  if (count === 0 || loadedFromCacheOrError) {
-    box.style.display = 'block';
-    if (status) {
-      status.textContent = count > 0
-        ? `Using ${count} cached records (direct CSV file unreachable). You can upload or paste an updated CSV below:`
-        : `No ${type === 'job' ? 'data.csv' : 'bom.csv'} records loaded yet (common when opened offline or via file://). Select a CSV file or paste CSV data below:`;
-    }
-  } else {
-    box.style.display = 'none';
-  }
-}
-
-window.handleManualCsvFile = function(type, inputEl) {
-  const file = inputEl && inputEl.files && inputEl.files[0];
-  if (!file) return;
-  Papa.parse(file, {
-    header: true,
-    skipEmptyLines: true,
-    complete: results => {
-      const cleaned = normalizeParsedRows(results.data);
-      if (!cleaned.length) {
-        alert('No valid rows found in the selected CSV file.');
-        return;
-      }
-      if (type === 'job') {
-        JOB_DATA = cleaned;
-        localStorage.setItem('tc_job_cache', JSON.stringify(JOB_DATA));
-        updateCsvFallbackUI('job', false);
-        if (jobInput && jobInput.value.trim()) populateJobOperations(jobInput.value.trim());
-        renderJobResults();
-      } else {
-        BOM_DATA = cleaned;
-        localStorage.setItem('tc_bom_cache', JSON.stringify(BOM_DATA));
-        updateCsvFallbackUI('bom', false);
-        if (bomInput && bomInput.value.trim()) populateBomOperations(bomInput.value.trim());
-        renderBomResults();
-      }
-      inputEl.value = '';
-      alert(`Loaded ${cleaned.length} records successfully.`);
-    },
-    error: err => {
-      alert('Failed to read CSV file: ' + (err && err.message ? err.message : 'Unknown error'));
-    }
-  });
-};
-
-window.handleManualCsvPaste = function(type) {
-  const ta = document.getElementById(type === 'job' ? 'jobCsvPasteArea' : 'bomCsvPasteArea');
-  const raw = ta ? ta.value.trim() : '';
-  if (!raw) {
-    alert('Please paste CSV text (including the header row) first.');
-    return;
-  }
-  const results = Papa.parse(raw, { header: true, skipEmptyLines: true });
-  const cleaned = normalizeParsedRows(results.data);
-  if (!cleaned.length) {
-    alert('Could not parse any valid rows. Make sure the first line contains column headers.');
-    return;
-  }
-  if (type === 'job') {
-    JOB_DATA = cleaned;
-    localStorage.setItem('tc_job_cache', JSON.stringify(JOB_DATA));
-    updateCsvFallbackUI('job', false);
-    if (jobInput && jobInput.value.trim()) populateJobOperations(jobInput.value.trim());
-    renderJobResults();
-  } else {
-    BOM_DATA = cleaned;
-    localStorage.setItem('tc_bom_cache', JSON.stringify(BOM_DATA));
-    updateCsvFallbackUI('bom', false);
-    if (bomInput && bomInput.value.trim()) populateBomOperations(bomInput.value.trim());
-    renderBomResults();
-  }
-  if (ta) ta.value = '';
-  alert(`Loaded ${cleaned.length} records from pasted CSV.`);
-};
-
-window.toggleCsvPasteBox = function(type) {
-  const wrap = document.getElementById(type === 'job' ? 'jobCsvPasteWrap' : 'bomCsvPasteWrap');
-  if (wrap) wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
-};
-
-function loadJobDataFromCSV() {
-  return new Promise(resolve => {
-    Papa.parse('data.csv', {
-      download: true,
-      header: true,
-      skipEmptyLines: true,
-      complete: results => {
-        const cleaned = normalizeParsedRows(results.data);
-        if (cleaned.length > 0) {
-          JOB_DATA = cleaned;
-          localStorage.setItem('tc_job_cache', JSON.stringify(JOB_DATA));
-          updateCsvFallbackUI('job', false);
-          resolve(true);
-        } else {
-          try { JOB_DATA = JSON.parse(localStorage.getItem('tc_job_cache')) || []; } catch (e) { JOB_DATA = []; }
-          updateCsvFallbackUI('job', true);
-          resolve(JOB_DATA.length > 0);
-        }
-      },
-      error: () => {
-        try { JOB_DATA = JSON.parse(localStorage.getItem('tc_job_cache')) || []; } catch (e) { JOB_DATA = []; }
-        updateCsvFallbackUI('job', true);
-        resolve(JOB_DATA.length > 0);
-      }
-    });
-  });
-}
-
-function loadBomDataFromCSV() {
-  return new Promise(resolve => {
-    Papa.parse('bom.csv', {
-      download: true,
-      header: true,
-      skipEmptyLines: true,
-      complete: results => {
-        const cleaned = normalizeParsedRows(results.data);
-        if (cleaned.length > 0) {
-          BOM_DATA = cleaned;
-          localStorage.setItem('tc_bom_cache', JSON.stringify(BOM_DATA));
-          updateCsvFallbackUI('bom', false);
-          resolve(true);
-        } else {
-          try { BOM_DATA = JSON.parse(localStorage.getItem('tc_bom_cache')) || []; } catch (e) { BOM_DATA = []; }
-          updateCsvFallbackUI('bom', true);
-          resolve(BOM_DATA.length > 0);
-        }
-      },
-      error: () => {
-        try { BOM_DATA = JSON.parse(localStorage.getItem('tc_bom_cache')) || []; } catch (e) { BOM_DATA = []; }
-        updateCsvFallbackUI('bom', true);
-        resolve(BOM_DATA.length > 0);
-      }
-    });
-  });
-}
-
-/* --- JOB CARDS UI --- */
-const jobInput = document.getElementById('jobInput');
-const suggestBox = document.getElementById('suggestBox');
-const opSelect = document.getElementById('opSelect');
-const jobGrid = document.getElementById('jobGrid');
-const jobResultTitle = document.getElementById('jobResultTitle');
-const jobResultCount = document.getElementById('jobResultCount');
-
-function getJobNo(r) { return getField(r, ['Job No', 'JobNo', 'Job Number', 'Job', 'JC No']); }
-function getOpName(r) { return getField(r, ['Operation', 'Op', 'Operation Name', 'Stage']); }
-function getDrumNo(r) { return getField(r, ['Drum No', 'DrumNo', 'Drum']); }
-
-function getUniqueJobs() {
-  const seen = new Set();
-  const list = [];
-  JOB_DATA.forEach(r => {
-    const j = getJobNo(r);
-    if (j && !seen.has(j)) {
-      seen.add(j);
-      list.push({ job: j, drum: getDrumNo(r) });
-    }
-  });
-  return list;
-}
-
-function showJobSuggestions(q) {
-  const query = String(q || '').trim().toLowerCase();
-  const all = getUniqueJobs();
-  const matches = query
-    ? all.filter(x => x.job.toLowerCase().includes(query) || x.drum.toLowerCase().includes(query))
-    : all.slice(0, 30);
-
-  if (!matches.length) {
-    suggestBox.innerHTML = `<div class="suggest-empty">No matching jobs found</div>`;
-    suggestBox.classList.add('open');
+  if (items.length === 0) {
+    listEl.innerHTML = `<div style="font-size:0.78rem;color:var(--text-muted);text-align:center;padding:8px;">No recent submissions yet.</div>`;
     return;
   }
 
-  suggestBox.innerHTML = `<div class="suggest-hint">Select a Job Number</div>` + matches.slice(0, 40).map(x => `
-    <div class="suggest-item" data-job="${esc(x.job)}">
-      <span>${esc(x.job)}</span>
-      ${x.drum ? `<span class="meta">${esc(x.drum)}</span>` : ''}
+  listEl.innerHTML = items.slice(0, 8).map(item => `
+    <div class="feedback-log-item">
+      <div class="feedback-log-meta">
+        <span>${esc(item.type)} • ${esc(item.module)} (${esc(item.user)})</span>
+        <span>${esc(item.createdAt)}</span>
+      </div>
+      <div style="color:var(--text-primary);white-space:pre-wrap;">${esc(item.message)}</div>
     </div>
   `).join('');
-  suggestBox.classList.add('open');
 }
 
-function populateJobOperations(jobNo) {
-  const rows = JOB_DATA.filter(r => getJobNo(r).toLowerCase() === String(jobNo || '').trim().toLowerCase());
-  const ops = Array.from(new Set(rows.map(r => getOpName(r)).filter(Boolean)));
-  opSelect.innerHTML = '';
-  if (!ops.length) {
-    opSelect.disabled = true;
-    opSelect.innerHTML = `<option value="">— No Operations —</option>`;
+/* --- BANNER MANAGEMENT LOGIC --- */
+window.openBannerModal = function(event) {
+  if(event) event.stopPropagation();
+  if (!isAdminUser()) {
+    alert('Only Admin can manage banners.');
     return;
   }
-  opSelect.disabled = false;
-  opSelect.innerHTML = `<option value="__ALL__">All Operations (${ops.length})</option>` +
-    ops.map(op => `<option value="${esc(op)}">${esc(op)}</option>`).join('');
+  document.getElementById('bannerModal').classList.add('open');
+  renderAdminBanners();
+};
+window.closeBannerModal = function(event) {
+  if(event && event.target.classList.contains('modal-content')) return;
+  document.getElementById('bannerModal').classList.remove('open');
+};
+
+function loadBanners() {
+  BANNERS = JSON.parse(localStorage.getItem('tc_banners')) || [];
+  const container = document.getElementById('promoBanner');
+  if (!container) return;
+
+  const activeBanners = BANNERS.filter(b => b.active);
+  if (activeBanners.length === 0) {
+    container.style.display = 'none';
+    clearInterval(BANNER_INTERVAL);
+    return;
+  }
+
+  container.style.display = 'flex';
+  CURRENT_BANNER_IDX = 0;
+  showBanner(activeBanners);
+
+  clearInterval(BANNER_INTERVAL);
+  if (activeBanners.length > 1) {
+    BANNER_INTERVAL = setInterval(() => {
+      CURRENT_BANNER_IDX = (CURRENT_BANNER_IDX + 1) % activeBanners.length;
+      showBanner(activeBanners);
+    }, 5000);
+  }
 }
 
-function renderJobResults() {
-  const jVal = jobInput.value.trim();
-  const opVal = opSelect.value;
+function showBanner(activeBanners) {
+  const container = document.getElementById('promoBanner');
+  const b = activeBanners[CURRENT_BANNER_IDX];
+  const hasTitle = Boolean(b.text && b.text.trim());
 
-  if (!jVal) {
-    jobResultTitle.textContent = 'Enter details above';
-    jobResultCount.textContent = '0 records';
-    jobGrid.innerHTML = `<div class="empty"><div class="icon">🔎</div><p>Start typing a <b>job number</b> above.</p></div>`;
+  const titleHtml = hasTitle ? `<div class="promo-banner-content">${esc(b.text.trim())}</div>` : '';
+  const linkBadgeHtml = b.link ? `<div class="promo-banner-link-badge" title="Open Link">↗</div>` : '';
+  const dotsHtml = activeBanners.length > 1
+    ? `<div class="promo-banner-dots">${activeBanners.map((_, idx) => `<span class="promo-banner-dot ${idx === CURRENT_BANNER_IDX ? 'active' : ''}"></span>`).join('')}</div>`
+    : '';
+
+  if (b.img) {
+    container.style.background = `url('${b.img}') center/cover no-repeat`;
+    container.innerHTML = `
+      ${hasTitle ? '<div class="promo-banner-overlay"></div>' : ''}
+      ${linkBadgeHtml}
+      ${titleHtml}
+      ${dotsHtml}
+    `;
+  } else {
+    container.style.background = `linear-gradient(135deg, #0f172a 0%, #1e40af 60%, #2563eb 100%)`;
+    container.innerHTML = `
+      ${linkBadgeHtml}
+      ${titleHtml}
+      ${dotsHtml}
+    `;
+  }
+  container.setAttribute('data-link', b.link || '');
+}
+
+window.handleBannerClick = function(event) {
+  const container = document.getElementById('promoBanner');
+  const link = container.getAttribute('data-link');
+  if (link) {
+    window.open(link, '_blank');
+  }
+};
+
+function renderAdminBanners() {
+  const list = document.getElementById('adminBannerList');
+  if (!list) return;
+  if (BANNERS.length === 0) {
+    list.innerHTML = '<div style="font-size: 0.8rem; color: var(--text-muted); text-align: center; padding: 12px;">No banners published yet.</div>';
+    return;
+  }
+  list.innerHTML = BANNERS.map((b, i) => `
+    <div class="admin-banner-item">
+      ${b.img ? `<img src="${b.img}" class="admin-banner-thumb">` : `<div class="admin-banner-thumb" style="display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#64748b; background:linear-gradient(135deg,#e2e8f0,#cbd5e1);">TEXT</div>`}
+      <div style="flex: 1; min-width: 0; padding: 0 12px;">
+        <div style="font-weight: 700; color: ${b.text ? '#0f172a' : '#64748b'}; font-style: ${b.text ? 'normal' : 'italic'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${b.text ? esc(b.text) : 'Image-only banner'}</div>
+        <div style="font-size: 0.7rem; font-weight: 600; color: ${b.active ? '#059669' : '#94a3b8'}; margin-top: 2px;">${b.active ? '● Active' : '○ Hidden'}</div>
+      </div>
+      <div style="display: flex; gap: 6px;">
+        <button onclick="toggleBanner(${i})" style="background: ${b.active ? '#10b981' : '#cbd5e1'}; color: white; border: none; padding: 6px 10px; border-radius: 8px; font-size: 0.72rem; font-weight: 700; cursor: pointer;">${b.active ? 'ON' : 'OFF'}</button>
+        <button onclick="deleteBanner(${i})" style="background: #fee2e2; color: #dc2626; border: none; padding: 6px 10px; border-radius: 8px; font-size: 0.72rem; font-weight: 700; cursor: pointer;">Del</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+window.addBanner = function() {
+  const text = document.getElementById('setBannerText').value.trim();
+  const link = document.getElementById('setBannerLink').value.trim();
+  const fileInput = document.getElementById('setBannerFile');
+  const hasFile = fileInput.files && fileInput.files[0];
+
+  if (!text && !hasFile) {
+    alert("Please enter a banner title or upload an image.");
     return;
   }
 
-  let rows = JOB_DATA.filter(r => getJobNo(r).toLowerCase() === jVal.toLowerCase());
-  if (!rows.length) {
-    rows = JOB_DATA.filter(r => getJobNo(r).toLowerCase().includes(jVal.toLowerCase()));
-  }
-  if (opVal && opVal !== '__ALL__') {
-    rows = rows.filter(r => getOpName(r) === opVal);
-  }
+  if (hasFile) {
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 900;
+        const MAX_HEIGHT = 400;
+        let width = img.width;
+        let height = img.height;
 
-  jobResultTitle.textContent = `Job ${jVal}${opVal && opVal !== '__ALL__' ? ' • ' + opVal : ''}`;
-  jobResultCount.textContent = `${rows.length} ${rows.length === 1 ? 'record' : 'records'}`;
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
 
-  if (!rows.length) {
-    jobGrid.innerHTML = `<div class="empty"><div class="icon">📭</div><p>No records found for <b>${esc(jVal)}</b>.</p></div>`;
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+
+        BANNERS.push({ text, img: dataUrl, link, active: true });
+        saveAndRefreshBanners();
+        fileInput.value = '';
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    BANNERS.push({ text, img: '', link, active: true });
+    saveAndRefreshBanners();
+  }
+};
+
+function saveAndRefreshBanners() {
+  try {
+    localStorage.setItem('tc_banners', JSON.stringify(BANNERS));
+  } catch(e) {
+    alert("Storage limit exceeded. Please delete some banners or upload a smaller image.");
     return;
   }
+  document.getElementById('setBannerText').value = '';
+  document.getElementById('setBannerLink').value = '';
+  renderAdminBanners();
+  loadBanners();
+}
 
-  jobGrid.innerHTML = rows.map(r => {
-    const jobNo = getJobNo(r) || jVal;
-    const op = getOpName(r) || 'General';
-    const drum = getDrumNo(r);
-    const extraKeys = Object.keys(r).filter(k => {
-      const nk = k.toLowerCase().replace(/[^a-z0-9]/g, '');
-      return !['jobno', 'jobnumber', 'job', 'jcno', 'operation', 'op', 'operationname', 'stage', 'drumno', 'drum'].includes(nk) && r[k] !== '';
+window.deleteBanner = function(i) {
+  if (!confirm("Delete this banner?")) return;
+  BANNERS.splice(i, 1);
+  saveAndRefreshBanners();
+};
+
+window.toggleBanner = function(i) {
+  BANNERS[i].active = !BANNERS[i].active;
+  saveAndRefreshBanners();
+};
+
+/* --- SHARED CSV HELPERS --- */
+function normalizeHeader(h){ return String(h||'').toLowerCase().replace(/[\s_\-\/\.]+/g,''); }
+function findHeader(headers, ...candidates){ for(const c of candidates){ const found = headers.find(h => normalizeHeader(h) === normalizeHeader(c)); if(found) return found; } return null; }
+function esc(s){ return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function formatQty(n) { if(n === null || n === undefined || isNaN(n)) return '—'; return Number(n).toFixed(4).replace(/\.?0+$/, '') || '0'; }
+function formatScientific(num) { if (num === 0) return '0'; const e = Math.floor(Math.log10(Math.abs(num))); const m = num / Math.pow(10, e); return `${m.toFixed(2)}&times; 10<sup>${e}</sup>`; }
+
+/* --- JOB DATA (OFFLINE-AWARE) --- */
+async function loadJobDataFromCSV() {
+  try {
+    const response = await fetch('data.csv', { cache: 'no-store' });
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    const text = await response.text();
+    return new Promise((resolve) => {
+      Papa.parse(text, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          processJobCSVData(results.data);
+          resolve(true);
+        }
+      });
+    });
+  } catch (e) {
+    console.warn('[offline] data.csv unavailable — using cached version if present');
+    return false;
+  }
+}
+
+function processJobCSVData(rows) {
+  const headers = Object.keys(rows[0] || {});
+  const soItemKey = findHeader(headers, 'SO-ITEM', 'SOITEM', 'INDEX'), opKey = findHeader(headers, 'OPERATION DETAIL', 'OPERATION');
+  if (!soItemKey || !opKey) return;
+  JOB_DATA = [];
+  rows.forEach((row, i) => {
+    const soItem = String(row[soItemKey] || '').trim(), op = String(row[opKey] || '').trim();
+    if (!soItem || !op) return;
+
+    const details = [];
+    const hCols = headers.filter(h => h.trim().toUpperCase().endsWith('H'));
+    hCols.forEach(hCol => {
+      const base = hCol.trim().toUpperCase().slice(0, -1);
+      const dCol = headers.find(h => h.trim().toUpperCase() === base + 'D');
+      const label = String(row[hCol] || '').trim();
+      if (dCol) {
+        const val = String(row[dCol] || '').trim();
+        if (label !== '' || val !== '') details.push([label || hCol, val || '—']);
+      } else if (label !== '') {
+        details.push([label, '—']);
+      }
     });
 
-    const specsHtml = extraKeys.map(k => `
-      <div class="spec">
-        <div class="k">${esc(k)}</div>
-        <div class="v"><span class="chip-val">${esc(r[k])}</span></div>
-      </div>
-    `).join('') || `<div class="spec"><div class="k">Status</div><div class="v">Active</div></div>`;
+    JOB_DATA.push({
+      order: i,
+      soItem,
+      so: soItem.split('#')[0].trim(),
+      operation: op,
+      qty: row[findHeader(headers, 'QTY', 'QUANTITY')] || '',
+      customer: row[findHeader(headers, 'CUSTOMER')] || '',
+      size: row[findHeader(headers, 'SIZE')] || '',
+      currentOp: row[findHeader(headers, 'CURRENT OPERATION', 'CURRENTOP')] || '',
+      nextOp: row[findHeader(headers, 'NEXT OPERATION', 'NEXTOP')] || '',
+      details,
+      drum: row[findHeader(headers, 'DRUM')] || ''
+    });
+  });
+}
+function jobNumberOf(row){ return row.soItem ? row.soItem.split('#')[0].trim() : ''; }
+function buildJobIndex(){ const map = new Map(); JOB_DATA.forEach(r => { const j = jobNumberOf(r); if(!j) return; if(!map.has(j)) map.set(j, {opCount:0, ops:new Set()}); const rec = map.get(j); if(r.operation) rec.ops.add(r.operation); }); map.forEach(v => v.opCount = v.ops.size); return map; }
+function allJobNumbers(){ return Array.from(buildJobIndex().keys()).sort(); }
 
-    return `
-      <div class="card printable-card">
-        <div class="card-head">
-          <h3><span class="bullet"></span>${esc(jobNo)}</h3>
-          <span class="op-tag">${esc(op)}</span>
-        </div>
-        <div class="specs">${specsHtml}</div>
-        <div class="card-foot">
-          <span>Job Card</span>
-          ${drum ? `<span class="drum">Drum: ${esc(drum)}</span>` : ''}
-        </div>
-      </div>
-    `;
-  }).join('');
+/* --- JOB CARDS CONTROLLER (AUTO-SHOW) --- */
+const jobInput = document.getElementById('jobInput'), opSelect = document.getElementById('opSelect'), jobGrid = document.getElementById('jobGrid'), suggestBox = document.getElementById('suggestBox');
+let SUGGEST_INDEX = -1, SUGGEST_ITEMS = [];
+
+function renderSuggestions(term){
+  const matches = allJobNumbers().filter(j => j.toLowerCase().includes(term.toLowerCase())); const idx = buildJobIndex(); SUGGEST_INDEX = -1;
+  if(matches.length === 0){ SUGGEST_ITEMS = []; suggestBox.innerHTML = `<div class="suggest-empty">No jobs match</div>`; suggestBox.classList.add('open'); return; }
+  SUGGEST_ITEMS = matches; let html = `<div class="suggest-hint">${matches.length} jobs found</div>`;
+  matches.forEach((j, i) => {
+    const rec = idx.get(j) || {opCount:0};
+    html += `<div class="suggest-item" data-job="${esc(j)}" data-idx="${i}"><span>${esc(j)}</span><span class="meta">${rec.opCount} ops</span></div>`;
+  });
+  suggestBox.innerHTML = html; suggestBox.classList.add('open');
+}
+function closeSuggestions(){ suggestBox.classList.remove('open'); SUGGEST_INDEX = -1; }
+
+function findExactJob(term){
+  const t = String(term || '').trim().toLowerCase();
+  if(!t) return null;
+  for(const k of buildJobIndex().keys()){ if(k.toLowerCase() === t) return k; }
+  return null;
 }
 
-jobInput.addEventListener('focus', () => showJobSuggestions(jobInput.value));
+function refreshOpSelect(jobArg, autoSelectFirst){
+  const job = (jobArg === undefined ? jobInput.value : jobArg).trim();
+  opSelect.innerHTML = '';
+  if(!job){ opSelect.innerHTML = '<option value="">— Select Job First —</option>'; opSelect.disabled = true; return; }
+  const jn = job.toLowerCase(); const seen = new Set(); const list = [];
+  JOB_DATA.forEach(r => { if(jobNumberOf(r).toLowerCase() === jn && !seen.has(r.operation)){ seen.add(r.operation); list.push(r.operation); } });
+  if(list.length === 0){ opSelect.innerHTML = '<option value="">— No Operations —</option>'; opSelect.disabled = true; return; }
+  const ph = document.createElement('option'); ph.value = ''; ph.textContent = '— Select Op —'; opSelect.appendChild(ph);
+  list.forEach(op => { const o = document.createElement('option'); o.value = op; o.textContent = op; opSelect.appendChild(o); });
+  opSelect.disabled = false;
+  if(list.length === 1 || autoSelectFirst) opSelect.value = list[0];
+}
+
+function pickSuggestion(jobNo){
+  jobInput.value = jobNo;
+  closeSuggestions();
+  refreshOpSelect(jobNo, true);
+  if(opSelect.value) renderJobResults();
+}
+
 jobInput.addEventListener('input', () => {
-  showJobSuggestions(jobInput.value);
-  populateJobOperations(jobInput.value);
-});
-jobInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    suggestBox.classList.remove('open');
-    populateJobOperations(jobInput.value);
-    renderJobResults();
+  const term = jobInput.value.trim();
+  const exact = findExactJob(term);
+  if(exact){
+    closeSuggestions();
+    refreshOpSelect(exact, true);
+    if(opSelect.value) renderJobResults();
+  } else {
+    renderSuggestions(term);
+    refreshOpSelect(term, false);
+    document.getElementById('jobResultTitle').textContent = 'Enter details above';
+    document.getElementById('jobResultCount').textContent = '0 records';
+    jobGrid.innerHTML = '<div class="empty"><div class="icon">🔎</div><p>Start typing a <b>job number</b> above.</p></div>';
   }
 });
-suggestBox.addEventListener('click', e => {
-  const item = e.target.closest('.suggest-item');
-  if (!item) return;
-  const chosen = item.getAttribute('data-job');
-  jobInput.value = chosen;
-  suggestBox.classList.remove('open');
-  populateJobOperations(chosen);
-  renderJobResults();
+jobInput.addEventListener('focus', () => { renderSuggestions(jobInput.value.trim()); });
+jobInput.addEventListener('keydown', (e) => {
+  if(e.key !== 'Enter') return;
+  e.preventDefault();
+  const first = suggestBox.querySelector('.suggest-item');
+  if(suggestBox.classList.contains('open') && first) pickSuggestion(first.dataset.job);
+  else if(opSelect.value) renderJobResults();
+  closeSuggestions();
 });
-document.addEventListener('click', e => {
-  if (!document.getElementById('jobField')?.contains(e.target)) suggestBox.classList.remove('open');
-  if (!document.getElementById('bomField')?.contains(e.target)) bomSuggestBox.classList.remove('open');
-});
-opSelect.addEventListener('change', renderJobResults);
+suggestBox.addEventListener('mousedown', e => { const item = e.target.closest('.suggest-item'); if(item) pickSuggestion(item.dataset.job); });
+opSelect.addEventListener('change', () => { if(opSelect.value) renderJobResults(); });
+document.addEventListener('click', e => { if(!document.getElementById('jobField').contains(e.target)) closeSuggestions(); });
+
+function renderJobResults(){
+  const job = jobInput.value.trim(), op = opSelect.value;
+  if(!job || !op) return;
+  const matches = JOB_DATA.filter(r => jobNumberOf(r).toLowerCase() === job.toLowerCase() && r.operation === op);
+  document.getElementById('jobResultTitle').textContent = `${job} • ${op}`;
+  document.getElementById('jobResultCount').textContent = `${matches.length} records`;
+  if(matches.length === 0){
+    jobGrid.innerHTML = `<div class="empty"><div class="icon">📭</div><p>No records for <b>${esc(job)}</b> / <b>${esc(op)}</b></p></div>`;
+    return;
+  }
+  let html = '';
+  matches.forEach(row => {
+    let specs = '';
+    specs += `<div class="spec accent"><div class="k">JOB NO</div><div class="v"><span class="chip-val">${esc(jobNumberOf(row))}</span></div></div>`;
+    specs += `<div class="spec"><div class="k">INDEX</div><div class="v">${esc(row.soItem)}</div></div>`;
+    specs += `<div class="spec"><div class="k">QTY</div><div class="v">${esc(row.qty||'—')}</div></div>`;
+    specs += `<div class="spec"><div class="k">CUSTOMER</div><div class="v">${esc(row.customer||'—')}</div></div>`;
+    specs += `<div class="spec"><div class="k">SIZE</div><div class="v">${esc(row.size||'—')}</div></div>`;
+    specs += `<div class="spec"><div class="k">CURR OP</div><div class="v">${esc(row.currentOp||'—')}</div></div>`;
+    specs += `<div class="spec"><div class="k">NEXT OP</div><div class="v">${esc(row.nextOp||'—')}</div></div>`;
+    (row.details||[]).forEach(([k,v])=>{ specs += `<div class="spec"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div></div>`; });
+
+    html += `<div class="card printable-card">
+      <div class="card-head"><h3><span class="bullet"></span>${esc(row.soItem)}</h3><span class="op-tag">${esc(row.operation)}</span></div>
+      <div class="specs">${specs}</div>
+      <div class="card-foot"><span>🏷️ ${esc(row.so)}</span><span class="drum">🥁 ${esc(row.drum||'—')}</span></div>
+    </div>`;
+  });
+  jobGrid.innerHTML = html;
+}
+
 document.getElementById('searchBtn').addEventListener('click', renderJobResults);
 document.getElementById('resetBtn').addEventListener('click', () => {
   jobInput.value = '';
-  opSelect.innerHTML = `<option value="">— Select Job First —</option>`;
+  opSelect.innerHTML = '<option value="">— Select Job First —</option>';
   opSelect.disabled = true;
-  renderJobResults();
+  jobGrid.innerHTML = '<div class="empty"><div class="icon">🔎</div><p>Start typing a <b>job number</b> above.</p></div>';
+  document.getElementById('jobResultTitle').textContent = 'Enter details above';
+  document.getElementById('jobResultCount').textContent = '0 records';
 });
 
-/* --- BOM UI --- */
-const bomInput = document.getElementById('bomInput');
-const bomSuggestBox = document.getElementById('bomSuggestBox');
-const bomOpSelect = document.getElementById('bomOpSelect');
-const bomGrid = document.getElementById('bomGrid');
-const bomResultTitle = document.getElementById('bomResultTitle');
-const bomResultCount = document.getElementById('bomResultCount');
-
-function getBomKey(r) { return getField(r, ['SO-ITEM', 'SO ITEM', 'SoItem', 'INDEX', 'Index', 'Item', 'Part No']); }
-function getBomJdm(r) { return getField(r, ['Operation JDM', 'Operation', 'JDM', 'Stage']); }
-function getBomMatCode(r) { return getField(r, ['Material Code', 'Mat Code', 'Code', 'Component Code']); }
-function getBomMatDesc(r) { return getField(r, ['Material Description', 'Description', 'Mat Desc', 'Material']); }
-function getBomQty(r) { return getField(r, ['Qty', 'Quantity', 'Req Qty', 'Std Qty', 'Base Qty']); }
-
-function getUniqueBomKeys() {
-  const seen = new Set();
-  const list = [];
-  BOM_DATA.forEach(r => {
-    const k = getBomKey(r);
-    if (k && !seen.has(k)) {
-      seen.add(k);
-      list.push({ key: k, jdm: getBomJdm(r) });
-    }
-  });
-  return list;
-}
-
-function showBomSuggestions(q) {
-  const query = String(q || '').trim().toLowerCase();
-  const all = getUniqueBomKeys();
-  const matches = query
-    ? all.filter(x => x.key.toLowerCase().includes(query) || x.jdm.toLowerCase().includes(query))
-    : all.slice(0, 30);
-
-  if (!matches.length) {
-    bomSuggestBox.innerHTML = `<div class="suggest-empty">No matching SO-ITEM / INDEX found</div>`;
-    bomSuggestBox.classList.add('open');
-    return;
-  }
-
-  bomSuggestBox.innerHTML = `<div class="suggest-hint">Select SO-ITEM / INDEX</div>` + matches.slice(0, 40).map(x => `
-    <div class="suggest-item" data-bomkey="${esc(x.key)}">
-      <span>${esc(x.key)}</span>
-      ${x.jdm ? `<span class="meta">${esc(x.jdm)}</span>` : ''}
-    </div>
-  `).join('');
-  bomSuggestBox.classList.add('open');
-}
-
-function populateBomOperations(keyVal) {
-  const rows = BOM_DATA.filter(r => getBomKey(r).toLowerCase() === String(keyVal || '').trim().toLowerCase());
-  const jdms = Array.from(new Set(rows.map(r => getBomJdm(r)).filter(Boolean)));
-  bomOpSelect.innerHTML = '';
-  if (!jdms.length) {
-    bomOpSelect.disabled = true;
-    bomOpSelect.innerHTML = `<option value="">— No Operation JDM —</option>`;
-    return;
-  }
-  bomOpSelect.disabled = false;
-  bomOpSelect.innerHTML = `<option value="__ALL__">All Operations (${jdms.length})</option>` +
-    jdms.map(j => `<option value="${esc(j)}">${esc(j)}</option>`).join('');
-}
-
-window.updateBomPlanQty = function(val) {
-  const num = parseFloat(val);
-  USER_PLAN_QTY = (!isNaN(num) && num > 0) ? num : null;
-  renderBomResults();
-};
-
-function renderBomResults() {
-  const bVal = bomInput.value.trim();
-  const jdmVal = bomOpSelect.value;
-
-  if (!bVal) {
-    bomResultTitle.textContent = 'Enter details above';
-    bomResultCount.textContent = '0 records';
-    bomGrid.innerHTML = `<div class="empty"><div class="icon">📦</div><p>Start typing a <b>SO-ITEM</b> above.</p></div>`;
-    return;
-  }
-
-  let rows = BOM_DATA.filter(r => getBomKey(r).toLowerCase() === bVal.toLowerCase());
-  if (!rows.length) {
-    rows = BOM_DATA.filter(r => getBomKey(r).toLowerCase().includes(bVal.toLowerCase()));
-  }
-  if (jdmVal && jdmVal !== '__ALL__') {
-    rows = rows.filter(r => getBomJdm(r) === jdmVal);
-  }
-
-  bomResultTitle.textContent = `BOM: ${bVal}${jdmVal && jdmVal !== '__ALL__' ? ' • ' + jdmVal : ''}`;
-  bomResultCount.textContent = `${rows.length} ${rows.length === 1 ? 'record' : 'records'}`;
-
-  if (!rows.length) {
-    bomGrid.innerHTML = `<div class="empty"><div class="icon">📭</div><p>No BOM rows found for <b>${esc(bVal)}</b>.</p></div>`;
-    return;
-  }
-
-  const multiplier = USER_PLAN_QTY !== null ? USER_PLAN_QTY : 1;
-  const groups = {};
-  rows.forEach(r => {
-    const g = getBomJdm(r) || 'Materials';
-    if (!groups[g]) groups[g] = [];
-    groups[g].push(r);
-  });
-
-  const groupsHtml = Object.keys(groups).map(gName => {
-    const itemsHtml = groups[gName].map(r => {
-      const code = getBomMatCode(r) || '—';
-      const desc = getBomMatDesc(r) || '—';
-      const rawQty = parseFloat(getBomQty(r));
-      const scaledQty = !isNaN(rawQty) ? (rawQty * multiplier).toFixed(2).replace(/\.00$/, '') : (getBomQty(r) || '—');
-      return `
-        <div class="bom-row">
-          <div>${esc(code)}</div>
-          <div>${esc(desc)}</div>
-          <div>${esc(scaledQty)}</div>
-        </div>
-      `;
-    }).join('');
-
-    return `
-      <div class="bom-group-header">${esc(gName)}</div>
-      ${itemsHtml}
-    `;
-  }).join('');
-
-  bomGrid.innerHTML = `
-    <div class="card printable-card" style="grid-column: 1 / -1;">
-      <div class="card-head">
-        <h3><span class="bullet"></span>${esc(bVal)}</h3>
-        <span class="op-tag">${esc(jdmVal && jdmVal !== '__ALL__' ? jdmVal : 'All JDM')}</span>
-      </div>
-      <div style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); background: var(--bg-app);">
-        <label style="display:block;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:6px;">
-          Plan Multiplier / Qty (1 = Base)
-        </label>
-        <input type="number" class="plan-input" step="any" min="0" value="${USER_PLAN_QTY !== null ? USER_PLAN_QTY : ''}" placeholder="1" oninput="updateBomPlanQty(this.value)">
-      </div>
-      <div class="bom-table">
-        <div class="bom-table-head">
-          <div>Code</div>
-          <div>Material</div>
-          <div>Qty</div>
-        </div>
-        ${groupsHtml}
-      </div>
-      <div class="card-foot">
-        <span>Bill of Materials</span>
-        <span class="drum">Scale: ${multiplier}×</span>
-      </div>
-    </div>
-  `;
-}
-
-bomInput.addEventListener('focus', () => showBomSuggestions(bomInput.value));
-bomInput.addEventListener('input', () => {
-  showBomSuggestions(bomInput.value);
-  populateBomOperations(bomInput.value);
-});
-bomInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    bomSuggestBox.classList.remove('open');
-    populateBomOperations(bomInput.value);
-    renderBomResults();
-  }
-});
-bomSuggestBox.addEventListener('click', e => {
-  const item = e.target.closest('.suggest-item');
-  if (!item) return;
-  const chosen = item.getAttribute('data-bomkey');
-  bomInput.value = chosen;
-  bomSuggestBox.classList.remove('open');
-  populateBomOperations(chosen);
-  renderBomResults();
-});
-bomOpSelect.addEventListener('change', renderBomResults);
-document.getElementById('bomSearchBtn').addEventListener('click', renderBomResults);
-document.getElementById('bomResetBtn').addEventListener('click', () => {
-  bomInput.value = '';
-  USER_PLAN_QTY = null;
-  bomOpSelect.innerHTML = `<option value="">— Select SO-ITEM First —</option>`;
-  bomOpSelect.disabled = true;
-  renderBomResults();
-});
-
-/* --- QC CALCULATOR LOGIC --- */
-function fmtNum(n, d = 3) {
-  if (typeof n !== 'number' || !isFinite(n)) return '—';
-  return Number(n.toFixed(d)).toString();
-}
-
-window.calculateCRCombined = function() {
-  const spec = parseFloat(document.getElementById('specCR').value);
-  const maxC = parseFloat(document.getElementById('maxCR').value);
-  const minC = parseFloat(document.getElementById('minCR').value);
-
-  const outUnb = document.getElementById('outUnbalance');
-  const outHigh = document.getElementById('outHigh');
-  const outLow = document.getElementById('outLow');
-
-  if (!isNaN(maxC) && !isNaN(minC) && maxC > 0) {
-    outUnb.textContent = fmtNum(((maxC - minC) / maxC) * 100, 2);
-  } else {
-    outUnb.textContent = '—';
-  }
-
-  if (!isNaN(spec) && spec > 0) {
-    outHigh.textContent = !isNaN(maxC) ? fmtNum(((maxC - spec) / spec) * 100, 2) : '—';
-    outLow.textContent = !isNaN(minC) ? fmtNum(((spec - minC) / spec) * 100, 2) : '—';
-  } else {
-    outHigh.textContent = '—';
-    outLow.textContent = '—';
-  }
-
-  const obs = parseFloat(document.getElementById('obsCR').value);
-  const len = parseFloat(document.getElementById('lenCR').value);
-  const temp = parseFloat(document.getElementById('tempCR').value);
-  const outCal = document.getElementById('outCalCR');
-
-  if (!isNaN(obs) && !isNaN(len) && len > 0) {
-    const t = !isNaN(temp) ? temp : 20;
-    const alpha = 0.00393;
-    const cal = (obs / len) * (1 / (1 + alpha * (t - 20)));
-    outCal.textContent = fmtNum(cal, 5);
-  } else {
-    outCal.textContent = '—';
-  }
-};
-
-function calculateIR() {
-  const reading = parseFloat(document.getElementById('irReading').value);
-  const len = parseFloat(document.getElementById('irLength').value);
-  const bigD = parseFloat(document.getElementById('irCoreDia').value);
-  const smallD = parseFloat(document.getElementById('irCondDia').value);
-
-  const irOut = document.getElementById('irResultOut');
-  const irConstOut = document.getElementById('irConstOut');
-  const vrConstOut = document.getElementById('vrConstOut');
-
-  if (!isNaN(reading) && !isNaN(len) && len > 0) {
-    irOut.textContent = fmtNum(reading * 1e6, 2);
-    const irConst = reading * len;
-    irConstOut.textContent = fmtNum(irConst, 3);
-    if (!isNaN(bigD) && !isNaN(smallD) && bigD > smallD && smallD > 0) {
-      const vr = (irConst * 1e6) / (2 * Math.PI * Math.log(bigD / smallD));
-      vrConstOut.textContent = fmtNum(vr, 2);
-    } else {
-      vrConstOut.textContent = '—';
-    }
-  } else {
-    irOut.textContent = '—';
-    irConstOut.textContent = '—';
-    vrConstOut.textContent = '—';
-  }
-}
-['irReading', 'irLength', 'irCoreDia', 'irCondDia'].forEach(id => {
-  document.getElementById(id)?.addEventListener('input', calculateIR);
-});
-
-function calculateCap() {
-  const reading = parseFloat(document.getElementById('capReading').value);
-  const len = parseFloat(document.getElementById('capLength').value);
-  const out = document.getElementById('capResultOut');
-  if (!isNaN(reading) && !isNaN(len) && len > 0) {
-    out.textContent = fmtNum(reading / len, 3);
-  } else {
-    out.textContent = '—';
-  }
-}
-['capReading', 'capLength'].forEach(id => {
-  document.getElementById(id)?.addEventListener('input', calculateCap);
-});
-
-function calculateHvFail() {
-  const totalLen = parseFloat(document.getElementById('hvLength').value);
-  const topCr = parseFloat(document.getElementById('hvTopCr').value);
-  const botCr = parseFloat(document.getElementById('hvBottomCr').value);
-
-  const totalOut = document.getElementById('hvTotalCrOut');
-  const topOut = document.getElementById('hvTopSideOut');
-  const botOut = document.getElementById('hvBottomSideOut');
-
-  const sumCr = (!isNaN(topCr) && !isNaN(botCr)) ? (topCr + botCr) : NaN;
-  totalOut.textContent = !isNaN(sumCr) ? fmtNum(sumCr, 4) : '—';
-
-  if (!isNaN(totalLen) && totalLen > 0 && !isNaN(sumCr) && sumCr > 0 && !isNaN(topCr) && !isNaN(botCr)) {
-    const topDist = totalLen * (topCr / sumCr);
-    const botDist = totalLen * (botCr / sumCr);
-    topOut.textContent = fmtNum(topDist, 2);
-    botOut.textContent = fmtNum(botDist, 2);
-  } else {
-    topOut.textContent = '—';
-    botOut.textContent = '—';
-  }
-}
-['hvLength', 'hvTopCr', 'hvBottomCr'].forEach(id => {
-  document.getElementById(id)?.addEventListener('input', calculateHvFail);
-});
-
-function calculateThick() {
-  const minT = parseFloat(document.getElementById('thickMin').value);
-  const maxT = parseFloat(document.getElementById('thickMax').value);
-  const avgOut = document.getElementById('thickAvgOut');
-  const concOut = document.getElementById('thickConcOut');
-
-  if (!isNaN(minT) && !isNaN(maxT) && maxT > 0) {
-    const avg = (minT + maxT) / 2;
-    const conc = (minT / maxT) * 100;
-    avgOut.textContent = fmtNum(avg, 3);
-    concOut.textContent = fmtNum(conc, 2);
-  } else {
-    avgOut.textContent = '—';
-    concOut.textContent = '—';
-  }
-}
-['thickMin', 'thickMax'].forEach(id => {
-  document.getElementById(id)?.addEventListener('input', calculateThick);
-});
-
-function calculateBraid() {
-  const d = parseFloat(document.getElementById('brD').value);
-  const bigD = parseFloat(document.getElementById('brBigD').value);
-  const n = parseFloat(document.getElementById('brN').value);
-  const m = parseFloat(document.getElementById('brM').value);
-  const l = parseFloat(document.getElementById('brL').value);
-
-  const totalWiresOut = document.getElementById('brTotalWiresOut');
-  const fOut = document.getElementById('brFOut');
-  const covOut = document.getElementById('brCovOut');
-
-  const totalWires = (!isNaN(n) && !isNaN(m)) ? (n * m) : NaN;
-  totalWiresOut.textContent = !isNaN(totalWires) ? fmtNum(totalWires, 0) : '—';
-
-  if (!isNaN(d) && !isNaN(bigD) && !isNaN(totalWires) && !isNaN(l) && l > 0 && (bigD + d) > 0) {
-    const meanDia = bigD + d;
-    const angle = Math.atan((2 * Math.PI * meanDia) / l);
-    const fVal = (totalWires * d) / (2 * Math.PI * meanDia * Math.cos(angle));
-    const covVal = (1 - Math.pow(1 - fVal, 2)) * 100;
-    fOut.textContent = fmtNum(fVal, 4);
-    covOut.textContent = fmtNum(covVal, 2);
-  } else {
-    fOut.textContent = '—';
-    covOut.textContent = '—';
-  }
-}
-['brD', 'brBigD', 'brN', 'brM', 'brL'].forEach(id => {
-  document.getElementById(id)?.addEventListener('input', calculateBraid);
-});
-
-document.getElementById('tensileShape')?.addEventListener('change', function() {
-  const isTub = this.value === 'tubular';
-  document.getElementById('tubularInputs').style.display = isTub ? 'block' : 'none';
-  document.getElementById('dumbbellInputs').style.display = isTub ? 'none' : 'block';
-  calculateTensile();
-});
-
-function calculateTensile() {
-  const shape = document.getElementById('tensileShape')?.value || 'tubular';
-  const load = parseFloat(document.getElementById('tLoad').value);
-  const elong = parseFloat(document.getElementById('tElong').value);
-  const init = parseFloat(document.getElementById('tInit').value);
-
-  let area = NaN;
-  if (shape === 'tubular') {
-    const dia = parseFloat(document.getElementById('tDia').value);
-    const thick = parseFloat(document.getElementById('tThick').value);
-    if (!isNaN(dia) && !isNaN(thick) && dia > thick && thick > 0) {
-      area = Math.PI * thick * (dia - thick);
-    }
-  } else {
-    const w = parseFloat(document.getElementById('dWidth').value);
-    const th = parseFloat(document.getElementById('dThick').value);
-    if (!isNaN(w) && !isNaN(th) && w > 0 && th > 0) {
-      area = w * th;
-    }
-  }
-
-  document.getElementById('tAreaOut').textContent = !isNaN(area) ? fmtNum(area, 3) : '—';
-  document.getElementById('tTsOut').textContent = (!isNaN(load) && !isNaN(area) && area > 0) ? fmtNum(load / area, 2) : '—';
-  document.getElementById('tElongOut').textContent = (!isNaN(elong) && !isNaN(init) && init > 0)
-    ? fmtNum(((elong - init) / init) * 100, 1)
-    : '—';
-}
-['tDia', 'tThick', 'dWidth', 'dThick', 'tLoad', 'tElong', 'tInit'].forEach(id => {
-  document.getElementById(id)?.addEventListener('input', calculateTensile);
-});
-
-document.getElementById('hotSetShape')?.addEventListener('change', function() {
-  const isTub = this.value === 'tubular';
-  document.getElementById('tubularHotInputs').style.display = isTub ? 'block' : 'none';
-  document.getElementById('dumbbellHotInputs').style.display = isTub ? 'none' : 'block';
-  calculateHotSet();
-});
-
-function calculateHotSet() {
-  const shape = document.getElementById('hotSetShape')?.value || 'tubular';
-  const init = parseFloat(document.getElementById('hInit').value);
-  const elong = parseFloat(document.getElementById('hElong').value);
-  const cool = parseFloat(document.getElementById('hCool').value);
-
-  let area = NaN;
-  if (shape === 'tubular') {
-    const coreD = parseFloat(document.getElementById('hCoreDia').value);
-    const condD = parseFloat(document.getElementById('hCondDia').value);
-    if (!isNaN(coreD) && !isNaN(condD) && coreD > condD) {
-      area = (Math.PI / 4) * (coreD * coreD - condD * condD);
-    }
-  } else {
-    const th = parseFloat(document.getElementById('hThick').value);
-    const w = parseFloat(document.getElementById('hWidth').value);
-    if (!isNaN(th) && !isNaN(w) && th > 0 && w > 0) {
-      area = th * w;
-    }
-  }
-
-  const weightOut = document.getElementById('hWeightOut');
-  if (!isNaN(area) && !isNaN(init) && init > 0) {
-    const weightGrams = area * (init / 1000) * 1.45;
-    weightOut.textContent = fmtNum(weightGrams, 3);
-  } else {
-    weightOut.textContent = '—';
-  }
-
-  document.getElementById('hHotOut').textContent = (!isNaN(elong) && !isNaN(init) && init > 0)
-    ? fmtNum(((elong - init) / init) * 100, 1)
-    : '—';
-
-  document.getElementById('hPermOut').textContent = (!isNaN(cool) && !isNaN(init) && init > 0)
-    ? fmtNum(((cool - init) / init) * 100, 1)
-    : '—';
-}
-['hCoreDia', 'hCondDia', 'hThick', 'hWidth', 'hInit', 'hElong', 'hCool'].forEach(id => {
-  document.getElementById(id)?.addEventListener('input', calculateHotSet);
-});
-
-window.calculateArmCov = function() {
-  const cableDia = parseFloat(document.getElementById('covCableDia').value);
-  const wireDia = parseFloat(document.getElementById('covWireDia').value);
-  const lay = parseFloat(document.getElementById('covLay').value);
-  const wires = parseFloat(document.getElementById('covWires').value);
-  const out = document.getElementById('outCov');
-
-  if (!isNaN(cableDia) && !isNaN(wireDia) && !isNaN(lay) && !isNaN(wires) && lay > 0 && wires > 0 && (cableDia + wireDia) > 0) {
-    const meanDia = cableDia + wireDia;
-    const sinAlpha = lay / Math.sqrt(Math.pow(Math.PI * meanDia, 2) + Math.pow(lay, 2));
-    const cov = ((wires * wireDia) / (Math.PI * meanDia * sinAlpha)) * 100;
-    out.textContent = fmtNum(cov, 2);
-  } else {
-    out.textContent = '—';
-  }
-};
-
-/* --- GATE PASS & PRINT --- */
-function generateGatePasses(deptText, dateDisplay, timeDisplay) {
-  const container = document.getElementById('gatePassPrintArea');
-  if (!container) return;
-
-  const cols = 3;
-  const rows = 9;
-  container.style.setProperty('--gp-rows', String(rows));
-  container.classList.remove('gp-dense');
-
-  const safeDept = esc((deptText || '').trim().toUpperCase() || 'PRODUCTION');
-  const safeDate = esc(dateDisplay);
-  const safeTime = esc(timeDisplay);
-
-  let html = '';
-  for (let i = 1; i <= GP_STANDARD_COUNT; i++) {
-    const serial = `GP-${String(i).padStart(2, '0')}`;
-    html += `
-      <div class="gate-pass-card">
-        <div class="gp-company">THERMOCABLES LTD.</div>
-        <div class="gp-dept">${safeDept}</div>
-        <div class="gp-serial">${serial}</div>
-        <div class="gp-datetime">
-          <span>${safeDate}</span>
-          <span>${safeTime}</span>
-        </div>
-        <div class="gp-sig-area">
-          <div class="gp-sig-line"></div>
-          <div class="gp-sig-label">Sign / Auth</div>
-        </div>
-      </div>
-    `;
-  }
-  container.innerHTML = html;
-}
-
-window.triggerPrint = function(event, mode) {
-  if (event) event.preventDefault();
-
-  const now = new Date();
-  document.getElementById('pCompany').textContent = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
-  document.getElementById('pDept').textContent = localStorage.getItem('tc_dept') || 'QC DEPARTMENT';
-  document.getElementById('pPrepBy').textContent = localStorage.getItem('tc_prep') || '—';
-  document.getElementById('pVerBy').textContent = localStorage.getItem('tc_ver') || '—';
-  document.getElementById('pDate').textContent = now.toLocaleDateString();
-  document.getElementById('pTime').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-  document.body.classList.remove('printing-gatepass');
-
-  if (mode === 'gatepass') {
-    const deptEl = document.getElementById('gpDept');
-    const dateEl = document.getElementById('gpDate');
-    const h = document.getElementById('gpHour').value;
-    const m = document.getElementById('gpMinute').value;
-    const ap = document.getElementById('gpAmPm').value;
-
-    dateEl.classList.remove('gp-invalid');
-    if (!dateEl.value) {
-      dateEl.classList.add('gp-invalid');
-      alert('Please select a Gate Pass date.');
-      dateEl.focus();
-      return;
-    }
-
-    const formattedDate = formatDateForDisplay(dateEl.value);
-    const formattedTime = `${h}:${m} ${ap}`;
-    generateGatePasses(deptEl.value, formattedDate, formattedTime);
-    document.body.classList.add('printing-gatepass');
-    window.print();
-    setTimeout(() => document.body.classList.remove('printing-gatepass'), 500);
-    return;
-  }
-
-  const inputsSection = document.getElementById('printInputs');
-  let tableHtml = '';
-
-  if (mode === 'job') {
-    document.getElementById('pDocTitle').textContent = 'JOB CARD SPECIFICATION';
-    document.getElementById('pTestType').textContent = `Job: ${jobInput.value || '—'} | Op: ${opSelect.value || '—'}`;
-    tableHtml = `<table class="print-inputs-table"><tr><th>Job Number</th><th>Operation</th></tr><tr><td>${esc(jobInput.value || '—')}</td><td>${esc(opSelect.value || '—')}</td></tr></table>`;
-  } else if (mode === 'bom') {
-    document.getElementById('pDocTitle').textContent = 'BILL OF MATERIALS (BOM)';
-    document.getElementById('pTestType').textContent = `SO-ITEM: ${bomInput.value || '—'} | Scale: ${USER_PLAN_QTY || 1}×`;
-    tableHtml = `<table class="print-inputs-table"><tr><th>SO-ITEM / INDEX</th><th>Operation JDM</th><th>Plan Qty</th></tr><tr><td>${esc(bomInput.value || '—')}</td><td>${esc(bomOpSelect.value || 'All')}</td><td>${esc(USER_PLAN_QTY || 1)}</td></tr></table>`;
-  } else if (mode === 'qc') {
-    const activeBtn = document.querySelector('.qc-tab-btn.active');
-    const tabLabel = activeBtn ? activeBtn.textContent.trim() : 'QC CALCULATION';
-    document.getElementById('pDocTitle').textContent = `QC TEST REPORT — ${tabLabel}`;
-    document.getElementById('pTestType').textContent = tabLabel;
-
-    const activeCard = document.querySelector('.qc-card.active');
-    if (activeCard) {
-      const pairs = [];
-      activeCard.querySelectorAll('.input-group').forEach(grp => {
-        const lbl = grp.querySelector('label')?.childNodes[0]?.textContent?.trim() || 'Input';
-        const inp = grp.querySelector('input, select');
-        if (inp && inp.offsetParent !== null) {
-          pairs.push(`<tr><td>${esc(lbl)}</td><td>${esc(inp.value || '—')}</td></tr>`);
-        }
-      });
-      if (pairs.length) {
-        tableHtml = `<table class="print-inputs-table"><tr><th>Parameter</th><th>Entered Value</th></tr>${pairs.join('')}</table>`;
-      }
-    }
-  }
-
-  inputsSection.innerHTML = tableHtml;
-  window.print();
-};
-
-initGatePassUI();
-renderMaintenanceUI();
-})();
-</script>
-</body>
-</html>
+/* --- BOM DATA (OFFLINE-AWARE) --- */
+let CURRENT_BOM_LINES = [];
+let LAST_BOM_ITEM = null;
+
+async function loadBomDataFromCSV() {
+  try {
+    const response = await fetch('bom.csv', { cache: 'no-store' });
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    const text = await response.text();
+    return new Promise((resolve) => {
+      Papa.parse(text, {
+        header: false,
+        skipEmptyLines: false,
+        complete: function (results) {
+          const allRows = results.data;
+          if (!allRows || allRows.length < 2) return resolve(false);
+
+          function rowHasHeader(row) {
+            if (!row || !row.length) return false;
+            return row.some(cell

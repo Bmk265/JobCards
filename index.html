@@ -3497,15 +3497,116 @@ function loadUsersStore() {
   return base;
 }
 
-function saveUsersStore() {
+function saveUsersStore(changedUserKey = null, deletedUserKey = null) {
   try {
     localStorage.setItem('tc_users', JSON.stringify(USERS));
   } catch (e) {
     console.warn('Failed to save users:', e);
   }
+  if (deletedUserKey) {
+    cloudPost({ action: 'deleteUser', username: deletedUserKey });
+  } else if (changedUserKey && USERS[changedUserKey]) {
+    cloudPost({ action: 'saveUser', username: changedUserKey, user: USERS[changedUserKey] });
+  } else {
+    cloudPost({ action: 'saveAllUsers', users: USERS });
+  }
 }
 
 let USERS = loadUsersStore();
+
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwtPsMohouynZCg2trSdWcWoDgBPXa7XL6suw5KIawWfKtfHXWbp424oI8ZGK4aaH6m/exec";
+
+async function cloudPost(payload) {
+  if (!APPS_SCRIPT_URL || !navigator.onLine) return null;
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    console.warn('[CloudSync] POST failed:', err);
+    return null;
+  }
+}
+
+async function cloudGet(action) {
+  if (!APPS_SCRIPT_URL || !navigator.onLine) return null;
+  try {
+    const url = APPS_SCRIPT_URL + (APPS_SCRIPT_URL.includes('?') ? '&' : '?') + 'action=' + encodeURIComponent(action) + '&_t=' + Date.now();
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    console.warn('[CloudSync] GET failed:', err);
+    return null;
+  }
+}
+
+async function syncAllFromCloud() {
+  if (!APPS_SCRIPT_URL || !navigator.onLine) return false;
+  try {
+    const data = await cloudGet('getAll');
+    if (!data) return false;
+
+    if (data.users && typeof data.users === 'object') {
+      const merged = loadUsersStore();
+      Object.keys(data.users).forEach(rawKey => {
+        const k = String(rawKey || '').trim().toLowerCase();
+        if (!k) return;
+        const u = data.users[rawKey];
+        merged[k] = {
+          name: u.name || k,
+          dept: u.dept || 'General',
+          plant: u.plant || 'Main Plant',
+          phone: u.phone || '',
+          email: u.email || '',
+          pass: u.pass !== undefined ? u.pass : '',
+          role: u.role !== undefined ? u.role : '',
+          views: Array.isArray(u.views) ? sanitizeViews(u.views) : ['home', 'jobcards', 'gatepass']
+        };
+      });
+      USERS = merged;
+      localStorage.setItem('tc_users', JSON.stringify(USERS));
+    }
+
+    if (data.maintenance && typeof data.maintenance === 'object') {
+      MAINT_SCOPES.forEach(({ key }) => {
+        if (data.maintenance[key] && typeof data.maintenance[key] === 'object') {
+          MAINTENANCE_STATE[key] = {
+            active: Boolean(data.maintenance[key].active),
+            remark: String(data.maintenance[key].remark || '')
+          };
+        }
+      });
+      localStorage.setItem('tc_maintenance', JSON.stringify(MAINTENANCE_STATE));
+    }
+
+    if (Array.isArray(data.banners)) {
+      BANNERS = data.banners;
+      localStorage.setItem('tc_banners', JSON.stringify(BANNERS));
+    }
+
+    if (Array.isArray(data.feedback)) {
+      localStorage.setItem('tc_feedback', JSON.stringify(data.feedback.slice(0, 50)));
+    }
+
+    if (data.settings && typeof data.settings === 'object') {
+      if (data.settings.company) localStorage.setItem('tc_company', data.settings.company);
+      if (data.settings.dept) localStorage.setItem('tc_dept', data.settings.dept);
+      if (data.settings.prepBy !== undefined) localStorage.setItem('tc_prep', data.settings.prepBy);
+      if (data.settings.verBy !== undefined) localStorage.setItem('tc_ver', data.settings.verBy);
+    }
+
+    return true;
+  } catch (e) {
+    console.warn('[CloudSync] syncAllFromCloud error:', e);
+    return false;
+  }
+}
+
 
 /* --- MAINTENANCE STATE --- */
 const MAINT_SCOPES = [
@@ -3628,6 +3729,7 @@ window.enableSelectedMaintenanceScope = function() {
   if (!MAINTENANCE_STATE[key]) MAINTENANCE_STATE[key] = { active: false, remark: '' };
   MAINTENANCE_STATE[key].active = true;
   localStorage.setItem('tc_maintenance', JSON.stringify(MAINTENANCE_STATE));
+  cloudPost({ action: 'saveMaintenance', maintenance: MAINTENANCE_STATE });
   renderMaintenanceUI();
 };
 
@@ -3644,6 +3746,7 @@ window.toggleMaintenanceScope = function(key) {
     MAINTENANCE_STATE[key].remark = remarkInput.value;
   }
   localStorage.setItem('tc_maintenance', JSON.stringify(MAINTENANCE_STATE));
+  cloudPost({ action: 'saveMaintenance', maintenance: MAINTENANCE_STATE });
   renderMaintenanceUI();
 };
 
@@ -3660,6 +3763,7 @@ window.saveMaintenanceSettings = function() {
     }
   });
   localStorage.setItem('tc_maintenance', JSON.stringify(MAINTENANCE_STATE));
+  cloudPost({ action: 'saveMaintenance', maintenance: MAINTENANCE_STATE });
   renderMaintenanceUI();
   alert('Maintenance settings updated.');
 };
@@ -3792,7 +3896,7 @@ window.saveOwnProfileContact = function() {
 
   USERS[CURRENT_USER].phone = phone;
   USERS[CURRENT_USER].email = email;
-  saveUsersStore();
+  saveUsersStore(CURRENT_USER);
   renderProfileContactCard();
   if (isAdminUser()) renderAdminUserList();
   alert('Profile contact details updated.');
@@ -3855,7 +3959,7 @@ window.deleteAdminUser = function(username) {
   if (!confirm(`Delete user "@${key}"?`)) return;
 
   delete USERS[key];
-  saveUsersStore();
+  saveUsersStore(null, key);
   renderAdminUserList();
 };
 
@@ -3920,7 +4024,7 @@ window.saveAdminUser = function() {
     views: finalViews
   };
 
-  saveUsersStore();
+  saveUsersStore(targetKey);
   if (targetKey === CURRENT_USER) {
     CURRENT_ROLE = USERS[targetKey].role;
     ALLOWED_VIEWS = [...USERS[targetKey].views];
@@ -4100,13 +4204,16 @@ function resetLoginStep(){
   document.getElementById('loginError').style.display = 'none';
 }
 
-window.handleLogin = function() {
+window.handleLogin = async function() {
   const u = document.getElementById('loginUser').value.trim().toLowerCase();
   const p = document.getElementById('loginPass').value;
   const err = document.getElementById('loginError');
   const passInput = document.getElementById('loginPass');
 
   if (loginStep === 1) {
+    if (!USERS[u] && navigator.onLine) {
+      await syncAllFromCloud();
+    }
     if (USERS[u]) {
       if (!USERS[u].pass) {
         completeLogin(u);
@@ -4180,7 +4287,7 @@ window.handleRegister = function() {
     role: '',
     views: ['home', 'jobcards', 'gatepass']
   };
-  saveUsersStore();
+  saveUsersStore(username);
 
   document.getElementById('regName').value = '';
   document.getElementById('regDept').value = '';
@@ -4293,9 +4400,19 @@ async function refreshData() {
 
   try {
     const results = await Promise.all([
+      syncAllFromCloud(),
       loadJobDataFromCSV(),
       ALLOWED_VIEWS.includes('bom') ? loadBomDataFromCSV() : Promise.resolve(true)
     ]);
+    if (CURRENT_USER && USERS[CURRENT_USER]) {
+      CURRENT_ROLE = USERS[CURRENT_USER].role || '';
+      ALLOWED_VIEWS = Array.isArray(USERS[CURRENT_USER].views) ? sanitizeViews(USERS[CURRENT_USER].views) : ['home', 'jobcards', 'gatepass'];
+      applyAllowedNavigation();
+      renderProfileContactCard();
+      renderAdminUserList();
+      renderMaintenanceUI();
+      loadBanners();
+    }
 
     if (results.every(r => r === true)) {
       setSyncState('synced');
@@ -4329,7 +4446,7 @@ window.addEventListener('offline', () => {
 
 window.handleLogout = function() { localStorage.removeItem('tc_user'); location.reload(); };
 
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
   document.getElementById('loginUser').addEventListener('input', () => {
     if (loginStep === 2) resetLoginStep();
   });
@@ -4338,6 +4455,8 @@ window.addEventListener('load', () => {
       if (e.key === 'Enter') { e.preventDefault(); handleLogin(); }
     });
   });
+
+  await syncAllFromCloud();
 
   const savedUser = localStorage.getItem('tc_user');
   if (savedUser && USERS[savedUser]) {
@@ -4350,10 +4469,17 @@ window.addEventListener('load', () => {
 });
 
 window.saveAdminSettings = function() {
-  localStorage.setItem('tc_company', document.getElementById('setCompany').value);
-  localStorage.setItem('tc_dept', document.getElementById('setDept').value);
-  localStorage.setItem('tc_prep', document.getElementById('setPrepBy').value);
-  localStorage.setItem('tc_ver', document.getElementById('setVerBy').value);
+  const settings = {
+    company: document.getElementById('setCompany').value,
+    dept: document.getElementById('setDept').value,
+    prepBy: document.getElementById('setPrepBy').value,
+    verBy: document.getElementById('setVerBy').value
+  };
+  localStorage.setItem('tc_company', settings.company);
+  localStorage.setItem('tc_dept', settings.dept);
+  localStorage.setItem('tc_prep', settings.prepBy);
+  localStorage.setItem('tc_ver', settings.verBy);
+  cloudPost({ action: 'saveSettings', settings });
   alert('Settings Saved Successfully!');
 };
 function loadAdminSettings() {
@@ -4473,8 +4599,10 @@ window.submitFeedback = function() {
     createdAt: new Date().toLocaleString()
   });
 
+  const entry = items[0];
   try {
     localStorage.setItem('tc_feedback', JSON.stringify(items.slice(0, 50)));
+    cloudPost({ action: 'addFeedback', feedback: entry });
   } catch (e) {
     console.warn('Could not persist feedback:', e);
   }
@@ -4667,6 +4795,7 @@ window.addBanner = function() {
 function saveAndRefreshBanners() {
   try {
     localStorage.setItem('tc_banners', JSON.stringify(BANNERS));
+    cloudPost({ action: 'saveBanners', banners: BANNERS });
   } catch(e) {
     alert("Storage limit exceeded. Please delete some banners or upload a smaller image.");
     return;
@@ -5096,354 +5225,372 @@ function renderBomResults(){
     <div class="qc-card-body">
       <div class="result-section">
         <div class="result-title-bar">PLAN/PRD QTY</div>
-        <div class="result-card primary">
-          <input type="number" id="planQtyInput" class="plan-input" value="${formatQty(effectivePlanQty)}" oninput="window.updateBomCalc(this)">
+        <div class="result-card primary" style="justify-content:center; padding:8px 12px;">
+          <input type="number" id="planQtyInput" class="plan-input" value="${esc(effectivePlanQty)}" step="any" placeholder="0">
         </div>
       </div>
       <div class="bom-table">
-        <div class="bom-table-head"><div>Mat Code</div><div>Mat Disc</div><div>Qty</div></div>`;
+        <div class="bom-table-head"><div>Material Code</div><div>Material Description</div><div>Req Qty</div></div>`;
 
-  const orderedLines = [];
-  const sortedGroups = Array.from(groupMap.keys()).sort();
-  sortedGroups.forEach(g => {
-    html += `<div class="bom-group-header">${esc(g)} <span style="margin-left:auto;font-size:0.6rem;background:#dbeafe;padding:2px 8px;border-radius:10px;">${groupMap.get(g).length}</span></div>`;
-    groupMap.get(g).forEach(l => {
-      orderedLines.push(l);
-      const computed = (effectivePlanQty * l.bomPerKm) / 1000;
-      html += `<div class="bom-row"><div>${esc(l.matCode)}</div><div>${esc(l.matDisc)}</div><div class="bom-calc-qty">${formatQty(computed)}</div></div>`;
+  CURRENT_BOM_LINES = [];
+
+  groupMap.forEach((groupLines, groupName) => {
+    html += `<div class="bom-group-header">${esc(groupName)}</div>`;
+    groupLines.forEach((l, idx) => {
+      const calculatedQty = l.bomPerKm * effectivePlanQty;
+      const rowId = `bom-qty-${groupName.replace(/\W/g, '')}-${idx}`;
+      CURRENT_BOM_LINES.push({ id: rowId, bomPerKm: l.bomPerKm });
+      html += `<div class="bom-row">
+        <div>${esc(l.matCode)}</div>
+        <div>${esc(l.matDisc)}</div>
+        <div id="${rowId}">${formatQty(calculatedQty)}</div>
+      </div>`;
     });
   });
 
-  CURRENT_BOM_LINES = orderedLines;
-  html += `</div></div></div>`;
-  document.getElementById('bomGrid').innerHTML = html;
-}
+  html += `</div></div>
+    <div class="card-foot"><span>${esc(item.customer || '—')}</span><span class="drum">${esc(item.size || '—')}</span></div>
+  </div>`;
 
-window.updateBomCalc = function(inputEl){
-  const q = parseFloat(inputEl.value);
-  USER_PLAN_QTY = isNaN(q) ? 0 : q;
-  const qtyCells = document.querySelectorAll('#bomGrid .bom-calc-qty');
-  CURRENT_BOM_LINES.forEach((line, idx) => {
-    if(qtyCells[idx]){ qtyCells[idx].textContent = formatQty((USER_PLAN_QTY * line.bomPerKm) / 1000); }
-  });
-};
+  document.getElementById('bomGrid').innerHTML = html;
+
+  const planInput = document.getElementById('planQtyInput');
+  if(planInput){
+    planInput.addEventListener('input', () => {
+      const val = parseFloat(planInput.value);
+      USER_PLAN_QTY = isNaN(val) ? 0 : val;
+      CURRENT_BOM_LINES.forEach(itemLine => {
+        const el = document.getElementById(itemLine.id);
+        if(el) el.textContent = formatQty(itemLine.bomPerKm * USER_PLAN_QTY);
+      });
+    });
+  }
+}
 
 document.getElementById('bomOpSelect').addEventListener('change', renderBomResults);
 document.getElementById('bomSearchBtn').addEventListener('click', renderBomResults);
 document.getElementById('bomResetBtn').addEventListener('click', () => {
-  bomInput.value = '';
+  USER_PLAN_QTY = null; LAST_BOM_ITEM = null; bomInput.value = '';
   document.getElementById('bomOpSelect').innerHTML = '<option value="">— Select SO-ITEM First —</option>';
   document.getElementById('bomOpSelect').disabled = true;
   document.getElementById('bomGrid').innerHTML = '<div class="empty"><div class="icon">📦</div><p>Start typing a <b>SO-ITEM</b> above.</p></div>';
   document.getElementById('bomResultTitle').textContent = 'Enter details above';
   document.getElementById('bomResultCount').textContent = '0 records';
-  USER_PLAN_QTY = null; LAST_BOM_ITEM = null; CURRENT_BOM_LINES = [];
 });
 
-/* --- QC CALCULATOR LOGIC --- */
-function fmt(n, d = 3) {
-  if (n === null || n === undefined || isNaN(n) || !isFinite(n)) return '—';
-  return Number(n).toFixed(d).replace(/\.?0+$/, '') || '0';
-}
-
-// 1. COMBINED CR CALC (UNBALANCE + CAL CR)
+/* --- QC CALCULATORS (1. CR CALC & UNBALANCE, 2. ARMOUR COVERAGE, ETC.) --- */
 function calculateCRCombined() {
-  const spec = parseFloat(document.getElementById('specCR').value);
-  const max = parseFloat(document.getElementById('maxCR').value);
-  const min = parseFloat(document.getElementById('minCR').value);
+  const spec = parseFloat(document.getElementById('specCR')?.value);
+  const max = parseFloat(document.getElementById('maxCR')?.value);
+  const min = parseFloat(document.getElementById('minCR')?.value);
 
-  const outUnbalance = document.getElementById('outUnbalance');
+  const outUnb = document.getElementById('outUnbalance');
   const outHigh = document.getElementById('outHigh');
   const outLow = document.getElementById('outLow');
 
-  if (!isNaN(spec) && !isNaN(max) && !isNaN(min) && spec !== 0 && max >= min) {
-    outUnbalance.textContent = fmt(((max - min) / max) * 100, 2);
-    outHigh.textContent = fmt(((max - spec) / spec) * 100, 2);
-    outLow.textContent = fmt(((spec - min) / spec) * 100, 2);
+  if (!isNaN(max) && !isNaN(min) && max > 0) {
+    outUnb.textContent = (((max - min) / max) * 100).toFixed(2);
   } else {
-    outUnbalance.textContent = '—';
+    outUnb.textContent = '—';
+  }
+
+  if (!isNaN(spec) && !isNaN(max) && spec !== 0) {
+    outHigh.textContent = (((max - spec) / spec) * 100).toFixed(2);
+  } else {
     outHigh.textContent = '—';
+  }
+
+  if (!isNaN(spec) && !isNaN(min) && spec !== 0) {
+    outLow.textContent = (((min - spec) / spec) * 100).toFixed(2);
+  } else {
     outLow.textContent = '—';
   }
 
-  const obs = parseFloat(document.getElementById('obsCR').value);
-  const len = parseFloat(document.getElementById('lenCR').value);
-  const temp = parseFloat(document.getElementById('tempCR').value);
+  const obs = parseFloat(document.getElementById('obsCR')?.value);
+  const len = parseFloat(document.getElementById('lenCR')?.value);
+  const temp = parseFloat(document.getElementById('tempCR')?.value);
   const outCalCR = document.getElementById('outCalCR');
 
   if (!isNaN(obs) && !isNaN(len) && !isNaN(temp) && len !== 0) {
-    const denom = 1 + 0.00393 * (temp - 20);
-    if (denom !== 0) {
-      outCalCR.textContent = fmt((obs / denom) / (len / 1000), 4);
-    } else {
-      outCalCR.textContent = '—';
-    }
+    const cal = (obs / len) * (1 / (1 + 0.00393 * (temp - 20)));
+    outCalCR.textContent = cal.toFixed(6);
   } else {
     outCalCR.textContent = '—';
   }
 }
 
-// 2. ARMOUR COVERAGE
 function calculateArmCov() {
-  const cableDia = parseFloat(document.getElementById('covCableDia').value);
-  const wireDia = parseFloat(document.getElementById('covWireDia').value);
-  const lay = parseFloat(document.getElementById('covLay').value);
-  const wires = parseFloat(document.getElementById('covWires').value);
+  const cableDia = parseFloat(document.getElementById('covCableDia')?.value);
+  const wireDia = parseFloat(document.getElementById('covWireDia')?.value);
+  const lay = parseFloat(document.getElementById('covLay')?.value);
+  const wires = parseFloat(document.getElementById('covWires')?.value);
   const outCov = document.getElementById('outCov');
 
-  if (!isNaN(cableDia) && !isNaN(wireDia) && !isNaN(lay) && !isNaN(wires) && lay !== 0 && wireDia !== 0) {
+  if (!isNaN(cableDia) && !isNaN(wireDia) && !isNaN(lay) && !isNaN(wires) && lay !== 0) {
     const dMean = cableDia + wireDia;
-    const sinAlpha = (Math.PI * dMean) / Math.sqrt(Math.pow(lay, 2) + Math.pow(Math.PI * dMean, 2));
-    if (sinAlpha !== 0) {
-      const cov = ((wires * wireDia) / (Math.PI * dMean * sinAlpha)) * 100;
-      outCov.textContent = fmt(cov, 2);
-    } else {
-      outCov.textContent = '—';
-    }
+    const alpha = Math.atan((Math.PI * dMean) / lay);
+    const cov = ((wires * wireDia) / (Math.PI * dMean * Math.cos(alpha))) * 100;
+    outCov.textContent = isFinite(cov) ? cov.toFixed(2) : '—';
   } else {
     outCov.textContent = '—';
   }
 }
 
-function calcIR() {
-  const R_m = parseFloat(document.getElementById('irReading').value), L = parseFloat(document.getElementById('irLength').value), D = parseFloat(document.getElementById('irCoreDia').value), d = parseFloat(document.getElementById('irCondDia').value);
-  const irOut = document.getElementById('irResultOut'), irCOut = document.getElementById('irConstOut'), vrCOut = document.getElementById('vrConstOut');
-  if(!isNaN(R_m) && !isNaN(L) && R_m > 0 && L > 0) {
-    const R_ohm = R_m * 1e6; irOut.innerHTML = formatScientific(R_ohm);
-    const irC = R_m * (L / 1000); irCOut.textContent = irC.toFixed(2);
-    if(!isNaN(D) && !isNaN(d) && D > d && d > 0) {
-      const vrC = (R_ohm * L) / (2 * Math.PI * Math.log(D / d));
-      vrCOut.innerHTML = formatScientific(vrC);
-    } else vrCOut.textContent = '—';
-  } else { irOut.textContent = '—'; irCOut.textContent = '—'; vrCOut.textContent = '—'; }
-}
-['irReading', 'irLength', 'irCoreDia', 'irCondDia'].forEach(id => document.getElementById(id).addEventListener('input', calcIR));
+window.calculateCRCombined = calculateCRCombined;
+window.calculateArmCov = calculateArmCov;
 
-function calcCap() {
-  const r = parseFloat(document.getElementById('capReading').value), l = parseFloat(document.getElementById('capLength').value), out = document.getElementById('capResultOut');
-  out.textContent = (!isNaN(r) && !isNaN(l) && l > 0) ? (r / l).toFixed(4) : '—';
-}
-['capReading', 'capLength'].forEach(id => document.getElementById(id).addEventListener('input', calcCap));
+['specCR', 'maxCR', 'minCR', 'obsCR', 'lenCR', 'tempCR'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', calculateCRCombined);
+});
+['covCableDia', 'covWireDia', 'covLay', 'covWires'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', calculateArmCov);
+});
 
-function calcHV() {
-  const L = parseFloat(document.getElementById('hvLength').value), T = parseFloat(document.getElementById('hvTopCr').value), B = parseFloat(document.getElementById('hvBottomCr').value);
-  const tOut = document.getElementById('hvTotalCrOut'), topOut = document.getElementById('hvTopSideOut'), botOut = document.getElementById('hvBottomSideOut');
-  if(!isNaN(T) && !isNaN(B)) {
-    tOut.textContent = (T + B).toFixed(4);
-    if(!isNaN(L) && L > 0 && (T + B) > 0) {
-      topOut.textContent = (L * (T / (T + B))).toFixed(2);
-      botOut.textContent = (L * (B / (T + B))).toFixed(2);
-    } else { topOut.textContent = '—'; botOut.textContent = '—'; }
-  } else { tOut.textContent = '—'; topOut.textContent = '—'; botOut.textContent = '—'; }
+const irR = document.getElementById('irReading'), irL = document.getElementById('irLength'), irD = document.getElementById('irCoreDia'), irCond = document.getElementById('irCondDia');
+function calcIR(){
+  const r = parseFloat(irR.value), l = parseFloat(irL.value), D = parseFloat(irD.value), d = parseFloat(irCond.value);
+  if(isNaN(r) || isNaN(l) || r <= 0 || l <= 0){ document.getElementById('irResultOut').textContent = '—'; document.getElementById('irConstOut').textContent = '—'; document.getElementById('vrConstOut').textContent = '—'; return; }
+  const totalIR = r * 1e6;
+  document.getElementById('irResultOut').innerHTML = formatScientific(totalIR);
+  const irConst = r * l;
+  document.getElementById('irConstOut').textContent = irConst.toFixed(2);
+  if(!isNaN(D) && !isNaN(d) && D > d && d > 0){
+    const vrConst = (totalIR * l) / (2 * Math.PI * Math.log(D / d));
+    document.getElementById('vrConstOut').innerHTML = formatScientific(vrConst);
+  } else { document.getElementById('vrConstOut').textContent = '—'; }
 }
-['hvLength', 'hvTopCr', 'hvBottomCr'].forEach(id => document.getElementById(id).addEventListener('input', calcHV));
+[irR, irL, irD, irCond].forEach(el => el.addEventListener('input', calcIR));
 
-function calcThick() {
-  const min = parseFloat(document.getElementById('thickMin').value), max = parseFloat(document.getElementById('thickMax').value);
-  const avgOut = document.getElementById('thickAvgOut'), concOut = document.getElementById('thickConcOut');
-  if(!isNaN(min) && !isNaN(max) && max > 0) {
-    avgOut.textContent = ((min + max) / 2).toFixed(2);
-    concOut.textContent = ((min / max) * 100).toFixed(1);
-  } else { avgOut.textContent = '—'; concOut.textContent = '—'; }
+const capR = document.getElementById('capReading'), capL = document.getElementById('capLength');
+function calcCap(){
+  const r = parseFloat(capR.value), l = parseFloat(capL.value);
+  if(isNaN(r) || isNaN(l) || l <= 0){ document.getElementById('capResultOut').textContent = '—'; return; }
+  document.getElementById('capResultOut').textContent = (r / l).toFixed(2);
 }
-['thickMin', 'thickMax'].forEach(id => document.getElementById(id).addEventListener('input', calcThick));
+[capR, capL].forEach(el => el.addEventListener('input', calcCap));
 
-function calcBraid() {
-  const d = parseFloat(document.getElementById('brD').value), D = parseFloat(document.getElementById('brBigD').value), N = parseFloat(document.getElementById('brN').value), M = parseFloat(document.getElementById('brM').value), L = parseFloat(document.getElementById('brL').value);
-  const twOut = document.getElementById('brTotalWiresOut'), fOut = document.getElementById('brFOut'), cOut = document.getElementById('brCovOut');
-  if(!isNaN(N) && !isNaN(M)) twOut.textContent = (N * M).toFixed(0); else twOut.textContent = '—';
-  if(!isNaN(d) && !isNaN(D) && !isNaN(N) && !isNaN(M) && !isNaN(L) && L > 0 && d > 0) {
-    const F = (N * M * d) / (2 * Math.PI * (D + d));
-    const tanA = (2 * Math.PI * (D + d)) / (M * L);
-    const cosA = 1 / Math.sqrt(1 + tanA * tanA);
-    const cov = (1 - Math.pow(1 - F, 2)) * 100;
-    fOut.textContent = F.toFixed(3);
-    cOut.textContent = isNaN(cosA) ? '—' : (cov / cosA).toFixed(1);
-  } else { fOut.textContent = '—'; cOut.textContent = '—'; }
+const hvL = document.getElementById('hvLength'), hvT = document.getElementById('hvTopCr'), hvB = document.getElementById('hvBottomCr');
+function calcHV(){
+  const l = parseFloat(hvL.value), t = parseFloat(hvT.value), b = parseFloat(hvB.value);
+  if(isNaN(l) || isNaN(t) || isNaN(b) || (t + b) === 0){ document.getElementById('hvTotalCrOut').textContent = '—'; document.getElementById('hvTopSideOut').textContent = '—'; document.getElementById('hvBottomSideOut').textContent = '—'; return; }
+  const total = t + b;
+  document.getElementById('hvTotalCrOut').textContent = total.toFixed(6);
+  const topDist = l * (t / total);
+  document.getElementById('hvTopSideOut').textContent = topDist.toFixed(2);
+  document.getElementById('hvBottomSideOut').textContent = (l - topDist).toFixed(2);
 }
-['brD', 'brBigD', 'brN', 'brM', 'brL'].forEach(id => document.getElementById(id).addEventListener('input', calcBraid));
+[hvL, hvT, hvB].forEach(el => el.addEventListener('input', calcHV));
 
-const tShape = document.getElementById('tensileShape'), tTub = document.getElementById('tubularInputs'), tDumb = document.getElementById('dumbbellInputs');
-tShape.addEventListener('change', () => {
-  tTub.style.display = tShape.value === 'tubular' ? 'block' : 'none';
-  tDumb.style.display = tShape.value === 'dumbbell' ? 'block' : 'none';
+const thMin = document.getElementById('thickMin'), thMax = document.getElementById('thickMax');
+function calcThick(){
+  const min = parseFloat(thMin.value), max = parseFloat(thMax.value);
+  if(isNaN(min) || isNaN(max) || max === 0){ document.getElementById('thickAvgOut').textContent = '—'; document.getElementById('thickConcOut').textContent = '—'; return; }
+  document.getElementById('thickAvgOut').textContent = ((min + max) / 2).toFixed(3);
+  document.getElementById('thickConcOut').textContent = (((max - min) / max) * 100).toFixed(2);
+}
+[thMin, thMax].forEach(el => el.addEventListener('input', calcThick));
+
+const brD = document.getElementById('brD'), brBigD = document.getElementById('brBigD'), brN = document.getElementById('brN'), brM = document.getElementById('brM'), brL = document.getElementById('brL');
+function calcBraid(){
+  const d = parseFloat(brD.value), bigD = parseFloat(brBigD.value), N = parseFloat(brN.value), M = parseFloat(brM.value), L = parseFloat(brL.value);
+  if(isNaN(d) || isNaN(bigD) || isNaN(N) || isNaN(M) || isNaN(L) || L === 0){ document.getElementById('brTotalWiresOut').textContent = '—'; document.getElementById('brFOut').textContent = '—'; document.getElementById('brCovOut').textContent = '—'; return; }
+  const totalWires = N * M;
+  document.getElementById('brTotalWiresOut').textContent = totalWires;
+  const meanD = bigD + (2 * d);
+  const tanTheta = (2 * Math.PI * meanD) / (M * L);
+  const cosTheta = 1 / Math.sqrt(1 + (tanTheta * tanTheta));
+  const F = (N * d) / (2 * Math.PI * meanD * cosTheta);
+  document.getElementById('brFOut').textContent = F.toFixed(4);
+  document.getElementById('brCovOut').textContent = ((2 * F - F * F) * 100).toFixed(2);
+}
+[brD, brBigD, brN, brM, brL].forEach(el => el.addEventListener('input', calcBraid));
+
+const tShape = document.getElementById('tensileShape'), tDia = document.getElementById('tDia'), tThick = document.getElementById('tThick'), dWidth = document.getElementById('dWidth'), dThick = document.getElementById('dThick'), tLoad = document.getElementById('tLoad'), tElong = document.getElementById('tElong'), tInit = document.getElementById('tInit');
+function toggleTensileShape(){
+  const isTubular = tShape.value === 'tubular';
+  document.getElementById('tubularInputs').style.display = isTubular ? 'block' : 'none';
+  document.getElementById('dumbbellInputs').style.display = isTubular ? 'none' : 'block';
   calcTensile();
-});
-function calcTensile() {
-  const shape = tShape.value, load = parseFloat(document.getElementById('tLoad').value), elong = parseFloat(document.getElementById('tElong').value), init = parseFloat(document.getElementById('tInit').value);
-  const areaOut = document.getElementById('tAreaOut'), tsOut = document.getElementById('tTsOut'), eOut = document.getElementById('tElongOut');
-  let area = NaN;
-  if(shape === 'tubular') {
-    const dia = parseFloat(document.getElementById('tDia').value), thick = parseFloat(document.getElementById('tThick').value);
-    if(!isNaN(dia) && !isNaN(thick) && dia > thick && thick > 0) area = Math.PI * (dia - thick) * thick;
-  } else {
-    const w = parseFloat(document.getElementById('dWidth').value), th = parseFloat(document.getElementById('dThick').value);
-    if(!isNaN(w) && !isNaN(th) && w > 0 && th > 0) area = w * th;
-  }
-  areaOut.textContent = !isNaN(area) ? area.toFixed(2) : '—';
-  tsOut.textContent = (!isNaN(load) && !isNaN(area) && area > 0) ? (load / area).toFixed(2) : '—';
-  eOut.textContent = (!isNaN(elong) && !isNaN(init) && init > 0) ? (((elong - init) / init) * 100).toFixed(1) : '—';
 }
-['tDia', 'tThick', 'dWidth', 'dThick', 'tLoad', 'tElong', 'tInit'].forEach(id => document.getElementById(id).addEventListener('input', calcTensile));
+function calcTensile(){
+  let area = NaN;
+  if(tShape.value === 'tubular'){
+    const dia = parseFloat(tDia.value), th = parseFloat(tThick.value);
+    if(!isNaN(dia) && !isNaN(th)) area = (Math.PI / 4) * (dia * dia - (dia - 2 * th) * (dia - 2 * th));
+  } else {
+    const w = parseFloat(dWidth.value), th = parseFloat(dThick.value);
+    if(!isNaN(w) && !isNaN(th)) area = w * th;
+  }
+  const load = parseFloat(tLoad.value), elong = parseFloat(tElong.value), init = parseFloat(tInit.value);
+  if(!isNaN(area) && area > 0){
+    document.getElementById('tAreaOut').textContent = area.toFixed(2);
+    if(!isNaN(load)) document.getElementById('tTsOut').textContent = (load / area).toFixed(2);
+    else document.getElementById('tTsOut').textContent = '—';
+  } else { document.getElementById('tAreaOut').textContent = '—'; document.getElementById('tTsOut').textContent = '—'; }
+  if(!isNaN(elong) && !isNaN(init) && init > 0) document.getElementById('tElongOut').textContent = (((elong - init) / init) * 100).toFixed(1);
+  else document.getElementById('tElongOut').textContent = '—';
+}
+tShape.addEventListener('change', toggleTensileShape);
+[tDia, tThick, dWidth, dThick, tLoad, tElong, tInit].forEach(el => el.addEventListener('input', calcTensile));
 
-const hShape = document.getElementById('hotSetShape'), hTub = document.getElementById('tubularHotInputs'), hDumb = document.getElementById('dumbbellHotInputs');
-hShape.addEventListener('change', () => {
-  hTub.style.display = hShape.value === 'tubular' ? 'block' : 'none';
-  hDumb.style.display = hShape.value === 'dumbbell' ? 'block' : 'none';
+const hShape = document.getElementById('hotSetShape'), hCore = document.getElementById('hCoreDia'), hCond = document.getElementById('hCondDia'), hThick = document.getElementById('hThick'), hWidth = document.getElementById('hWidth'), hInit = document.getElementById('hInit'), hElong = document.getElementById('hElong'), hCool = document.getElementById('hCool');
+function toggleHotSetShape(){
+  const isTubular = hShape.value === 'tubular';
+  document.getElementById('tubularHotInputs').style.display = isTubular ? 'block' : 'none';
+  document.getElementById('dumbbellHotInputs').style.display = isTubular ? 'none' : 'block';
   calcHotSet();
-});
-function calcHotSet() {
-  const shape = hShape.value, init = parseFloat(document.getElementById('hInit').value), elong = parseFloat(document.getElementById('hElong').value), cool = parseFloat(document.getElementById('hCool').value);
-  const wOut = document.getElementById('hWeightOut'), hotOut = document.getElementById('hHotOut'), permOut = document.getElementById('hPermOut');
+}
+function calcHotSet(){
   let area = NaN;
-  if(shape === 'tubular') {
-    const core = parseFloat(document.getElementById('hCoreDia').value), cond = parseFloat(document.getElementById('hCondDia').value);
-    if(!isNaN(core) && !isNaN(cond) && core > cond) area = (Math.PI / 4) * (core * core - cond * cond);
+  if(hShape.value === 'tubular'){
+    const d1 = parseFloat(hCore.value), d2 = parseFloat(hCond.value);
+    if(!isNaN(d1) && !isNaN(d2)) area = (Math.PI / 4) * (d1 * d1 - d2 * d2);
   } else {
-    const th = parseFloat(document.getElementById('hThick').value), w = parseFloat(document.getElementById('hWidth').value);
-    if(!isNaN(th) && !isNaN(w) && th > 0 && w > 0) area = th * w;
+    const th = parseFloat(hThick.value), w = parseFloat(hWidth.value);
+    if(!isNaN(th) && !isNaN(w)) area = th * w;
   }
-  wOut.textContent = !isNaN(area) ? (area * 0.2).toFixed(2) : '—';
-  hotOut.textContent = (!isNaN(elong) && !isNaN(init) && init > 0) ? (((elong - init) / init) * 100).toFixed(1) : '—';
-  permOut.textContent = (!isNaN(cool) && !isNaN(init) && init > 0) ? (((cool - init) / init) * 100).toFixed(1) : '—';
+  if(!isNaN(area) && area > 0) document.getElementById('hWeightOut').textContent = (area * 0.2).toFixed(2);
+  else document.getElementById('hWeightOut').textContent = '—';
+  const init = parseFloat(hInit.value), elong = parseFloat(hElong.value), cool = parseFloat(hCool.value);
+  if(!isNaN(init) && !isNaN(elong) && init > 0) document.getElementById('hHotOut').textContent = (((elong - init) / init) * 100).toFixed(1);
+  else document.getElementById('hHotOut').textContent = '—';
+  if(!isNaN(init) && !isNaN(cool) && init > 0) document.getElementById('hPermOut').textContent = (((cool - init) / init) * 100).toFixed(1);
+  else document.getElementById('hPermOut').textContent = '—';
 }
-['hCoreDia', 'hCondDia', 'hThick', 'hWidth', 'hInit', 'hElong', 'hCool'].forEach(id => document.getElementById(id).addEventListener('input', calcHotSet));
+hShape.addEventListener('change', toggleHotSetShape);
+[hCore, hCond, hThick, hWidth, hInit, hElong, hCool].forEach(el => el.addEventListener('input', calcHotSet));
 
-/* --- PRINT & GATE PASS GENERATION --- */
-function renderGatePassPrintSheet() {
-  const container = document.getElementById('gatePassPrintArea');
-  const deptInput = document.getElementById('gpDept');
-  const dateInput = document.getElementById('gpDate');
-  const hourSel = document.getElementById('gpHour');
-  const minSel = document.getElementById('gpMinute');
-  const ampmSel = document.getElementById('gpAmPm');
-
-  const dept = (deptInput.value || '').trim().toUpperCase();
-  const dateVal = dateInput.value;
-  const timeVal = `${hourSel.value}:${minSel.value} ${ampmSel.value}`;
-  const count = GP_STANDARD_COUNT;
-
-  const company = (localStorage.getItem('tc_company') || 'THERMOCABLES LTD.').toUpperCase();
-
-  let html = '';
-  for (let i = 0; i < count; i++) {
-    html += `
-      <div class="gate-pass-card">
-        <div class="gp-company">${esc(company)}</div>
-        <div class="gp-dept">${dept ? esc(dept) : '&nbsp;'}</div>
-        <div class="gp-datetime">
-          <span>Date: <b>${dateVal ? esc(formatDateForDisplay(dateVal)) : '&nbsp;'}</b></span>
-          <span>Out Time: <b>${esc(timeVal)}</b></span>
-        </div>
-        <div class="gp-sig-area">
-          <div class="gp-sig-line"></div>
-          <div class="gp-sig-label">Authorized Sign</div>
-        </div>
-      </div>
-    `;
-  }
-  container.innerHTML = html;
-
-  const cols = 3;
-  const rows = Math.ceil(count / cols);
-  container.style.setProperty('--gp-rows', rows);
-  container.classList.toggle('gp-dense', rows > 9);
-}
-
-window.triggerPrint = function(event, context) {
+/* --- PRINT ENGINE --- */
+window.triggerPrint = function(event, mode){
   if (event) event.preventDefault();
-  document.body.classList.remove('printing-gatepass');
-
-  if (context === 'gatepass') {
-    const deptEl = document.getElementById('gpDept');
-    const dateEl = document.getElementById('gpDate');
-    let missing = false;
-
-    [deptEl, dateEl].forEach(el => {
-      el.classList.remove('gp-invalid');
-      if (!el.value || !el.value.trim()) {
-        el.classList.add('gp-invalid');
-        missing = true;
-      }
-    });
-
-    if (missing) {
-      alert('Please enter Department and select Date before generating Gate Passes.');
-      (!deptEl.value.trim() ? deptEl : dateEl).focus();
-      return;
-    }
-
-    localStorage.setItem('tc_gp_dept', deptEl.value.trim());
-    renderGatePassPrintSheet();
-    document.body.classList.add('printing-gatepass');
-    window.print();
-    return;
-  }
-
-  document.getElementById('pCompany').textContent = (localStorage.getItem('tc_company') || 'THERMOCABLES LTD.').toUpperCase();
-  document.getElementById('pDept').textContent = (localStorage.getItem('tc_dept') || 'QC DEPARTMENT').toUpperCase();
+  document.getElementById('pCompany').textContent = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
+  document.getElementById('pDept').textContent = localStorage.getItem('tc_dept') || 'QC DEPARTMENT';
   document.getElementById('pPrepBy').textContent = localStorage.getItem('tc_prep') || '—';
   document.getElementById('pVerBy').textContent = localStorage.getItem('tc_ver') || '—';
 
   const now = new Date();
   document.getElementById('pDate').textContent = now.toLocaleDateString('en-GB');
-  document.getElementById('pTime').textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  document.getElementById('pTime').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-  let inputsHtml = '<table class="print-inputs-table"><thead><tr><th>Parameter</th><th>Value</th></tr></thead><tbody>';
-  let docTitle = 'TEST REPORT', testType = 'General';
+  const printInputsDiv = document.getElementById('printInputs');
+  printInputsDiv.innerHTML = '';
 
-  if (context === 'job') {
-    docTitle = 'JOB CARD';
-    testType = `${document.getElementById('jobInput').value || 'N/A'} - ${document.getElementById('opSelect').value || 'N/A'}`;
-    inputsHtml += `<tr><td>Job Number</td><td>${esc(document.getElementById('jobInput').value || '—')}</td></tr>`;
-    inputsHtml += `<tr><td>Operation</td><td>${esc(document.getElementById('opSelect').value || '—')}</td></tr>`;
-  } else if (context === 'bom') {
-    docTitle = 'BILL OF MATERIALS (BOM)';
-    testType = `${document.getElementById('bomInput').value || 'N/A'} - ${document.getElementById('bomOpSelect').value || 'All Operations'}`;
-    inputsHtml += `<tr><td>SO-ITEM</td><td>${esc(document.getElementById('bomInput').value || '—')}</td></tr>`;
-    inputsHtml += `<tr><td>Operation</td><td>${esc(document.getElementById('bomOpSelect').value || 'All Operations')}</td></tr>`;
-    const planQtyVal = document.getElementById('planQtyInput') ? document.getElementById('planQtyInput').value : '—';
-    inputsHtml += `<tr><td>Plan / Prd Qty</td><td>${esc(planQtyVal)}</td></tr>`;
-  } else if (context === 'qc') {
-    const activeTabBtn = document.querySelector('.qc-tab-btn.active');
-    const tabName = activeTabBtn ? activeTabBtn.textContent.trim() : 'QC Calculation';
-    docTitle = `${tabName.toUpperCase()} TEST REPORT`;
-    testType = tabName;
+  if (mode === 'gatepass') {
+    const deptEl = document.getElementById('gpDept');
+    const dateEl = document.getElementById('gpDate');
+    const hourEl = document.getElementById('gpHour');
+    const minEl = document.getElementById('gpMinute');
+    const apEl = document.getElementById('gpAmPm');
 
+    const dateVal = dateEl.value;
+    const hourVal = hourEl.value;
+    const minVal = minEl.value;
+    const amPmVal = apEl.value;
+
+    dateEl.classList.remove('gp-invalid');
+    if (!dateVal) {
+      dateEl.classList.add('gp-invalid');
+      alert('Please select a Date for the gate pass.');
+      dateEl.focus();
+      return;
+    }
+
+    const totalCount = GP_STANDARD_COUNT;
+    const cols = 3;
+    const rows = Math.ceil(totalCount / cols);
+
+    const companyName = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
+    const deptName = (deptEl.value || '').trim() || (localStorage.getItem('tc_gp_dept') || localStorage.getItem('tc_dept') || 'PRODUCTION').trim();
+    const displayDate = formatDateForDisplay(dateVal);
+    const displayTime = `${hourVal}:${minVal} ${amPmVal}`;
+
+    const gpArea = document.getElementById('gatePassPrintArea');
+    gpArea.style.setProperty('--gp-rows', rows);
+    gpArea.classList.toggle('gp-dense', rows > 9);
+
+    const cardsHtml = [];
+    for (let i = 1; i <= totalCount; i++) {
+      const serial = `TC-GP-${String(i).padStart(2, '0')}`;
+      cardsHtml.push(`
+        <div class="gate-pass-card">
+          <div class="gp-company">${esc(companyName)}</div>
+          ${deptName ? `<div class="gp-dept">${esc(deptName)}</div>` : ''}
+          <div class="gp-serial">${serial}</div>
+          <div class="gp-datetime">
+            <span>Date: ${esc(displayDate)}</span>
+            <span>Out: ${esc(displayTime)}</span>
+          </div>
+          <div class="gp-sig-area">
+            <div class="gp-sig-line"></div>
+            <div class="gp-sig-label">Sign</div>
+          </div>
+        </div>
+      `);
+    }
+
+    gpArea.innerHTML = cardsHtml.join('');
+
+    document.body.classList.add('printing-gatepass');
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => {
+        document.body.classList.remove('printing-gatepass');
+        gpArea.innerHTML = '';
+        gpArea.style.removeProperty('--gp-rows');
+        gpArea.classList.remove('gp-dense');
+      }, 300);
+    }, 100);
+    return;
+  }
+
+  let rowsHtml = '';
+
+  if (mode === 'job') {
+    document.getElementById('pDocTitle').textContent = 'JOB CARD';
+    document.getElementById('pTestType').textContent = 'JOB CARD DETAILS';
+    rowsHtml += `<tr><th>Job No</th><td>${esc(jobInput.value || '—')}</td></tr>`;
+    rowsHtml += `<tr><th>Operation</th><td>${esc(opSelect.value || '—')}</td></tr>`;
+  } else if (mode === 'bom') {
+    document.getElementById('pDocTitle').textContent = 'BILL OF MATERIALS (BOM)';
+    document.getElementById('pTestType').textContent = 'BOM CALCULATION';
+    rowsHtml += `<tr><th>SO-ITEM</th><td>${esc(bomInput.value || '—')}</td></tr>`;
+    rowsHtml += `<tr><th>Operation JDM</th><td>${esc(document.getElementById('bomOpSelect').value || 'All Operations')}</td></tr>`;
+    const planQtyVal = document.getElementById('planQtyInput');
+    if (planQtyVal) rowsHtml += `<tr><th>Plan / PRD Qty</th><td>${esc(planQtyVal.value || '0')}</td></tr>`;
+  } else if (mode === 'qc') {
+    const activeTab = document.querySelector('.qc-tab-btn.active');
+    const testName = activeTab ? activeTab.textContent.trim().toUpperCase() : 'QC CALCULATION';
+    document.getElementById('pDocTitle').textContent = 'QUALITY CONTROL REPORT';
+    document.getElementById('pTestType').textContent = testName;
     const activeCard = document.querySelector('.qc-card.active');
     if (activeCard) {
       activeCard.querySelectorAll('.input-group').forEach(grp => {
-        const labelEl = grp.querySelector('label');
+        const lblEl = grp.querySelector('label');
         const inputEl = grp.querySelector('input, select');
-        if (labelEl && inputEl && inputEl.offsetParent !== null) {
-          const cleanLabel = labelEl.childNodes[0].textContent.trim();
-          const val = inputEl.value !== '' ? inputEl.value : '—';
-          inputsHtml += `<tr><td>${esc(cleanLabel)}</td><td>${esc(val)}</td></tr>`;
+        if (lblEl && inputEl) {
+          const cloneLbl = lblEl.cloneNode(true);
+          const hint = cloneLbl.querySelector('.unit-hint');
+          if (hint) hint.remove();
+          let valText = inputEl.value;
+          if (inputEl.tagName === 'SELECT') valText = inputEl.options[inputEl.selectedIndex]?.text || valText;
+          if (valText !== '' && valText !== null) {
+            rowsHtml += `<tr><th>${esc(cloneLbl.textContent.trim())}</th><td>${esc(valText)}</td></tr>`;
+          }
         }
       });
     }
   }
 
-  inputsHtml += '</tbody></table>';
-  document.getElementById('pDocTitle').textContent = docTitle;
-  document.getElementById('pTestType').textContent = testType;
-  document.getElementById('printInputs').innerHTML = inputsHtml;
+  if (rowsHtml) {
+    printInputsDiv.innerHTML = `<table class="print-inputs-table">${rowsHtml}</table>`;
+  }
 
   window.print();
 };
 
-window.addEventListener('afterprint', () => {
-  document.body.classList.remove('printing-gatepass');
-  const gpArea = document.getElementById('gatePassPrintArea');
-  if (gpArea) {
-    gpArea.innerHTML = '';
-    gpArea.classList.remove('gp-dense');
-  }
-});
-
 initGatePassUI();
-renderMaintenanceUI();
-setModuleAccessFormCheckboxes(['home', 'jobcards', 'gatepass']);
 })();
 </script>
 </body>

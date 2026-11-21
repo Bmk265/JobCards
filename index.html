@@ -3132,6 +3132,14 @@ body.has-offline-banner .app { padding-top: 48px; }
     </div>
 
     <div class="profile-actions-grid">
+      <button type="button" class="profile-tile" id="profileSyncTile" onclick="handleManualSync(event)">
+        <div class="profile-tile-icon" style="background: var(--success-bg); color: var(--success-text);">🔄</div>
+        <div class="profile-tile-text">
+          <strong>Sync Data</strong>
+          <span id="profileSyncSub">Refresh users &amp; CSVs</span>
+        </div>
+      </button>
+
       <button class="profile-tile" onclick="openQrModal(event)">
         <div class="profile-tile-icon qr">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -3504,11 +3512,11 @@ function saveUsersStore(changedUserKey = null, deletedUserKey = null) {
     console.warn('Failed to save users:', e);
   }
   if (deletedUserKey) {
-    cloudPost({ action: 'deleteUser', username: deletedUserKey });
+    return cloudPost({ action: 'deleteUser', username: deletedUserKey });
   } else if (changedUserKey && USERS[changedUserKey]) {
-    cloudPost({ action: 'saveUser', username: changedUserKey, user: USERS[changedUserKey] });
+    return cloudPost({ action: 'saveUser', username: changedUserKey, user: USERS[changedUserKey] });
   } else {
-    cloudPost({ action: 'saveAllUsers', users: USERS });
+    return cloudPost({ action: 'saveAllUsers', users: USERS });
   }
 }
 
@@ -3551,12 +3559,13 @@ async function syncAllFromCloud() {
     const data = await cloudGet('getAll');
     if (!data) return false;
 
-    if (data.users && typeof data.users === 'object') {
+    if (data.users && typeof data.users === 'object' && Object.keys(data.users).length > 0) {
       const merged = loadUsersStore();
       Object.keys(data.users).forEach(rawKey => {
         const k = String(rawKey || '').trim().toLowerCase();
         if (!k) return;
         const u = data.users[rawKey];
+        if (!u || typeof u !== 'object') return;
         merged[k] = {
           name: u.name || k,
           dept: u.dept || 'General',
@@ -4209,18 +4218,32 @@ window.handleLogin = async function() {
   const p = document.getElementById('loginPass').value;
   const err = document.getElementById('loginError');
   const passInput = document.getElementById('loginPass');
+  const btn = document.getElementById('loginBtn');
+
+  if (!u) {
+    err.textContent = 'Please enter your username.';
+    err.style.display = 'block';
+    return;
+  }
+
+  USERS = loadUsersStore();
 
   if (loginStep === 1) {
     if (!USERS[u] && navigator.onLine) {
+      btn.disabled = true;
+      btn.textContent = 'Checking...';
       await syncAllFromCloud();
+      btn.disabled = false;
+      btn.textContent = 'Next';
     }
     if (USERS[u]) {
-      if (!USERS[u].pass) {
+      const savedPass = String(USERS[u].pass || '');
+      if (!savedPass) {
         completeLogin(u);
       } else {
         passInput.style.display = 'block';
         passInput.focus();
-        document.getElementById('loginBtn').textContent = 'Sign In';
+        btn.textContent = 'Sign In';
         loginStep = 2;
         err.style.display = 'none';
       }
@@ -4229,7 +4252,8 @@ window.handleLogin = async function() {
       err.style.display = 'block';
     }
   } else {
-    if (USERS[u] && p === USERS[u].pass) {
+    const savedPass = USERS[u] ? String(USERS[u].pass || '') : '';
+    if (USERS[u] && String(p) === savedPass) {
       completeLogin(u);
     } else {
       err.textContent = 'Invalid Password';
@@ -4238,7 +4262,7 @@ window.handleLogin = async function() {
   }
 };
 
-window.handleRegister = function() {
+window.handleRegister = async function() {
   const name = document.getElementById('regName').value.trim();
   const dept = document.getElementById('regDept').value.trim();
   const plant = document.getElementById('regPlant').value.trim();
@@ -4248,6 +4272,7 @@ window.handleRegister = function() {
 
   const err = document.getElementById('loginError');
   const ok = document.getElementById('loginSuccess');
+  const regBtn = document.getElementById('registerBtn');
   err.style.display = 'none';
   ok.style.display = 'none';
 
@@ -4261,6 +4286,8 @@ window.handleRegister = function() {
     err.style.display = 'block';
     return;
   }
+
+  USERS = loadUsersStore();
   if (USERS[username]) {
     err.textContent = 'This username is already taken.';
     err.style.display = 'block';
@@ -4277,17 +4304,20 @@ window.handleRegister = function() {
     return;
   }
 
+  regBtn.disabled = true;
+  regBtn.textContent = 'Creating Account...';
+
   USERS[username] = {
     name,
     dept,
     plant,
     phone: '',
     email: '',
-    pass,
-    role: '',
+    pass: String(pass),
+    role: 'Operator',
     views: ['home', 'jobcards', 'gatepass']
   };
-  saveUsersStore(username);
+  await saveUsersStore(username);
 
   document.getElementById('regName').value = '';
   document.getElementById('regDept').value = '';
@@ -4296,9 +4326,12 @@ window.handleRegister = function() {
   document.getElementById('regPass').value = '';
   document.getElementById('regConfirmPass').value = '';
 
+  regBtn.disabled = false;
+  regBtn.textContent = 'Create Account';
+
   ok.textContent = `Registration successful for @${username}. Signing you in...`;
   ok.style.display = 'block';
-  setTimeout(() => completeLogin(username), 450);
+  setTimeout(() => completeLogin(username), 400);
 };
 
 function completeLogin(u) {
@@ -4433,6 +4466,22 @@ async function refreshData() {
 }
 
 window.refreshData = refreshData;
+
+window.handleManualSync = async function(event) {
+  if (event) event.stopPropagation();
+  const sub = document.getElementById('profileSyncSub');
+  if (!navigator.onLine) {
+    setSyncState('offline');
+    if (sub) sub.textContent = 'Offline — cached only';
+    return;
+  }
+  if (sub) sub.textContent = 'Syncing...';
+  const ok = await refreshData();
+  if (sub) {
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    sub.textContent = ok ? `Synced at ${timeStr}` : 'Partial sync — tap to retry';
+  }
+};
 
 window.addEventListener('online', () => {
   console.log('[sync] Back online — refreshing data');
@@ -4572,7 +4621,7 @@ window.closeFeedbackModal = function(event) {
   document.getElementById('feedbackModal').classList.remove('open');
 };
 
-window.submitFeedback = function() {
+window.submitFeedback = async function() {
   const typeEl = document.getElementById('fbType');
   const modEl = document.getElementById('fbModule');
   const msgEl = document.getElementById('fbMessage');
@@ -4583,6 +4632,15 @@ window.submitFeedback = function() {
     return;
   }
 
+  const uKey = String(CURRENT_USER || 'guest').trim().toLowerCase();
+  const uProfile = (USERS && USERS[uKey]) ? USERS[uKey] : {};
+  const userName = String(uProfile.name || uKey || 'Guest').trim();
+  const userDept = String(uProfile.dept || '-').trim() || '-';
+  const userPlant = String(uProfile.plant || '-').trim() || '-';
+  const userPhone = String(uProfile.phone || '-').trim() || '-';
+  const userEmail = String(uProfile.email || '-').trim() || '-';
+  const timestamp = new Date().toLocaleString('en-GB', { hour12: false });
+
   let items = [];
   try {
     items = JSON.parse(localStorage.getItem('tc_feedback')) || [];
@@ -4590,19 +4648,43 @@ window.submitFeedback = function() {
     items = [];
   }
 
-  items.unshift({
+  const entry = {
     id: Date.now(),
-    type: typeEl.value,
-    module: modEl.value,
+    type: String(typeEl.value || 'Feedback'),
+    module: String(modEl.value || 'General'),
     message: msg,
-    user: CURRENT_USER || 'guest',
-    createdAt: new Date().toLocaleString()
-  });
+    details: msg,
+    user: uKey,
+    username: uKey,
+    name: userName,
+    submittedBy: `${userName} (@${uKey})`,
+    department: userDept,
+    dept: userDept,
+    plant: userPlant,
+    phone: userPhone,
+    email: userEmail,
+    createdAt: timestamp
+  };
 
-  const entry = items[0];
+  items.unshift(entry);
+
   try {
     localStorage.setItem('tc_feedback', JSON.stringify(items.slice(0, 50)));
-    cloudPost({ action: 'addFeedback', feedback: entry });
+    await cloudPost({
+      action: 'addFeedback',
+      feedback: entry,
+      type: entry.type,
+      module: entry.module,
+      name: userName,
+      username: uKey,
+      department: userDept,
+      plant: userPlant,
+      phone: userPhone,
+      email: userEmail,
+      details: msg,
+      message: msg,
+      time: timestamp
+    });
   } catch (e) {
     console.warn('Could not persist feedback:', e);
   }
@@ -4630,7 +4712,7 @@ function renderFeedbackHistory() {
   listEl.innerHTML = items.slice(0, 8).map(item => `
     <div class="feedback-log-item">
       <div class="feedback-log-meta">
-        <span>${esc(item.type)} • ${esc(item.module)} (${esc(item.user)})</span>
+        <span>${esc(item.type)} • ${esc(item.module)} (${esc(typeof item.user === 'object' ? (item.user.name || item.user.username || 'user') : item.user)})</span>
         <span>${esc(item.createdAt)}</span>
       </div>
       <div style="color:var(--text-primary);white-space:pre-wrap;">${esc(item.message)}</div>

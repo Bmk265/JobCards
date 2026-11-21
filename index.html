@@ -3453,13 +3453,11 @@ async function registerUserToCloud(userDetails) {
     });
 
     const result = await response.json();
-    if (result.status === "success" || result.status === "exists") {
-      localStorage.setItem("currentUser", JSON.stringify(payload));
-      return result;
-    } else {
-      console.warn("Registration cloud warning:", result.message);
-      return result;
+    localStorage.setItem("currentUser", JSON.stringify(payload));
+    if (typeof window.syncAllFromCloud === "function") {
+      await window.syncAllFromCloud();
     }
+    return result;
   } catch (error) {
     console.error("Registration cloud sync failed (saved locally):", error);
     return null;
@@ -3469,21 +3467,27 @@ async function registerUserToCloud(userDetails) {
 // 2. Call this when Admin opens the Admin Panel (or clicks Refresh)
 async function loadUsersForAdmin() {
   try {
-    const response = await fetch(SCRIPT_URL);
+    if (typeof window.syncAllFromCloud === "function") {
+      await window.syncAllFromCloud();
+    }
+    const url = SCRIPT_URL + (SCRIPT_URL.includes("?") ? "&" : "?") + "action=users&_t=" + Date.now();
+    const response = await fetch(url);
     const result = await response.json();
 
-    if (result.status === "success" && Array.isArray(result.users)) {
+    if (result && Array.isArray(result.users)) {
       console.log("Live users from Google Sheet:", result.users);
       if (typeof window.mergeCloudUsersIntoStore === "function") {
-        window.mergeCloudUsersIntoStore(result.users);
+        window.mergeCloudUsersIntoStore(result.users, true);
       }
+    }
+    if (typeof renderAdminUserList === "function") {
       renderAdminUserList();
-    } else if (result.message) {
-      alert("Could not load users: " + result.message);
     }
   } catch (error) {
     console.error("Failed to fetch users:", error);
-    renderAdminUserList();
+    if (typeof renderAdminUserList === "function") {
+      renderAdminUserList();
+    }
   }
 }
 
@@ -3577,18 +3581,69 @@ function loadUsersStore() {
   return base;
 }
 
-function saveUsersStore(changedUserKey = null, deletedUserKey = null) {
+function getDeletedUsersSet() {
+  try {
+    const arr = JSON.parse(localStorage.getItem('tc_deleted_users')) || [];
+    return new Set(arr.map(x => String(x || '').trim().toLowerCase()).filter(Boolean));
+  } catch (e) {
+    return new Set();
+  }
+}
+
+function setDeletedUserFlag(username, removeFlag = false) {
+  const k = String(username || '').trim().toLowerCase();
+  if (!k || k === 'admin') return;
+  const set = getDeletedUsersSet();
+  if (removeFlag) set.delete(k);
+  else set.add(k);
+  try {
+    localStorage.setItem('tc_deleted_users', JSON.stringify(Array.from(set)));
+  } catch (e) {
+    console.warn('Failed to persist deleted users list:', e);
+  }
+}
+
+function normalizeUserObj(rawKey, u, prev = {}) {
+  const k = String(rawKey || '').trim().toLowerCase();
+  let parsedViews = null;
+  if (Array.isArray(u && u.views)) {
+    parsedViews = sanitizeViews(u.views);
+  } else if (typeof (u && u.views) === 'string' && u.views.trim()) {
+    parsedViews = sanitizeViews(u.views.split(',').map(v => v.trim().toLowerCase()));
+  }
+  const hasExplicitPass = u && Object.prototype.hasOwnProperty.call(u, 'pass');
+  const resolvedPass = hasExplicitPass ? String(u.pass ?? '') : (prev.pass || '');
+  const hasExplicitRole = u && Object.prototype.hasOwnProperty.call(u, 'role');
+  const resolvedRole = hasExplicitRole ? String(u.role ?? '') : (prev.role || '');
+
+  return {
+    name: (u && u.name) || prev.name || k,
+    dept: (u && (u.dept || u.department)) || prev.dept || 'General',
+    plant: (u && u.plant) || prev.plant || 'Main Plant',
+    phone: (u && u.phone !== undefined && u.phone !== '') ? String(u.phone) : (prev.phone || ''),
+    email: (u && u.email !== undefined && u.email !== '') ? String(u.email) : (prev.email || ''),
+    pass: resolvedPass,
+    role: resolvedRole,
+    views: (parsedViews && parsedViews.length > 0)
+      ? parsedViews
+      : (Array.isArray(prev.views) && prev.views.length > 0 ? sanitizeViews(prev.views) : ['home', 'jobcards', 'gatepass'])
+  };
+}
+
+async function saveUsersStore(changedUserKey = null, deletedUserKey = null) {
   try {
     localStorage.setItem('tc_users', JSON.stringify(USERS));
   } catch (e) {
     console.warn('Failed to save users:', e);
   }
   if (deletedUserKey) {
-    cloudPost({ action: 'deleteUser', username: deletedUserKey });
+    setDeletedUserFlag(deletedUserKey, false);
+    await cloudPost({ action: 'deleteUser', username: deletedUserKey });
   } else if (changedUserKey && USERS[changedUserKey]) {
-    cloudPost({ action: 'saveUser', username: changedUserKey, user: USERS[changedUserKey] });
+    setDeletedUserFlag(changedUserKey, true);
+    await cloudPost({ action: 'saveUser', username: changedUserKey, user: USERS[changedUserKey] });
   } else {
-    cloudPost({ action: 'saveAllUsers', users: USERS });
+    await cloudPost({ action: 'saveAllUsers', users: USERS });
   }
 }
 
@@ -3631,26 +3686,28 @@ async function syncAllFromCloud() {
     if (!data) return false;
 
     if (data.users && typeof data.users === 'object') {
-      const merged = loadUsersStore();
-      Object.keys(data.users).forEach(rawKey => {
-        const k = String(rawKey || '').trim().toLowerCase();
-        if (!k) return;
-        const u = data.users[rawKey];
-        const prev = merged[k] || {};
-        merged[k] = {
-          name: u.name || prev.name || k,
-          dept: u.dept || u.department || prev.dept || 'General',
-          plant: u.plant || prev.plant || 'Main Plant',
-          phone: u.phone !== undefined && u.phone !== '' ? u.phone : (prev.phone || ''),
-          email: u.email !== undefined && u.email !== '' ? u.email : (prev.email || ''),
-          pass: (u.pass !== undefined && u.pass !== '') ? u.pass : (prev.pass || ''),
-          role: (u.role !== undefined && u.role !== '') ? u.role : (prev.role || ''),
-          views: (Array.isArray(u.views) && u.views.length > 0)
-            ? sanitizeViews(u.views)
-            : (Array.isArray(prev.views) && prev.views.length > 0 ? sanitizeViews(prev.views) : ['home', 'jobcards', 'gatepass'])
-        };
+      const deletedSet = getDeletedUsersSet();
+      const nextUsers = {};
+      Object.keys(DEFAULT_USERS).forEach(dk => {
+        nextUsers[dk] = { ...DEFAULT_USERS[dk], views: [...DEFAULT_USERS[dk].views] };
       });
-      USERS = merged;
+
+      if (Array.isArray(data.users)) {
+        data.users.forEach(u => {
+          const k = String((u && (u.username || u.name)) || '').trim().toLowerCase();
+          if (!k || deletedSet.has(k)) return;
+          nextUsers[k] = normalizeUserObj(k, u, USERS[k] || nextUsers[k] || {});
+        });
+      } else {
+        Object.keys(data.users).forEach(rawKey => {
+          const k = String(rawKey || '').trim().toLowerCase();
+          if (!k || deletedSet.has(k)) return;
+          const u = data.users[rawKey];
+          nextUsers[k] = normalizeUserObj(k, u, USERS[k] || nextUsers[k] || {});
+        });
+      }
+
+      USERS = nextUsers;
       localStorage.setItem('tc_users', JSON.stringify(USERS));
     }
 
@@ -4018,7 +4075,7 @@ window.editAdminUser = function(username) {
   document.getElementById('admUserName').focus();
 };
 
-window.deleteAdminUser = function(username) {
+window.deleteAdminUser = async function(username) {
   if (!isAdminUser()) return;
   const key = String(username || '').toLowerCase();
   if (key === 'admin') {
@@ -4032,11 +4089,12 @@ window.deleteAdminUser = function(username) {
   if (!confirm(`Delete user "@${key}"?`)) return;
 
   delete USERS[key];
-  saveUsersStore(null, key);
+  await saveUsersStore(null, key);
+  await syncAllFromCloud();
   renderAdminUserList();
 };
 
-window.saveAdminUser = function() {
+window.saveAdminUser = async function() {
   if (!isAdminUser()) {
     alert('Only Admin can manage users.');
     return;
@@ -4054,7 +4112,7 @@ window.saveAdminUser = function() {
   const selectedViews = getSelectedModuleAccessFromForm();
 
   if (!name) {
-    alert('Please enter the user\'s Name.');
+    alert("Please enter the user's Name.");
     document.getElementById('admUserName').focus();
     return;
   }
@@ -4080,6 +4138,7 @@ window.saveAdminUser = function() {
   const targetKey = origKey || username;
   if (origKey && origKey !== username && origKey !== 'admin') {
     delete USERS[origKey];
+    await saveUsersStore(null, origKey);
   }
 
   const existing = USERS[targetKey] || {};
@@ -4097,8 +4156,9 @@ window.saveAdminUser = function() {
     views: finalViews
   };
 
-  saveUsersStore(targetKey);
-  if (targetKey === CURRENT_USER) {
+  await saveUsersStore(targetKey);
+  await syncAllFromCloud();
+  if (targetKey === CURRENT_USER && USERS[targetKey]) {
     CURRENT_ROLE = USERS[targetKey].role;
     ALLOWED_VIEWS = [...USERS[targetKey].views];
     applyAllowedNavigation();
@@ -4112,39 +4172,32 @@ window.saveAdminUser = function() {
   alert(origKey ? `User "@${targetKey}" updated.` : `User "@${targetKey}" created.`);
 };
 
-function mergeCloudUsersIntoStore(cloudUsers) {
+function mergeCloudUsersIntoStore(cloudUsers, authoritativeList = false) {
   if (!Array.isArray(cloudUsers)) return;
-  let changed = false;
-  cloudUsers.forEach(u => {
-    const rawKey = String(u.username || u.name || '').trim().toLowerCase();
-    if (!rawKey) return;
-    const prev = USERS[rawKey] || {};
-    let parsedViews = null;
-    if (Array.isArray(u.views)) {
-      parsedViews = sanitizeViews(u.views);
-    } else if (typeof u.views === 'string' && u.views.trim()) {
-      parsedViews = sanitizeViews(u.views.split(',').map(v => v.trim().toLowerCase()));
-    }
-    USERS[rawKey] = {
-      name: u.name || prev.name || rawKey,
-      dept: u.department || u.dept || prev.dept || 'General',
-      plant: u.plant || prev.plant || 'Main Plant',
-      phone: u.phone || prev.phone || '',
-      email: u.email || prev.email || '',
-      pass: (u.pass !== undefined && u.pass !== '') ? String(u.pass) : (prev.pass || ''),
-      role: (u.role !== undefined && u.role !== '') ? String(u.role) : (prev.role || ''),
-      views: (parsedViews && parsedViews.length > 0)
-        ? parsedViews
-        : (Array.isArray(prev.views) && prev.views.length > 0 ? sanitizeViews(prev.views) : ['home', 'jobcards', 'gatepass'])
-    };
-    changed = true;
+  const deletedSet = getDeletedUsersSet();
+  const nextUsers = {};
+  Object.keys(DEFAULT_USERS).forEach(dk => {
+    nextUsers[dk] = { ...DEFAULT_USERS[dk], views: [...DEFAULT_USERS[dk].views] };
   });
-  if (changed) {
-    try {
-      localStorage.setItem('tc_users', JSON.stringify(USERS));
-    } catch (e) {
-      console.warn('Failed to cache merged users:', e);
-    }
+
+  if (!authoritativeList) {
+    Object.keys(USERS).forEach(k => {
+      if (!deletedSet.has(k)) nextUsers[k] = USERS[k];
+    });
+  }
+
+  cloudUsers.forEach(u => {
+    const rawKey = String((u && (u.username || u.name)) || '').trim().toLowerCase();
+    if (!rawKey || deletedSet.has(rawKey)) return;
+    const prev = USERS[rawKey] || nextUsers[rawKey] || {};
+    nextUsers[rawKey] = normalizeUserObj(rawKey, u, prev);
+  });
+
+  USERS = nextUsers;
+  try {
+    localStorage.setItem('tc_users', JSON.stringify(USERS));
+  } catch (e) {
+    console.warn('Failed to cache merged users:', e);
   }
 }
 window.mergeCloudUsersIntoStore = mergeCloudUsersIntoStore;
@@ -4409,7 +4462,7 @@ window.handleRegister = async function() {
     views: ['home', 'jobcards', 'gatepass']
   };
   USERS[username] = newUserRecord;
-  saveUsersStore(username);
+  await saveUsersStore(username);
 
   await registerUserToCloud({
     username,
@@ -4582,6 +4635,18 @@ window.addEventListener('offline', () => {
 });
 
 window.handleLogout = function() { localStorage.removeItem('tc_user'); location.reload(); };
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && navigator.onLine && CURRENT_USER) {
+    refreshData();
+  }
+});
+
+window.addEventListener('focus', () => {
+  if (navigator.onLine && CURRENT_USER && !isSyncing) {
+    refreshData();
+  }
+});
 
 window.addEventListener('load', async () => {
   document.getElementById('loginUser').addEventListener('input', () => {

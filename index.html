@@ -5236,7 +5236,8 @@ function normalizeParsedRows(rows) {
     .map(r => {
       const clean = {};
       Object.keys(r || {}).forEach(k => {
-        if (k && k.trim()) clean[k.trim()] = String(r[k] ?? '').trim();
+        const cleanKey = String(k || '').replace(/^\uFEFF/, '').trim();
+        if (cleanKey) clean[cleanKey] = String(r[k] ?? '').trim();
       });
       return clean;
     })
@@ -5458,6 +5459,9 @@ function renderJobResults() {
   }
 
   let rows = JOB_DATA.filter(r => getJobNo(r).toLowerCase() === jVal.toLowerCase());
+  if (!rows.length) {
+    rows = JOB_DATA.filter(r => getJobNo(r).toLowerCase().includes(jVal.toLowerCase()));
+  }
   if (opVal && opVal !== '__ALL__') {
     rows = rows.filter(r => getOpName(r) === opVal);
   }
@@ -5506,6 +5510,14 @@ jobInput.addEventListener('focus', () => showJobSuggestions(jobInput.value));
 jobInput.addEventListener('input', () => {
   showJobSuggestions(jobInput.value);
   populateJobOperations(jobInput.value);
+});
+jobInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    suggestBox.classList.remove('open');
+    populateJobOperations(jobInput.value);
+    renderJobResults();
+  }
 });
 suggestBox.addEventListener('click', e => {
   const item = e.target.closest('.suggest-item');
@@ -5610,6 +5622,9 @@ function renderBomResults() {
   }
 
   let rows = BOM_DATA.filter(r => getBomKey(r).toLowerCase() === bVal.toLowerCase());
+  if (!rows.length) {
+    rows = BOM_DATA.filter(r => getBomKey(r).toLowerCase().includes(bVal.toLowerCase()));
+  }
   if (jdmVal && jdmVal !== '__ALL__') {
     rows = rows.filter(r => getBomJdm(r) === jdmVal);
   }
@@ -5683,6 +5698,14 @@ bomInput.addEventListener('focus', () => showBomSuggestions(bomInput.value));
 bomInput.addEventListener('input', () => {
   showBomSuggestions(bomInput.value);
   populateBomOperations(bomInput.value);
+});
+bomInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    bomSuggestBox.classList.remove('open');
+    populateBomOperations(bomInput.value);
+    renderBomResults();
+  }
 });
 bomSuggestBox.addEventListener('click', e => {
   const item = e.target.closest('.suggest-item');

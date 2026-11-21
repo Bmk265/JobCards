@@ -97,12 +97,13 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.5s var(--ease-smooth), visibility 0.5s var(--ease-smooth);
+  transition: opacity 0.35s var(--ease-smooth), visibility 0.35s var(--ease-smooth);
 }
 #globalLoader.hidden {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+  display: none;
 }
 .loader-wrapper {
   display: flex;
@@ -132,15 +133,15 @@ body {
 }
 .mesh-wire {
   stroke-dasharray: 2500;
-  animation: drawMesh 4.5s ease-in-out forwards;
+  animation: drawMesh 1.4s ease-in-out forwards;
 }
 @keyframes dropCross {
-  0%, 35% { transform: translateY(-120px); opacity: 0; }
-  50% { transform: translateY(0px); opacity: 1; }
+  0%, 25% { transform: translateY(-120px); opacity: 0; }
+  45% { transform: translateY(0px); opacity: 1; }
   100% { transform: translateY(0px); opacity: 1; }
 }
 .red-cross {
-  animation: dropCross 4.5s var(--ease-smooth) forwards;
+  animation: dropCross 1.4s var(--ease-smooth) forwards;
 }
 @keyframes currentPulse {
   0%, 100% { filter: drop-shadow(0 0 0px rgba(227, 24, 24, 0)); }
@@ -148,7 +149,7 @@ body {
 }
 .pulse-glow {
   animation: currentPulse 2s ease-in-out infinite;
-  animation-delay: 4.5s;
+  animation-delay: 1.4s;
 }
 .company-text {
   display: flex;
@@ -166,24 +167,23 @@ body {
 .company-text span {
   display: inline-block;
   opacity: 0;
-  transform: translateX(100vw);
-  animation: trainEnter 4s var(--ease-smooth) forwards;
+  transform: translateX(40px);
+  animation: trainEnter 0.8s var(--ease-smooth) forwards;
 }
-.company-text span:nth-child(1) { animation-delay: 1.5s; }
-.company-text span:nth-child(2) { animation-delay: 1.6s; }
-.company-text span:nth-child(3) { animation-delay: 1.7s; }
-.company-text span:nth-child(4) { animation-delay: 1.8s; }
-.company-text span:nth-child(5) { animation-delay: 1.9s; }
-.company-text span:nth-child(6) { animation-delay: 2.0s; }
-.company-text span:nth-child(7) { animation-delay: 2.1s; }
-.company-text span:nth-child(8) { animation-delay: 2.2s; }
-.company-text span:nth-child(9) { animation-delay: 2.3s; }
-.company-text span:nth-child(10) { animation-delay: 2.4s; }
-.company-text span:nth-child(11) { animation-delay: 2.5s; }
-.company-text span:nth-child(12) { animation-delay: 2.6s; }
+.company-text span:nth-child(1) { animation-delay: 0.10s; }
+.company-text span:nth-child(2) { animation-delay: 0.14s; }
+.company-text span:nth-child(3) { animation-delay: 0.18s; }
+.company-text span:nth-child(4) { animation-delay: 0.22s; }
+.company-text span:nth-child(5) { animation-delay: 0.26s; }
+.company-text span:nth-child(6) { animation-delay: 0.30s; }
+.company-text span:nth-child(7) { animation-delay: 0.34s; }
+.company-text span:nth-child(8) { animation-delay: 0.38s; }
+.company-text span:nth-child(9) { animation-delay: 0.42s; }
+.company-text span:nth-child(10) { animation-delay: 0.46s; }
+.company-text span:nth-child(11) { animation-delay: 0.50s; }
+.company-text span:nth-child(12) { animation-delay: 0.54s; }
 @keyframes trainEnter {
-  0% { opacity: 0; transform: translateX(100vw); }
-  10% { opacity: 1; }
+  0% { opacity: 0; transform: translateX(40px); }
   100% { opacity: 1; transform: translateX(0); }
 }
 .underline-glow {
@@ -195,8 +195,8 @@ body {
   height: 2.5px;
   background: #e31818;
   border-radius: 999px;
-  animation: expandLine 1.5s var(--ease-smooth) forwards;
-  animation-delay: 2.8s;
+  animation: expandLine 0.7s var(--ease-smooth) forwards;
+  animation-delay: 0.65s;
 }
 @keyframes expandLine {
   0% { width: 0%; opacity: 0; }
@@ -840,7 +840,6 @@ body {
   box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
 }
 
-/* Maintenance Block Overlay / Card for Active Modules */
 .maintenance-notice-card {
   background: var(--bg-surface);
   border: 1.5px solid var(--warning-border);
@@ -2874,13 +2873,11 @@ body.has-offline-banner .app { padding-top: 48px; }
   </div>
   <div class="print-inputs-section" id="printInputs"></div>
 
-  <!-- Global Whole-App Maintenance Block (Shown for non-admin users when app is in maintenance) -->
   <div id="globalAppMaintenanceView" style="display: none;"></div>
 
   <div class="view-section active" id="view-home">
     <div id="homeMaintenanceNotice"></div>
     <div id="homeContentWrap">
-      <!-- Promotional Banner -->
       <div id="promoBanner" class="promo-banner" style="display: none;" onclick="handleBannerClick(event)"></div>
 
       <div class="dashboard-hero">
@@ -2996,7 +2993,6 @@ body.has-offline-banner .app { padding-top: 48px; }
     </div>
   </div>
 
-
   <div class="view-section" id="view-qccalc">
     <div id="qccalcMaintenanceNotice"></div>
     <div id="qccalcContentWrap">
@@ -3025,7 +3021,6 @@ body.has-offline-banner .app { padding-top: 48px; }
         </div>
       </div>
 
-      <!-- 1. CR CALC & UNBALANCE (Combined) -->
       <div class="qc-card active" id="qc-card-cr">
         <div class="qc-card-body">
           <div class="result-title-bar">CR UNBALANCE</div>
@@ -3168,7 +3163,6 @@ body.has-offline-banner .app { padding-top: 48px; }
         </div>
       </div>
 
-      <!-- 2. ARMOUR COVERAGE (New) -->
       <div class="qc-card" id="qc-card-armcov">
         <div class="qc-card-body">
           <div class="input-group"><label>Cable Dia (mm)</label><input type="number" id="covCableDia" step="any" placeholder="" oninput="calculateArmCov()"></div>
@@ -3257,7 +3251,6 @@ body.has-offline-banner .app { padding-top: 48px; }
       </div>
     </div>
 
-    <!-- User Profile Contact & Account Management -->
     <div class="maint-card" id="userContactCard">
       <div class="maint-header">
         <h3>👤 My Profile &amp; Contact</h3>
@@ -3330,7 +3323,6 @@ body.has-offline-banner .app { padding-top: 48px; }
       </button>
     </div>
 
-    <!-- Admin User Management (Create / Edit / Delete + Module Access) -->
     <div class="maint-card" id="adminUserMgmtCard" style="display: none;">
       <div class="maint-header">
         <h3>👥 Manage Users &amp; Module Access</h3>
@@ -3411,7 +3403,6 @@ body.has-offline-banner .app { padding-top: 48px; }
       <div id="adminUserList"></div>
     </div>
 
-    <!-- Maintenance Mode Manager (Shows only active maintenance items; Admin can enable/disable) -->
     <div class="maint-card" id="maintenanceSection">
       <div class="maint-header">
         <h3>🛠️ Maintenance Mode</h3>
@@ -3490,7 +3481,6 @@ body.has-offline-banner .app { padding-top: 48px; }
   </div>
 </div>
 
-<!-- QR MODAL -->
 <div class="modal-overlay" id="qrModal" onclick="closeQrModal(event)">
   <div class="modal-content" onclick="event.stopPropagation()" style="text-align: center;">
     <button class="modal-close" onclick="closeQrModal(event)">✕</button>
@@ -3505,7 +3495,6 @@ body.has-offline-banner .app { padding-top: 48px; }
   </div>
 </div>
 
-<!-- BANNER MANAGEMENT MODAL -->
 <div class="modal-overlay" id="bannerModal" onclick="closeBannerModal(event)">
   <div class="modal-content" onclick="event.stopPropagation()">
     <button class="modal-close" onclick="closeBannerModal(event)">✕</button>
@@ -3533,7 +3522,6 @@ body.has-offline-banner .app { padding-top: 48px; }
   </div>
 </div>
 
-<!-- REPORT ISSUE / SUGGEST IMPROVEMENT MODAL -->
 <div class="modal-overlay" id="feedbackModal" onclick="closeFeedbackModal(event)">
   <div class="modal-content" onclick="event.stopPropagation()">
     <button class="modal-close" onclick="closeFeedbackModal(event)">✕</button>
@@ -3579,16 +3567,17 @@ function hideGlobalLoader() {
   if (loader) {
     loader.classList.add('hidden');
     loader.style.display = 'none';
+    loader.style.opacity = '0';
+    loader.style.visibility = 'hidden';
   }
 }
 
-/* --- SAFETY: Force hide loader quickly on DOMContentLoaded and load --- */
-window.addEventListener('DOMContentLoaded', () => {
-  setTimeout(hideGlobalLoader, 1500);
-});
-
+/* Guarantee the splash loader never stays stuck */
+setTimeout(hideGlobalLoader, 1300);
+window.addEventListener('DOMContentLoaded', () => setTimeout(hideGlobalLoader, 400));
 window.addEventListener('load', () => {
-  setTimeout(hideGlobalLoader, 1500);
+  hideGlobalLoader();
+  initAppBoot();
 });
 
 /* --- SERVICE WORKER REGISTRATION (OFFLINE SUPPORT) --- */
@@ -3598,7 +3587,6 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
     try {
       SW_REGISTRATION = await navigator.serviceWorker.register('sw.js', { scope: './' });
-      console.log('[SW] Registered, scope:', SW_REGISTRATION.scope);
       SW_REGISTRATION.update().catch(() => {});
     } catch (err) {
       console.warn('[SW] Registration failed:', err);
@@ -3615,11 +3603,9 @@ let CURRENT_USER = '', CURRENT_ROLE = '', ALLOWED_VIEWS = [];
 let JOB_DATA = [], BOM_DATA = [], DRUM_DATA = [], USER_PLAN_QTY = null;
 let loginStep = 1;
 
-/* --- STANDARD GATE PASS COUNT: 3 x 9 = 27 --- */
 const GP_STANDARD_COUNT = 27;
 const ALL_MODULE_KEYS = ['home', 'jobcards', 'bom', 'drumreq', 'qccalc', 'gatepass'];
 
-/* --- DEFAULT & PERSISTED USERS STORE --- */
 const DEFAULT_USERS = {
   'admin':      { name: 'Administrator', dept: 'Administration', plant: 'Main Plant', phone: '', email: '', pass: 'Admin@Tcl',     role: 'Admin',      views: ['home', 'jobcards', 'bom', 'drumreq', 'qccalc', 'gatepass'] },
   'rakesh':     { name: 'Rakesh',        dept: 'Operations',     plant: 'Main Plant', phone: '', email: '', pass: 'Rakesh@Tcl',    role: 'Manager',    views: ['home', 'jobcards', 'bom', 'drumreq', 'gatepass'] },
@@ -3730,12 +3716,8 @@ function renderMaintenanceUI() {
   if (!listEl) return;
 
   const canEdit = isAdminUser();
-  if (badgeEl) {
-    badgeEl.textContent = canEdit ? 'Admin Editable' : 'Active Notices';
-  }
-  if (saveBtn) {
-    saveBtn.style.display = canEdit ? 'block' : 'none';
-  }
+  if (badgeEl) badgeEl.textContent = canEdit ? 'Admin Editable' : 'Active Notices';
+  if (saveBtn) saveBtn.style.display = canEdit ? 'block' : 'none';
 
   const activeScopes = MAINT_SCOPES.filter(({ key }) => Boolean(MAINTENANCE_STATE[key] && MAINTENANCE_STATE[key].active));
   const inactiveScopes = MAINT_SCOPES.filter(({ key }) => !(MAINTENANCE_STATE[key] && MAINTENANCE_STATE[key].active));
@@ -3809,9 +3791,7 @@ window.toggleMaintenanceScope = function(key) {
   MAINTENANCE_STATE[key].active = !MAINTENANCE_STATE[key].active;
 
   const remarkInput = document.getElementById(`maint-remark-${key}`);
-  if (remarkInput) {
-    MAINTENANCE_STATE[key].remark = remarkInput.value;
-  }
+  if (remarkInput) MAINTENANCE_STATE[key].remark = remarkInput.value;
   localStorage.setItem('tc_maintenance', JSON.stringify(MAINTENANCE_STATE));
   renderMaintenanceUI();
 };
@@ -3824,9 +3804,7 @@ window.saveMaintenanceSettings = function() {
   MAINT_SCOPES.forEach(({ key }) => {
     const input = document.getElementById(`maint-remark-${key}`);
     if (!MAINTENANCE_STATE[key]) MAINTENANCE_STATE[key] = { active: false, remark: '' };
-    if (input) {
-      MAINTENANCE_STATE[key].remark = input.value.trim();
-    }
+    if (input) MAINTENANCE_STATE[key].remark = input.value.trim();
   });
   localStorage.setItem('tc_maintenance', JSON.stringify(MAINTENANCE_STATE));
   renderMaintenanceUI();
@@ -4098,12 +4076,8 @@ window.saveAdminUser = function() {
     applyAllowedNavigation();
     renderProfileContactCard();
   }
-  if (finalViews.includes('bom')) {
-    loadBomDataFromCSV();
-  }
-  if (finalViews.includes('drumreq')) {
-    loadDrumDataFromFile();
-  }
+  if (finalViews.includes('bom')) loadBomDataFromCSV();
+  if (finalViews.includes('drumreq')) loadDrumDataFromFile();
   renderAdminUserList();
   resetAdminUserForm();
   alert(origKey ? `User "@${targetKey}" updated.` : `User "@${targetKey}" created.`);
@@ -4159,14 +4133,12 @@ let BANNERS = JSON.parse(localStorage.getItem('tc_banners')) || [];
 let CURRENT_BANNER_IDX = 0;
 let BANNER_INTERVAL = null;
 
-/* ---- Date/time formatting helpers ---- */
 function formatDateForDisplay(isoDate) {
   if (!isoDate) return '';
   const [y, m, d] = isoDate.split('-');
   return `${d}/${m}/${y}`;
 }
 
-/* ---- Gate Pass UI: populate dropdowns, defaults, live preview ---- */
 function initGatePassUI() {
   const hourSel = document.getElementById('gpHour');
   const minSel = document.getElementById('gpMinute');
@@ -4365,60 +4337,66 @@ window.handleRegister = function() {
 
   ok.textContent = `Registration successful for @${username}. Signing you in...`;
   ok.style.display = 'block';
-  setTimeout(() => completeLogin(username), 450);
+  setTimeout(() => completeLogin(username), 300);
 };
 
 function completeLogin(u) {
   CURRENT_USER = u;
   hideGlobalLoader();
 
-  const userRec = USERS[u] || { role: '', views: ['home', 'jobcards', 'gatepass'] };
-  CURRENT_ROLE = userRec.role || '';
-  ALLOWED_VIEWS = Array.isArray(userRec.views) ? sanitizeViews(userRec.views) : ['home', 'jobcards', 'gatepass'];
-  localStorage.setItem('tc_user', u);
+  try {
+    const userRec = USERS[u] || { role: '', views: ['home', 'jobcards', 'gatepass'] };
+    CURRENT_ROLE = userRec.role || '';
+    ALLOWED_VIEWS = Array.isArray(userRec.views) ? sanitizeViews(userRec.views) : ['home', 'jobcards', 'gatepass'];
+    localStorage.setItem('tc_user', u);
 
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('appContainer').style.display = 'block';
+    const loginScreen = document.getElementById('loginScreen');
+    const appContainer = document.getElementById('appContainer');
+    if (loginScreen) loginScreen.style.display = 'none';
+    if (appContainer) appContainer.style.display = 'block';
 
-  renderProfileContactCard();
-  applyAllowedNavigation();
+    renderProfileContactCard();
+    applyAllowedNavigation();
 
-  if (isAdminUser()) {
-    document.getElementById('adminPanel').style.display = 'block';
-    document.getElementById('profileBannerTile').style.display = 'flex';
-    loadAdminSettings();
-    renderAdminUserList();
-  } else {
-    document.getElementById('adminPanel').style.display = 'none';
-    document.getElementById('profileBannerTile').style.display = 'none';
-    document.getElementById('adminUserMgmtCard').style.display = 'none';
+    if (isAdminUser()) {
+      document.getElementById('adminPanel').style.display = 'block';
+      document.getElementById('profileBannerTile').style.display = 'flex';
+      loadAdminSettings();
+      renderAdminUserList();
+    } else {
+      document.getElementById('adminPanel').style.display = 'none';
+      document.getElementById('profileBannerTile').style.display = 'none';
+      document.getElementById('adminUserMgmtCard').style.display = 'none';
+    }
+
+    MAINTENANCE_STATE = loadMaintenanceState();
+    renderMaintenanceUI();
+
+    document.getElementById('welcomeName').textContent = userRec.name || CURRENT_ROLE || CURRENT_USER;
+    document.getElementById('headerTitle').textContent = 'Thermocables';
+
+    const now = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('dashDate').textContent = now.toLocaleDateString('en-US', options);
+
+    const hr = now.getHours();
+    let greeting = 'Good Evening';
+    if (hr < 12) greeting = 'Good Morning';
+    else if (hr < 17) greeting = 'Good Afternoon';
+    document.getElementById('dashGreeting').textContent = greeting;
+
+    loadJobDataFromCSV().catch(() => {});
+    if (ALLOWED_VIEWS.includes('bom')) loadBomDataFromCSV().catch(() => {});
+    if (ALLOWED_VIEWS.includes('drumreq')) loadDrumDataFromFile().catch(() => {});
+
+    loadBanners();
+    const initialView = ALLOWED_VIEWS.includes('home') ? 'home' : (ALLOWED_VIEWS[0] || 'profile');
+    switchMainView(initialView);
+
+    if (!navigator.onLine) setSyncState('offline');
+  } finally {
+    hideGlobalLoader();
   }
-
-  MAINTENANCE_STATE = loadMaintenanceState();
-  renderMaintenanceUI();
-
-  document.getElementById('welcomeName').textContent = userRec.name || CURRENT_ROLE || CURRENT_USER;
-  document.getElementById('headerTitle').textContent = 'Thermocables';
-
-  const now = new Date();
-  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-  document.getElementById('dashDate').textContent = now.toLocaleDateString('en-US', options);
-
-  const hr = now.getHours();
-  let greeting = 'Good Evening';
-  if(hr < 12) greeting = 'Good Morning';
-  else if(hr < 17) greeting = 'Good Afternoon';
-  document.getElementById('dashGreeting').textContent = greeting;
-
-  loadJobDataFromCSV();
-  if (ALLOWED_VIEWS.includes('bom')) loadBomDataFromCSV();
-  if (ALLOWED_VIEWS.includes('drumreq')) loadDrumDataFromFile();
-
-  loadBanners();
-  const initialView = ALLOWED_VIEWS.includes('home') ? 'home' : (ALLOWED_VIEWS[0] || 'profile');
-  switchMainView(initialView);
-
-  if (!navigator.onLine) setSyncState('offline');
 }
 
 /* --- OFFLINE / ONLINE SYNC ORCHESTRATION --- */
@@ -4497,18 +4475,20 @@ async function refreshData() {
 window.refreshData = refreshData;
 
 window.addEventListener('online', () => {
-  console.log('[sync] Back online — refreshing data');
   refreshData();
 });
 
 window.addEventListener('offline', () => {
-  console.log('[sync] Gone offline');
   setSyncState('offline');
 });
 
 window.handleLogout = function() { localStorage.removeItem('tc_user'); location.reload(); };
 
-window.addEventListener('load', () => {
+let bootInitialized = false;
+function initAppBoot() {
+  if (bootInitialized) return;
+  bootInitialized = true;
+
   document.getElementById('loginUser').addEventListener('input', () => {
     if (loginStep === 2) resetLoginStep();
   });
@@ -4526,7 +4506,8 @@ window.addEventListener('load', () => {
     }
     completeLogin(savedUser);
   }
-});
+  hideGlobalLoader();
+}
 
 window.saveAdminSettings = function() {
   localStorage.setItem('tc_company', document.getElementById('setCompany').value);
@@ -4892,7 +4873,6 @@ async function loadJobDataFromCSV() {
       });
     });
   } catch (e) {
-    console.warn('[offline] data.csv unavailable — using cached version if present');
     return false;
   }
 }
@@ -5070,4 +5050,913 @@ async function loadBomDataFromCSV() {
 
           function rowHasHeader(row) {
             if (!row || !row.length) return false;
-            return row.some(cell
+            return row.some(cell => {
+              const n = normalizeHeader(cell);
+              return n === 'soitemno' || n === 'soitem';
+            });
+          }
+
+          let headerRowIndex = 0;
+          if (!rowHasHeader(allRows[0]) && rowHasHeader(allRows[1])) {
+            headerRowIndex = 1;
+          }
+
+          const headerRow = allRows[headerRowIndex].map(h => String(h || '').trim());
+          const dataRows = allRows
+            .slice(headerRowIndex + 1)
+            .filter(r => r.some(c => String(c || '').trim() !== ''));
+
+          const rows = dataRows.map(r => {
+            const obj = {};
+            headerRow.forEach((h, i) => { obj[h] = r[i] !== undefined ? r[i] : ''; });
+            return obj;
+          }).filter(o => Object.values(o).some(v => String(v || '').trim() !== ''));
+
+          processBomCSVData(rows);
+          resolve(true);
+        }
+      });
+    });
+  } catch (e) {
+    return false;
+  }
+}
+
+function processBomCSVData(rows) {
+  if(!rows || !rows.length) return;
+  const headers = Object.keys(rows[0] || {});
+
+  const soItemKey = findHeader(headers, 'SO/ITEM NO', 'SOITEMNO', 'SO ITEM NO', 'SO-ITEM', 'SOITEM');
+  const operationKey = findHeader(headers, 'OPERATION JDM', 'OPERATIONJDM', 'OPERATION');
+  const groupKey = findHeader(headers, 'GROUP');
+  const opnKey = findHeader(headers, 'OPN CODE', 'OPNCODE', 'OPN');
+  const materialCodeKey = findHeader(headers, 'MATERIAL CODE', 'MATERIALCODE');
+  const materialDiscKey = findHeader(headers, 'MATERIAL DISC', 'MATERIALDISC', 'MATERIAL');
+  const bomPerKmKey = findHeader(headers, 'BOM/KM - JDM', 'BOMKMJDM', 'BOM/KM', 'BOM/KM-JDM');
+  const customerKey = findHeader(headers, 'CUSTOMER JDM', 'CUSTOMERJDM', 'CUSTOMER');
+  const sizeKey = findHeader(headers, 'SIZE JDM', 'SIZEJDM', 'SIZE');
+
+  let lastSoItem = '';
+  let lastOperation = '';
+  let lastCustomer = '';
+  let lastSize = '';
+  let lastGroup = '';
+
+  BOM_DATA = [];
+  rows.forEach((row, idx) => {
+    let soItem = soItemKey ? String(row[soItemKey] || '').trim() : '';
+    let operation = operationKey ? String(row[operationKey] || '').trim() : '';
+    let group = groupKey ? String(row[groupKey] || '').trim() : '';
+    let customer = customerKey ? String(row[customerKey] || '').trim() : '';
+    let size = sizeKey ? String(row[sizeKey] || '').trim() : '';
+
+    if (soItem) {
+      lastSoItem = soItem;
+      lastOperation = '';
+      lastCustomer = customer;
+      lastSize = size;
+      lastGroup = '';
+    } else if (lastSoItem) {
+      soItem = lastSoItem;
+      if (!customer && lastCustomer) customer = lastCustomer;
+      if (!size && lastSize) size = lastSize;
+    }
+
+    if (operation) {
+      lastOperation = operation;
+      lastGroup = '';
+    } else if (lastOperation) {
+      operation = lastOperation;
+    }
+
+    if (group) {
+      lastGroup = group;
+    } else if (lastGroup) {
+      group = lastGroup;
+    }
+
+    if (!soItem || !operation) return;
+
+    const bomPerKmRaw = bomPerKmKey ? row[bomPerKmKey] : '';
+    const bomPerKm = (bomPerKmRaw === '' || bomPerKmRaw === null || bomPerKmRaw === undefined) ? null : parseFloat(String(bomPerKmRaw).replace(/,/g, ''));
+
+    BOM_DATA.push({
+      order: idx,
+      soItem,
+      operation,
+      group: group || 'Other',
+      opnCode: opnKey ? String(row[opnKey] || '').trim() : '',
+      materialCode: materialCodeKey ? String(row[materialCodeKey] || '').trim() : '',
+      materialDisc: materialDiscKey ? String(row[materialDiscKey] || '').trim() : '',
+      bomPerKm: (bomPerKm !== null && !isNaN(bomPerKm)) ? bomPerKm : null,
+      customer,
+      size
+    });
+  });
+}
+
+function allBomSoItems() {
+  const s = new Set();
+  BOM_DATA.forEach(r => { if(r.soItem) s.add(r.soItem); });
+  return Array.from(s).sort();
+}
+
+function buildBomSoIndex() {
+  const map = new Map();
+  BOM_DATA.forEach(r => {
+    if (!r.soItem) return;
+    if (!map.has(r.soItem)) map.set(r.soItem, new Set());
+    if (r.operation) map.get(r.soItem).add(r.operation);
+  });
+  return map;
+}
+
+/* --- BOM CONTROLLER (AUTO-SHOW) --- */
+const bomInput = document.getElementById('bomInput'), bomOpSelect = document.getElementById('bomOpSelect'), bomGrid = document.getElementById('bomGrid'), bomSuggestBox = document.getElementById('bomSuggestBox');
+
+function renderBomSuggestions(term) {
+  const idx = buildBomSoIndex();
+  const matches = allBomSoItems().filter(s => s.toLowerCase().includes(term.toLowerCase()));
+  if (matches.length === 0) {
+    bomSuggestBox.innerHTML = `<div class="suggest-empty">No SO-ITEMs match</div>`;
+    bomSuggestBox.classList.add('open');
+    return;
+  }
+  let html = `<div class="suggest-hint">${matches.length} SO-ITEMs found</div>`;
+  matches.forEach(s => {
+    const opCount = idx.get(s) ? idx.get(s).size : 0;
+    html += `<div class="suggest-item" data-soitem="${esc(s)}"><span>${esc(s)}</span><span class="meta">${opCount} ops</span></div>`;
+  });
+  bomSuggestBox.innerHTML = html;
+  bomSuggestBox.classList.add('open');
+}
+
+function closeBomSuggestions() { bomSuggestBox.classList.remove('open'); }
+
+function findExactBomSoItem(term) {
+  const t = String(term || '').trim().toLowerCase();
+  if (!t) return null;
+  for (const s of allBomSoItems()) {
+    if (s.toLowerCase() === t) return s;
+  }
+  return null;
+}
+
+function refreshBomOpSelect(soItemArg, autoSelectFirst) {
+  const item = (soItemArg === undefined ? bomInput.value : soItemArg).trim();
+  bomOpSelect.innerHTML = '';
+  if (!item) {
+    bomOpSelect.innerHTML = '<option value="">— Select SO-ITEM First —</option>';
+    bomOpSelect.disabled = true;
+    return;
+  }
+  const seen = new Set();
+  const list = [];
+  BOM_DATA.forEach(r => {
+    if (r.soItem.toLowerCase() === item.toLowerCase() && r.operation && !seen.has(r.operation)) {
+      seen.add(r.operation);
+      list.push(r.operation);
+    }
+  });
+  if (list.length === 0) {
+    bomOpSelect.innerHTML = '<option value="">— No Operations —</option>';
+    bomOpSelect.disabled = true;
+    return;
+  }
+  const ph = document.createElement('option');
+  ph.value = '';
+  ph.textContent = '— Select Op JDM —';
+  bomOpSelect.appendChild(ph);
+  list.forEach(op => {
+    const o = document.createElement('option');
+    o.value = op;
+    o.textContent = op;
+    bomOpSelect.appendChild(o);
+  });
+  bomOpSelect.disabled = false;
+  if (list.length === 1 || autoSelectFirst) bomOpSelect.value = list[0];
+}
+
+function pickBomSuggestion(soItem) {
+  bomInput.value = soItem;
+  closeBomSuggestions();
+  refreshBomOpSelect(soItem, true);
+  if (bomOpSelect.value) renderBomResults();
+}
+
+bomInput.addEventListener('input', () => {
+  const term = bomInput.value.trim();
+  const exact = findExactBomSoItem(term);
+  if (exact) {
+    closeBomSuggestions();
+    refreshBomOpSelect(exact, true);
+    if (bomOpSelect.value) renderBomResults();
+  } else {
+    renderBomSuggestions(term);
+    refreshBomOpSelect(term, false);
+    document.getElementById('bomResultTitle').textContent = 'Enter details above';
+    document.getElementById('bomResultCount').textContent = '0 records';
+    bomGrid.innerHTML = '<div class="empty"><div class="icon">📦</div><p>Start typing a <b>SO-ITEM</b> above.</p></div>';
+  }
+});
+bomInput.addEventListener('focus', () => { renderBomSuggestions(bomInput.value.trim()); });
+bomInput.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  const first = bomSuggestBox.querySelector('.suggest-item');
+  if (bomSuggestBox.classList.contains('open') && first) pickBomSuggestion(first.dataset.soitem);
+  else if (bomOpSelect.value) renderBomResults();
+  closeBomSuggestions();
+});
+bomSuggestBox.addEventListener('mousedown', e => { const item = e.target.closest('.suggest-item'); if(item) pickBomSuggestion(item.dataset.soitem); });
+bomOpSelect.addEventListener('change', () => { if (bomOpSelect.value) renderBomResults(); });
+document.addEventListener('click', e => { if (!document.getElementById('bomField').contains(e.target)) closeBomSuggestions(); });
+
+function renderBomResults() {
+  const item = bomInput.value.trim();
+  const op = bomOpSelect.value;
+  if(!item || !op) return;
+
+  const matches = BOM_DATA.filter(r => r.soItem.toLowerCase() === item.toLowerCase() && r.operation === op);
+  document.getElementById('bomResultTitle').textContent = `${item} • ${op}`;
+  document.getElementById('bomResultCount').textContent = `${matches.length} records`;
+
+  if (matches.length === 0) {
+    bomGrid.innerHTML = `<div class="empty"><div class="icon">📭</div><p>No records for <b>${esc(item)}</b> / <b>${esc(op)}</b></p></div>`;
+    return;
+  }
+
+  CURRENT_BOM_LINES = matches;
+  LAST_BOM_ITEM = { soItem: item, operation: op, customer: matches[0].customer, size: matches[0].size };
+
+  let grouped = new Map();
+  matches.forEach(m => {
+    const g = m.group || 'Other';
+    if (!grouped.has(g)) grouped.set(g, []);
+    grouped.get(g).push(m);
+  });
+
+  let rowsHtml = '';
+  grouped.forEach((lines, grp) => {
+    rowsHtml += `<div class="bom-group-header">${esc(grp)}</div>`;
+    lines.forEach((line, i) => {
+      rowsHtml += `<div class="bom-row">
+        <div>${esc(line.materialCode || '—')}</div>
+        <div>${esc(line.materialDisc || '—')}</div>
+        <div id="bom-req-${i}">—</div>
+      </div>`;
+    });
+  });
+
+  const planVal = (USER_PLAN_QTY !== null && USER_PLAN_QTY !== '' && !isNaN(USER_PLAN_QTY)) ? USER_PLAN_QTY : 1;
+
+  const html = `<div class="card printable-card" style="grid-column: 1 / -1;">
+    <div class="card-head"><h3><span class="bullet"></span>${esc(LAST_BOM_ITEM.soItem)}</h3><span class="op-tag">${esc(LAST_BOM_ITEM.operation)}</span></div>
+    <div class="specs">
+      <div class="spec accent"><div class="k">PLAN QTY (M)</div><div class="v"><input type="number" id="planQtyInput" class="plan-input" placeholder="1" step="any" value="${esc(planVal)}"></div></div>
+      <div class="spec"><div class="k">CUSTOMER</div><div class="v">${esc(LAST_BOM_ITEM.customer || '—')}</div></div>
+      <div class="spec"><div class="k">SIZE</div><div class="v">${esc(LAST_BOM_ITEM.size || '—')}</div></div>
+    </div>
+    <div style="padding: 12px 14px 16px;">
+      <div class="bom-table">
+        <div class="bom-table-head"><div>MAT CODE</div><div>MATERIAL</div><div>REQ QTY</div></div>
+        ${rowsHtml}
+      </div>
+    </div>
+  </div>`;
+
+  bomGrid.innerHTML = html;
+
+  const planInput = document.getElementById('planQtyInput');
+  if (planInput) {
+    planInput.addEventListener('input', () => {
+      USER_PLAN_QTY = planInput.value;
+      updateBomPlanQuantities();
+    });
+  }
+  updateBomPlanQuantities();
+}
+
+function updateBomPlanQuantities() {
+  const planInput = document.getElementById('planQtyInput');
+  if (!planInput) return;
+  let planQty = parseFloat(planInput.value);
+  if (isNaN(planQty) || planQty <= 0) planQty = 1;
+  CURRENT_BOM_LINES.forEach((line, i) => {
+    const el = document.getElementById(`bom-req-${i}`);
+    if (!el) return;
+    if (line.bomPerKm === null) {
+      el.textContent = '—';
+    } else {
+      el.textContent = formatQty((line.bomPerKm / 1000) * planQty);
+    }
+  });
+}
+
+document.getElementById('bomSearchBtn').addEventListener('click', renderBomResults);
+document.getElementById('bomResetBtn').addEventListener('click', () => {
+  bomInput.value = '';
+  bomOpSelect.innerHTML = '<option value="">— Select SO-ITEM First —</option>';
+  bomOpSelect.disabled = true;
+  bomGrid.innerHTML = '<div class="empty"><div class="icon">📦</div><p>Start typing a <b>SO-ITEM</b> above.</p></div>';
+  document.getElementById('bomResultTitle').textContent = 'Enter details above';
+  document.getElementById('bomResultCount').textContent = '0 records';
+});
+
+/* --- DRUM REQ DATA & CONTROLLER --- */
+async function loadDrumDataFromFile() {
+  const sources = [
+    { url: 'drumreq.xlsx', type: 'xlsx' },
+    { url: 'drumreq.csv',  type: 'csv' }
+  ];
+
+  for (const src of sources) {
+    try {
+      const response = await fetch(src.url, { cache: 'no-store' });
+      if (!response.ok) continue;
+      if (src.type === 'xlsx') {
+        const buffer = await response.arrayBuffer();
+        const wb = XLSX.read(buffer, { type: 'array' });
+        const firstSheet = wb.SheetNames[0];
+        if (!firstSheet) continue;
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[firstSheet], { defval: '' });
+        if (rows && rows.length) {
+          processDrumRows(rows);
+          return true;
+        }
+      } else {
+        const text = await response.text();
+        const ok = await new Promise((resolve) => {
+          Papa.parse(text, {
+            header: true,
+            skipEmptyLines: true,
+            complete: (res) => {
+              if (res.data && res.data.length) {
+                processDrumRows(res.data);
+                resolve(true);
+              } else {
+                resolve(false);
+              }
+            }
+          });
+        });
+        if (ok) return true;
+      }
+    } catch (e) {
+      // Try next source
+    }
+  }
+  return false;
+}
+
+function processDrumRows(rows) {
+  if (!rows || !rows.length) return;
+  const headers = Object.keys(rows[0] || {});
+
+  const jobKey = findHeader(headers, 'JOB NO', 'JOBNO', 'JOB NUMBER', 'JOB', 'SO-ITEM', 'SOITEM');
+  const itemDescKey = findHeader(headers, 'ITEM DESCRIPTION', 'ITEMDESC', 'DESCRIPTION', 'ITEM', 'MATERIAL DISC', 'MATERIAL');
+  const drumSizeKey = findHeader(headers, 'DRUM SIZE', 'DRUMSIZE', 'SIZE', 'DRUM');
+  const qtyKey = findHeader(headers, 'QTY', 'QUANTITY', 'DRUM QTY', 'NO OF DRUMS', 'COUNT', 'REQ QTY');
+
+  if (!jobKey) return;
+
+  const grouped = new Map();
+
+  rows.forEach((row, idx) => {
+    const jobNo = String(row[jobKey] || '').trim();
+    if (!jobNo) return;
+
+    const itemDesc = itemDescKey ? String(row[itemDescKey] || '').trim() : '';
+    const drumSize = drumSizeKey ? String(row[drumSizeKey] || '').trim() : 'Unspecified Drum';
+    const rawQty = qtyKey ? row[qtyKey] : 1;
+    const numQty = parseFloat(String(rawQty).replace(/,/g, ''));
+    const qty = (!isNaN(numQty) && numQty > 0) ? numQty : (String(rawQty).trim() === '' ? 1 : 0);
+
+    if (!grouped.has(jobNo)) {
+      grouped.set(jobNo, {
+        order: idx,
+        jobNo,
+        itemDesc: itemDesc || '',
+        drumCounts: new Map(),
+        totalDrums: 0
+      });
+    }
+
+    const entry = grouped.get(jobNo);
+    if (!entry.itemDesc && itemDesc) entry.itemDesc = itemDesc;
+
+    const sizeLabel = drumSize || 'Unspecified Drum';
+    entry.drumCounts.set(sizeLabel, (entry.drumCounts.get(sizeLabel) || 0) + qty);
+    entry.totalDrums += qty;
+  });
+
+  DRUM_DATA = Array.from(grouped.values()).map(g => ({
+    order: g.order,
+    jobNo: g.jobNo,
+    itemDesc: g.itemDesc || '—',
+    drums: Array.from(g.drumCounts.entries()).map(([size, count]) => ({ size, count })),
+    totalDrums: g.totalDrums
+  }));
+}
+
+function allDrumJobNos() {
+  return DRUM_DATA.map(r => r.jobNo).sort();
+}
+
+function findExactDrumJob(term) {
+  const t = String(term || '').trim().toLowerCase();
+  if (!t) return null;
+  const found = DRUM_DATA.find(r => r.jobNo.toLowerCase() === t);
+  return found ? found.jobNo : null;
+}
+
+const drumInput = document.getElementById('drumInput');
+const drumGrid = document.getElementById('drumGrid');
+const drumSuggestBox = document.getElementById('drumSuggestBox');
+
+function renderDrumSuggestions(term) {
+  const matches = DRUM_DATA.filter(r =>
+    r.jobNo.toLowerCase().includes(term.toLowerCase()) ||
+    r.itemDesc.toLowerCase().includes(term.toLowerCase())
+  );
+
+  if (matches.length === 0) {
+    drumSuggestBox.innerHTML = `<div class="suggest-empty">No matching Job No / Item No</div>`;
+    drumSuggestBox.classList.add('open');
+    return;
+  }
+
+  let html = `<div class="suggest-hint">${matches.length} jobs found</div>`;
+  matches.slice(0, 40).forEach(r => {
+    html += `<div class="suggest-item" data-job="${esc(r.jobNo)}">
+      <span>${esc(r.jobNo)}${r.itemDesc && r.itemDesc !== '—' ? ` — <small style="color:var(--text-muted);font-weight:500;">${esc(r.itemDesc)}</small>` : ''}</span>
+      <span class="meta">${formatQty(r.totalDrums)} drums</span>
+    </div>`;
+  });
+  drumSuggestBox.innerHTML = html;
+  drumSuggestBox.classList.add('open');
+}
+
+function closeDrumSuggestions() {
+  drumSuggestBox.classList.remove('open');
+}
+
+function pickDrumSuggestion(jobNo) {
+  drumInput.value = jobNo;
+  closeDrumSuggestions();
+  renderDrumResults();
+}
+
+drumInput.addEventListener('input', () => {
+  const term = drumInput.value.trim();
+  const exact = findExactDrumJob(term);
+  if (exact) {
+    closeDrumSuggestions();
+    renderDrumResults();
+  } else if (term.length > 0) {
+    renderDrumSuggestions(term);
+  } else {
+    closeDrumSuggestions();
+    document.getElementById('drumResultTitle').textContent = 'Enter Job No / Item No above';
+    document.getElementById('drumResultCount').textContent = '0 records';
+    drumGrid.innerHTML = '<div class="empty"><div class="icon">🥁</div><p>Start typing a <b>Job No / Item No</b> above.</p></div>';
+  }
+});
+
+drumInput.addEventListener('focus', () => {
+  renderDrumSuggestions(drumInput.value.trim());
+});
+
+drumInput.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  const first = drumSuggestBox.querySelector('.suggest-item');
+  if (drumSuggestBox.classList.contains('open') && first) {
+    pickDrumSuggestion(first.dataset.job);
+  } else {
+    renderDrumResults();
+  }
+  closeDrumSuggestions();
+});
+
+drumSuggestBox.addEventListener('mousedown', (e) => {
+  const item = e.target.closest('.suggest-item');
+  if (item) pickDrumSuggestion(item.dataset.job);
+});
+
+document.addEventListener('click', (e) => {
+  if (!document.getElementById('drumField').contains(e.target)) {
+    closeDrumSuggestions();
+  }
+});
+
+function renderDrumResults() {
+  const term = drumInput.value.trim().toLowerCase();
+  if (!term) return;
+
+  const exact = DRUM_DATA.find(r => r.jobNo.toLowerCase() === term);
+  const matches = exact ? [exact] : DRUM_DATA.filter(r =>
+    r.jobNo.toLowerCase().includes(term) ||
+    r.itemDesc.toLowerCase().includes(term)
+  );
+
+  document.getElementById('drumResultTitle').textContent = exact ? `Drum Req • ${exact.jobNo}` : `Drum Req • "${drumInput.value.trim()}"`;
+  document.getElementById('drumResultCount').textContent = `${matches.length} ${matches.length === 1 ? 'job' : 'jobs'}`;
+
+  if (matches.length === 0) {
+    drumGrid.innerHTML = `<div class="empty"><div class="icon">📭</div><p>No drum requirement found for <b>${esc(drumInput.value.trim())}</b></p></div>`;
+    return;
+  }
+
+  let html = '';
+  matches.forEach(job => {
+    const rowsHtml = job.drums.map(d => `
+      <div class="drum-req-row">
+        <div>${esc(d.size)}</div>
+        <div>${esc(formatQty(d.count))}</div>
+      </div>
+    `).join('');
+
+    html += `
+      <div class="card printable-card">
+        <div class="card-head">
+          <h3><span class="bullet"></span>${esc(job.jobNo)}</h3>
+          <span class="op-tag">DRUM REQ</span>
+        </div>
+        <div style="padding: 16px;">
+          <div class="drum-summary-boxes">
+            <div class="drum-info-box">
+              <div class="lbl">JOB NO / ITEM NO</div>
+              <div class="val">${esc(job.jobNo)}</div>
+            </div>
+            <div class="drum-info-box">
+              <div class="lbl">ITEM DESCRIPTION</div>
+              <div class="val">${esc(job.itemDesc)}</div>
+            </div>
+            <div class="drum-info-box highlight">
+              <div class="lbl">TOTAL DRUMS</div>
+              <div class="val">${esc(formatQty(job.totalDrums))}</div>
+            </div>
+          </div>
+
+          <div class="drum-req-table">
+            <div class="drum-req-head">
+              <div>DRUM SIZE</div>
+              <div>DRUMS REQ</div>
+            </div>
+            ${rowsHtml}
+            <div class="drum-total-foot">
+              <span>TOTAL DRUMS REQUIRED</span>
+              <span class="total-val">${esc(formatQty(job.totalDrums))}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  drumGrid.innerHTML = html;
+}
+
+document.getElementById('drumSearchBtn').addEventListener('click', renderDrumResults);
+document.getElementById('drumResetBtn').addEventListener('click', () => {
+  drumInput.value = '';
+  closeDrumSuggestions();
+  drumGrid.innerHTML = '<div class="empty"><div class="icon">🥁</div><p>Start typing a <b>Job No / Item No</b> above.</p></div>';
+  document.getElementById('drumResultTitle').textContent = 'Enter Job No / Item No above';
+  document.getElementById('drumResultCount').textContent = '0 records';
+});
+
+/* --- QC CALCULATOR LOGIC --- */
+function calculateCRCombined() {
+  const specCR = parseFloat(document.getElementById('specCR').value);
+  const maxCR = parseFloat(document.getElementById('maxCR').value);
+  const minCR = parseFloat(document.getElementById('minCR').value);
+
+  const outUnb = document.getElementById('outUnbalance');
+  const outHigh = document.getElementById('outHigh');
+  const outLow = document.getElementById('outLow');
+
+  if (isNaN(specCR) || isNaN(maxCR) || isNaN(minCR) || specCR === 0) {
+    outUnb.textContent = '—';
+    outHigh.textContent = '—';
+    outLow.textContent = '—';
+  } else {
+    const unbalance = ((maxCR - minCR) / maxCR) * 100;
+    const high = ((maxCR - specCR) / specCR) * 100;
+    const low = ((specCR - minCR) / specCR) * 100;
+
+    outUnb.textContent = unbalance.toFixed(2);
+    outHigh.textContent = high.toFixed(2);
+    outLow.textContent = low.toFixed(2);
+  }
+
+  const obs = parseFloat(document.getElementById('obsCR').value);
+  const len = parseFloat(document.getElementById('lenCR').value);
+  const temp = parseFloat(document.getElementById('tempCR').value);
+  const outCalCR = document.getElementById('outCalCR');
+
+  if (isNaN(obs) || isNaN(len) || isNaN(temp) || len === 0) {
+    outCalCR.textContent = '—';
+  } else {
+    const calCR = (obs / len) * (1 / (1 + 0.00393 * (temp - 20)));
+    outCalCR.textContent = calCR.toFixed(4);
+  }
+}
+
+['irReading', 'irLength', 'irCoreDia', 'irCondDia'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    const r = parseFloat(document.getElementById('irReading').value);
+    const l = parseFloat(document.getElementById('irLength').value);
+    const d = parseFloat(document.getElementById('irCoreDia').value);
+    const cond = parseFloat(document.getElementById('irCondDia').value);
+    if (isNaN(r) || isNaN(l) || isNaN(d) || isNaN(cond) || l === 0 || cond === 0 || d <= cond) {
+      document.getElementById('irResultOut').innerHTML = '—';
+      document.getElementById('irConstOut').innerHTML = '—';
+      document.getElementById('vrConstOut').innerHTML = '—';
+      return;
+    }
+    const ir = r * 1e6;
+    const k = Math.log10(d / cond) / (2 * Math.PI);
+    const irConst = r * l / k;
+    const vrConst = ir * l / k;
+    document.getElementById('irResultOut').innerHTML = formatScientific(ir);
+    document.getElementById('irConstOut').innerHTML = formatScientific(irConst);
+    document.getElementById('vrConstOut').innerHTML = formatScientific(vrConst);
+  });
+});
+
+['capReading', 'capLength'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    const c = parseFloat(document.getElementById('capReading').value);
+    const l = parseFloat(document.getElementById('capLength').value);
+    if (isNaN(c) || isNaN(l) || l === 0) {
+      document.getElementById('capResultOut').textContent = '—';
+      return;
+    }
+    document.getElementById('capResultOut').textContent = (c / l).toFixed(2);
+  });
+});
+
+['hvLength', 'hvTopCr', 'hvBottomCr'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    const l = parseFloat(document.getElementById('hvLength').value);
+    const t = parseFloat(document.getElementById('hvTopCr').value);
+    const b = parseFloat(document.getElementById('hvBottomCr').value);
+    if (isNaN(l) || isNaN(t) || isNaN(b) || (t + b) === 0) {
+      document.getElementById('hvTotalCrOut').textContent = '—';
+      document.getElementById('hvTopSideOut').textContent = '—';
+      document.getElementById('hvBottomSideOut').textContent = '—';
+      return;
+    }
+    const tot = t + b;
+    document.getElementById('hvTotalCrOut').textContent = tot.toFixed(4);
+    document.getElementById('hvTopSideOut').textContent = ((t / tot) * l).toFixed(2);
+    document.getElementById('hvBottomSideOut').textContent = ((b / tot) * l).toFixed(2);
+  });
+});
+
+['thickMin', 'thickMax'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    const min = parseFloat(document.getElementById('thickMin').value);
+    const max = parseFloat(document.getElementById('thickMax').value);
+    if (isNaN(min) || isNaN(max) || max === 0) {
+      document.getElementById('thickAvgOut').textContent = '—';
+      document.getElementById('thickConcOut').textContent = '—';
+      return;
+    }
+    document.getElementById('thickAvgOut').textContent = ((min + max) / 2).toFixed(3);
+    document.getElementById('thickConcOut').textContent = (((max - min) / max) * 100).toFixed(2);
+  });
+});
+
+['brD', 'brBigD', 'brN', 'brM', 'brL'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    const d = parseFloat(document.getElementById('brD').value);
+    const bigD = parseFloat(document.getElementById('brBigD').value);
+    const n = parseFloat(document.getElementById('brN').value);
+    const m = parseFloat(document.getElementById('brM').value);
+    const l = parseFloat(document.getElementById('brL').value);
+    if (isNaN(d) || isNaN(bigD) || isNaN(n) || isNaN(m) || isNaN(l) || bigD === 0 || l === 0) {
+      document.getElementById('brTotalWiresOut').textContent = '—';
+      document.getElementById('brFOut').textContent = '—';
+      document.getElementById('brCovOut').textContent = '—';
+      return;
+    }
+    const tot = n * m;
+    const angle = Math.atan((2 * Math.PI * (bigD + d)) / l);
+    const cosA = Math.cos(angle);
+    const f = cosA > 0 ? (tot * d) / (Math.PI * (bigD + d) * cosA) : 0;
+    const cov = (2 * f - f * f) * 100;
+    document.getElementById('brTotalWiresOut').textContent = tot;
+    document.getElementById('brFOut').textContent = f.toFixed(3);
+    document.getElementById('brCovOut').textContent = cov.toFixed(2);
+  });
+});
+
+document.getElementById('tensileShape').addEventListener('change', (e) => {
+  document.getElementById('tubularInputs').style.display = e.target.value === 'tubular' ? 'block' : 'none';
+  document.getElementById('dumbbellInputs').style.display = e.target.value === 'dumbbell' ? 'block' : 'none';
+  calculateTensile();
+});
+['tDia', 'tThick', 'dWidth', 'dThick', 'tLoad', 'tElong', 'tInit'].forEach(id => document.getElementById(id).addEventListener('input', calculateTensile));
+function calculateTensile() {
+  const shape = document.getElementById('tensileShape').value;
+  const load = parseFloat(document.getElementById('tLoad').value);
+  const elong = parseFloat(document.getElementById('tElong').value);
+  const init = parseFloat(document.getElementById('tInit').value);
+  let area = NaN;
+  if (shape === 'tubular') {
+    const dia = parseFloat(document.getElementById('tDia').value);
+    const thick = parseFloat(document.getElementById('tThick').value);
+    if (!isNaN(dia) && !isNaN(thick) && dia > thick) { area = Math.PI * (dia - thick) * thick; }
+  } else {
+    const w = parseFloat(document.getElementById('dWidth').value);
+    const t = parseFloat(document.getElementById('dThick').value);
+    if (!isNaN(w) && !isNaN(t)) { area = w * t; }
+  }
+  document.getElementById('tAreaOut').textContent = isNaN(area) ? '—' : area.toFixed(2);
+  if (isNaN(area) || area === 0 || isNaN(load)) { document.getElementById('tTsOut').textContent = '—'; } else { document.getElementById('tTsOut').textContent = (load / area).toFixed(2); }
+  if (isNaN(elong) || isNaN(init) || init === 0) { document.getElementById('tElongOut').textContent = '—'; } else { document.getElementById('tElongOut').textContent = (((elong - init) / init) * 100).toFixed(2); }
+}
+
+document.getElementById('hotSetShape').addEventListener('change', (e) => {
+  document.getElementById('tubularHotInputs').style.display = e.target.value === 'tubular' ? 'block' : 'none';
+  document.getElementById('dumbbellHotInputs').style.display = e.target.value === 'dumbbell' ? 'block' : 'none';
+  calculateHotSet();
+});
+['hCoreDia', 'hCondDia', 'hThick', 'hWidth', 'hInit', 'hElong', 'hCool'].forEach(id => document.getElementById(id).addEventListener('input', calculateHotSet));
+function calculateHotSet() {
+  const shape = document.getElementById('hotSetShape').value;
+  const init = parseFloat(document.getElementById('hInit').value);
+  const elong = parseFloat(document.getElementById('hElong').value);
+  const cool = parseFloat(document.getElementById('hCool').value);
+  let area = NaN;
+  if (shape === 'tubular') {
+    const core = parseFloat(document.getElementById('hCoreDia').value);
+    const cond = parseFloat(document.getElementById('hCondDia').value);
+    if (!isNaN(core) && !isNaN(cond) && core > cond) { area = (Math.PI / 4) * (core * core - cond * cond); }
+  } else {
+    const t = parseFloat(document.getElementById('hThick').value);
+    const w = parseFloat(document.getElementById('hWidth').value);
+    if (!isNaN(t) && !isNaN(w)) { area = t * w; }
+  }
+  document.getElementById('hWeightOut').textContent = isNaN(area) ? '—' : (area * 0.2).toFixed(3);
+  if (isNaN(elong) || isNaN(init) || init === 0) { document.getElementById('hHotOut').textContent = '—'; } else { document.getElementById('hHotOut').textContent = (((elong - init) / init) * 100).toFixed(2); }
+  if (isNaN(cool) || isNaN(init) || init === 0) { document.getElementById('hPermOut').textContent = '—'; } else { document.getElementById('hPermOut').textContent = (((cool - init) / init) * 100).toFixed(2); }
+}
+
+function calculateArmCov() {
+  const cableDia = parseFloat(document.getElementById('covCableDia').value);
+  const wireDia = parseFloat(document.getElementById('covWireDia').value);
+  const lay = parseFloat(document.getElementById('covLay').value);
+  const wires = parseFloat(document.getElementById('covWires').value);
+
+  const outCov = document.getElementById('outCov');
+
+  if (isNaN(cableDia) || isNaN(wireDia) || isNaN(lay) || isNaN(wires) || cableDia === 0 || lay === 0) {
+    outCov.textContent = '—';
+    return;
+  }
+
+  const pi = Math.PI;
+  const part1 = (wires * wireDia) / (pi * (cableDia + wireDia));
+  const cosVal = lay / Math.sqrt(lay * lay + (pi * pi * (cableDia + wireDia) * (cableDia + wireDia)));
+  const cov = (part1 / cosVal) * 100;
+
+  outCov.textContent = cov.toFixed(2);
+}
+
+/* --- PRINT / PDF GATEWAY --- */
+window.triggerPrint = function(event, mode) {
+  if(event) event.stopPropagation();
+
+  if (mode === 'gatepass') {
+    const dateInput = document.getElementById('gpDate');
+    const hourSel = document.getElementById('gpHour');
+    const minSel = document.getElementById('gpMinute');
+    const ampmSel = document.getElementById('gpAmPm');
+    const deptEl = document.getElementById('gpDept');
+
+    const dateVal = dateInput ? dateInput.value : '';
+    const hourVal = hourSel ? hourSel.value : '';
+    const minVal = minSel ? minSel.value : '';
+    const ampmVal = ampmSel ? ampmSel.value : '';
+    const deptVal = deptEl ? deptEl.value.trim() : '';
+
+    if (dateInput) dateInput.classList.remove('gp-invalid');
+
+    if (!dateVal) {
+      alert("Please select a Date.");
+      if (dateInput) {
+        dateInput.classList.add('gp-invalid');
+        dateInput.focus();
+      }
+      return;
+    }
+
+    if (!hourVal || !minVal || !ampmVal) {
+      alert("Please select Out Time (Hour, Minute, and AM/PM).");
+      if (hourSel) hourSel.focus();
+      return;
+    }
+
+    const formattedDate = formatDateForDisplay(dateVal);
+    const formattedTime = `${hourVal}:${minVal} ${ampmVal}`;
+    const printArea = document.getElementById('gatePassPrintArea');
+    const companyName = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
+    const deptName = deptVal || localStorage.getItem('tc_gp_dept') || localStorage.getItem('tc_dept') || 'PRODUCTION';
+    localStorage.setItem('tc_gp_dept', deptName);
+
+    const cols = 3;
+    const count = GP_STANDARD_COUNT;
+    const rows = Math.ceil(count / cols);
+    printArea.style.setProperty('--gp-rows', rows);
+    printArea.classList.toggle('gp-dense', rows > 10);
+
+    let cardsHtml = '';
+    for (let i = 1; i <= count; i++) {
+      cardsHtml += `
+        <div class="gate-pass-card">
+          <div class="gp-company">${esc(companyName)}</div>
+          <div class="gp-dept">${esc(deptName)}</div>
+          <div class="gp-serial">GATE PASS #${i}</div>
+          <div class="gp-datetime">
+            <span>Date: ${esc(formattedDate)}</span>
+            <span>Out Time: ${esc(formattedTime)}</span>
+          </div>
+          <div class="gp-sig-area">
+            <div class="gp-sig-line"></div>
+            <div class="gp-sig-label">Authorized Signature</div>
+          </div>
+        </div>
+      `;
+    }
+    printArea.innerHTML = cardsHtml;
+    document.body.classList.add('printing-gatepass');
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => {
+        document.body.classList.remove('printing-gatepass');
+        printArea.innerHTML = '';
+      }, 500);
+    }, 100);
+    return;
+  }
+
+  const now = new Date();
+  document.getElementById('pDate').textContent = now.toLocaleDateString('en-GB');
+  document.getElementById('pTime').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('pCompany').textContent = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
+  document.getElementById('pDept').textContent = localStorage.getItem('tc_dept') || 'QC DEPARTMENT';
+  document.getElementById('pPrepBy').textContent = localStorage.getItem('tc_prep') || '—';
+  document.getElementById('pVerBy').textContent = localStorage.getItem('tc_ver') || '—';
+
+  let titleText = 'TEST REPORT', typeText = 'GENERAL', inputsHtml = '';
+
+  if (mode === 'qc') {
+    const activeTabBtn = document.querySelector('.qc-tab-btn.active');
+    const tabName = activeTabBtn ? activeTabBtn.textContent.trim() : 'QC CALC';
+    titleText = `${tabName.toUpperCase()} TEST REPORT`; typeText = tabName;
+    const activeCard = document.querySelector('.qc-card.active');
+    if (activeCard) {
+      let rows = '';
+      activeCard.querySelectorAll('.input-group').forEach(grp => {
+        const lbl = grp.querySelector('label');
+        const inp = grp.querySelector('input, select');
+        if (lbl && inp) {
+          let val = inp.value;
+          if(inp.tagName === 'SELECT') val = inp.options[inp.selectedIndex]?.text || val;
+          rows += `<tr><td style="font-weight:700;">${esc(lbl.innerText.split('\n')[0])}</td><td>${esc(val || '—')}</td></tr>`;
+        }
+      });
+      if(rows) inputsHtml = `<div style="font-weight:700; margin-bottom:6px; font-size:12px;">INPUT PARAMETERS:</div><table class="print-inputs-table"><thead><tr><th>Parameter</th><th>Value</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+  } else if (mode === 'job') {
+    titleText = 'JOB CARD REPORT'; typeText = 'JOB CARD';
+    const job = jobInput.value || '—', op = opSelect.value || '—';
+    inputsHtml = `<div style="font-weight:700; margin-bottom:6px; font-size:12px;">SEARCH CRITERIA:</div><table class="print-inputs-table"><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody><tr><td style="font-weight:700;">Job Number</td><td>${esc(job)}</td></tr><tr><td style="font-weight:700;">Operation</td><td>${esc(op)}</td></tr></tbody></table>`;
+  } else if (mode === 'bom') {
+    titleText = 'BOM REPORT'; typeText = 'BOM';
+    const item = bomInput.value || '—', op = bomOpSelect.value || '—';
+    const planQty = document.getElementById('planQtyInput')?.value || '1';
+    inputsHtml = `<div style="font-weight:700; margin-bottom:6px; font-size:12px;">BOM PARAMETERS:</div><table class="print-inputs-table"><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody><tr><td style="font-weight:700;">SO-ITEM / INDEX</td><td>${esc(item)}</td></tr><tr><td style="font-weight:700;">Operation JDM</td><td>${esc(op)}</td></tr><tr><td style="font-weight:700;">Plan Qty (Meters)</td><td>${esc(planQty)}</td></tr></tbody></table>`;
+  } else if (mode === 'drumreq') {
+    titleText = 'DRUM REQUIREMENT REPORT'; typeText = 'DRUM REQ';
+    const job = drumInput.value || '—';
+    inputsHtml = `<div style="font-weight:700; margin-bottom:6px; font-size:12px;">DRUM REQ PARAMETERS:</div><table class="print-inputs-table"><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody><tr><td style="font-weight:700;">Job No / Item No</td><td>${esc(job)}</td></tr></tbody></table>`;
+  }
+
+  document.getElementById('pDocTitle').textContent = titleText;
+  document.getElementById('pTestType').textContent = typeText;
+  document.getElementById('printInputs').innerHTML = inputsHtml;
+  setTimeout(() => { window.print(); }, 100);
+};
+
+initGatePassUI();
+initAppBoot();
+})();
+</script>
+
+</body>
+</html>

@@ -3553,11 +3553,19 @@ async function cloudGet(action) {
   }
 }
 
+let LAST_CLOUD_SYNC_INFO = '';
+
 async function syncAllFromCloud() {
-  if (!APPS_SCRIPT_URL || !navigator.onLine) return false;
+  if (!APPS_SCRIPT_URL || !navigator.onLine) {
+    LAST_CLOUD_SYNC_INFO = 'Offline';
+    return false;
+  }
   try {
     const data = await cloudGet('getAll');
-    if (!data) return false;
+    if (!data || data.ok === false) {
+      LAST_CLOUD_SYNC_INFO = (data && data.error) ? ('Script error: ' + data.error) : 'No response from Apps Script';
+      return false;
+    }
 
     if (data.users && typeof data.users === 'object' && Object.keys(data.users).length > 0) {
       const merged = loadUsersStore();
@@ -3609,9 +3617,12 @@ async function syncAllFromCloud() {
       if (data.settings.verBy !== undefined) localStorage.setItem('tc_ver', data.settings.verBy);
     }
 
+    const userCount = Object.keys(USERS).length;
+    LAST_CLOUD_SYNC_INFO = `Cloud OK (${userCount} users)`;
     return true;
   } catch (e) {
     console.warn('[CloudSync] syncAllFromCloud error:', e);
+    LAST_CLOUD_SYNC_INFO = 'Sync error';
     return false;
   }
 }
@@ -4479,7 +4490,9 @@ window.handleManualSync = async function(event) {
   const ok = await refreshData();
   if (sub) {
     const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    sub.textContent = ok ? `Synced at ${timeStr}` : 'Partial sync — tap to retry';
+    sub.textContent = ok
+      ? `${LAST_CLOUD_SYNC_INFO} • ${timeStr}`
+      : `${LAST_CLOUD_SYNC_INFO || 'Sync failed'} — tap to retry`;
   }
 };
 
@@ -4487,6 +4500,24 @@ window.addEventListener('online', () => {
   console.log('[sync] Back online — refreshing data');
   refreshData();
 });
+
+setInterval(() => {
+  if (navigator.onLine && CURRENT_USER && !isSyncing) {
+    syncAllFromCloud().then(ok => {
+      if (ok && CURRENT_USER && USERS[CURRENT_USER]) {
+        CURRENT_ROLE = USERS[CURRENT_USER].role || '';
+        ALLOWED_VIEWS = Array.isArray(USERS[CURRENT_USER].views) ? sanitizeViews(USERS[CURRENT_USER].views) : ['home', 'jobcards', 'gatepass'];
+        applyAllowedNavigation();
+        if (document.getElementById('view-profile')?.classList.contains('active')) {
+          renderProfileContactCard();
+          renderAdminUserList();
+          renderMaintenanceUI();
+        }
+        applyMaintenanceLocks();
+      }
+    });
+  }
+}, 30000);
 
 window.addEventListener('offline', () => {
   console.log('[sync] Gone offline');
@@ -4562,6 +4593,16 @@ window.switchMainView = function(viewName) {
     renderProfileContactCard();
     renderAdminUserList();
     renderMaintenanceUI();
+    if (navigator.onLine) {
+      syncAllFromCloud().then(ok => {
+        if (ok) {
+          renderProfileContactCard();
+          renderAdminUserList();
+          renderMaintenanceUI();
+          applyAllowedNavigation();
+        }
+      });
+    }
   }
 
   document.getElementById('headerTitle').textContent = 'Thermocables';

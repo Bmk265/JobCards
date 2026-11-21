@@ -3431,60 +3431,120 @@ body.has-offline-banner .app { padding-top: 48px; }
   </div>
 </div>
 
-<script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyiOsEWbiKuCLAAcjvztyjgroobotLSQ4MZVTD1htmtTBXUqH5QuMTepHztUzNdSazY/exec";
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, set, get, update, remove, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-// 1. Call this when a user submits the Registration Form
+const firebaseConfig = {
+  databaseURL: "https://jobcardstcl-default-rtdb.firebaseio.com"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const rtdb = getDatabase(firebaseApp);
+
+window.FIREBASE_RTDB = {
+  db: rtdb,
+  ref,
+  set,
+  get,
+  update,
+  remove,
+  push,
+  onValue
+};
+
+window.dispatchEvent(new Event("firebase-rtdb-ready"));
+</script>
+<script>
+const FIREBASE_DB_URL = "https://jobcardstcl-default-rtdb.firebaseio.com";
+
+function sanitizeFirebaseKey(rawKey) {
+  return String(rawKey || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[.#$\[\]/]/g, "_");
+}
+
+async function fbRestRequest(path, method = "GET", body = null) {
+  if (!navigator.onLine) return null;
+  const cleanPath = String(path || "").replace(/^\/+|\/+$/g, "");
+  const url = `${FIREBASE_DB_URL}/${cleanPath}.json?_t=${Date.now()}`;
+  const opts = {
+    method,
+    headers: { "Content-Type": "application/json" }
+  };
+  if (body !== null && method !== "GET" && method !== "DELETE") {
+    opts.body = JSON.stringify(body);
+  }
+  const res = await fetch(url, opts);
+  if (!res.ok) throw new Error(`Firebase HTTP ${res.status}`);
+  return await res.json();
+}
+
+// 1. Live sync when a user submits the Registration Form
 async function registerUserToCloud(userDetails) {
   try {
+    const uname = sanitizeFirebaseKey(userDetails.username || userDetails.name);
+    if (!uname) return null;
     const payload = {
-      action: "register",
-      ...userDetails,
+      username: uname,
+      name: userDetails.name || uname,
+      email: userDetails.email || "",
       dept: userDetails.dept || userDetails.department || "General",
-      department: userDetails.department || userDetails.dept || "General",
+      plant: userDetails.plant || "Main Plant",
+      phone: userDetails.phone || "",
       pass: userDetails.pass || "",
       role: userDetails.role || "",
-      views: Array.isArray(userDetails.views) ? userDetails.views : ["home", "jobcards", "gatepass"]
+      views: Array.isArray(userDetails.views) ? userDetails.views : ["home", "jobcards", "gatepass"],
+      updatedAt: new Date().toISOString()
     };
-    const response = await fetch(SCRIPT_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(payload)
-    });
 
-    const result = await response.json();
+    if (window.FIREBASE_RTDB) {
+      const { db, ref, set } = window.FIREBASE_RTDB;
+      await set(ref(db, `users/${uname}`), payload);
+    } else {
+      await fbRestRequest(`users/${uname}`, "PUT", payload);
+    }
+
     localStorage.setItem("currentUser", JSON.stringify(payload));
     if (typeof window.syncAllFromCloud === "function") {
       await window.syncAllFromCloud();
     }
-    return result;
+    return { ok: true, user: payload };
   } catch (error) {
-    console.error("Registration cloud sync failed (saved locally):", error);
+    console.error("Firebase registration sync failed (saved locally):", error);
     return null;
   }
 }
 
-// 2. Call this when Admin opens the Admin Panel (or clicks Refresh)
+// 2. Fetch latest users from Firebase Realtime Database for Admin
 async function loadUsersForAdmin() {
   try {
     if (typeof window.syncAllFromCloud === "function") {
       await window.syncAllFromCloud();
     }
-    const url = SCRIPT_URL + (SCRIPT_URL.includes("?") ? "&" : "?") + "action=users&_t=" + Date.now();
-    const response = await fetch(url);
-    const result = await response.json();
+    let usersObj = null;
+    if (window.FIREBASE_RTDB) {
+      const { db, ref, get } = window.FIREBASE_RTDB;
+      const snap = await get(ref(db, "users"));
+      if (snap.exists()) usersObj = snap.val();
+    } else {
+      usersObj = await fbRestRequest("users", "GET");
+    }
 
-    if (result && Array.isArray(result.users)) {
-      console.log("Live users from Google Sheet:", result.users);
+    if (usersObj && typeof usersObj === "object") {
+      const list = Array.isArray(usersObj)
+        ? usersObj.filter(Boolean)
+        : Object.keys(usersObj).map(k => ({ username: k, ...usersObj[k] }));
       if (typeof window.mergeCloudUsersIntoStore === "function") {
-        window.mergeCloudUsersIntoStore(result.users, true);
+        window.mergeCloudUsersIntoStore(list, true);
       }
     }
     if (typeof renderAdminUserList === "function") {
       renderAdminUserList();
     }
   } catch (error) {
-    console.error("Failed to fetch users:", error);
+    console.error("Failed to fetch users from Firebase:", error);
     if (typeof renderAdminUserList === "function") {
       renderAdminUserList();
     }
@@ -3533,6 +3593,7 @@ if ('serviceWorker' in navigator) {
 let CURRENT_USER = '', CURRENT_ROLE = '', ALLOWED_VIEWS = [];
 let JOB_DATA = [], BOM_DATA = [], USER_PLAN_QTY = null;
 let loginStep = 1;
+let FIREBASE_LIVE_ATTACHED = false;
 
 const GP_STANDARD_COUNT = 27;
 const ALL_MODULE_KEYS = ['home', 'jobcards', 'bom', 'qccalc', 'gatepass'];
@@ -3561,7 +3622,7 @@ function loadUsersStore() {
   try {
     const saved = JSON.parse(localStorage.getItem('tc_users')) || {};
     Object.keys(saved).forEach(rawKey => {
-      const k = String(rawKey || '').trim().toLowerCase();
+      const k = sanitizeFirebaseKey(rawKey);
       if (!k) return;
       const u = saved[rawKey];
       base[k] = {
@@ -3584,14 +3645,14 @@ function loadUsersStore() {
 function getDeletedUsersSet() {
   try {
     const arr = JSON.parse(localStorage.getItem('tc_deleted_users')) || [];
-    return new Set(arr.map(x => String(x || '').trim().toLowerCase()).filter(Boolean));
+    return new Set(arr.map(x => sanitizeFirebaseKey(x)).filter(Boolean));
   } catch (e) {
     return new Set();
   }
 }
 
 function setDeletedUserFlag(username, removeFlag = false) {
-  const k = String(username || '').trim().toLowerCase();
+  const k = sanitizeFirebaseKey(username);
   if (!k || k === 'admin') return;
   const set = getDeletedUsersSet();
   if (removeFlag) set.delete(k);
@@ -3604,7 +3665,7 @@ function setDeletedUserFlag(username, removeFlag = false) {
 }
 
 function normalizeUserObj(rawKey, u, prev = {}) {
-  const k = String(rawKey || '').trim().toLowerCase();
+  const k = sanitizeFirebaseKey(rawKey);
   let parsedViews = null;
   if (Array.isArray(u && u.views)) {
     parsedViews = sanitizeViews(u.views);
@@ -3634,117 +3695,264 @@ async function saveUsersStore(changedUserKey = null, deletedUserKey = null) {
   try {
     localStorage.setItem('tc_users', JSON.stringify(USERS));
   } catch (e) {
-    console.warn('Failed to save users:', e);
+    console.warn('Failed to save users locally:', e);
   }
   if (deletedUserKey) {
-    setDeletedUserFlag(deletedUserKey, false);
-    await cloudPost({ action: 'deleteUser', username: deletedUserKey });
+    const cleanDel = sanitizeFirebaseKey(deletedUserKey);
+    setDeletedUserFlag(cleanDel, false);
+    await cloudPost({ action: 'deleteUser', username: cleanDel });
   } else if (changedUserKey && USERS[changedUserKey]) {
-    setDeletedUserFlag(changedUserKey, true);
-    await cloudPost({ action: 'saveUser', username: changedUserKey, user: USERS[changedUserKey] });
+    const cleanKey = sanitizeFirebaseKey(changedUserKey);
+    setDeletedUserFlag(cleanKey, true);
+    await cloudPost({ action: 'saveUser', username: cleanKey, user: USERS[cleanKey] });
   } else {
     await cloudPost({ action: 'saveAllUsers', users: USERS });
   }
 }
 
 let USERS = loadUsersStore();
-const APPS_SCRIPT_URL = SCRIPT_URL;
 
 async function cloudPost(payload) {
-  if (!APPS_SCRIPT_URL || !navigator.onLine) return null;
+  if (!payload || !payload.action || !navigator.onLine) return null;
   try {
-    const res = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
-    });
-    if (!res.ok) return null;
-    return await res.json();
+    const fb = window.FIREBASE_RTDB;
+    const nowIso = new Date().toISOString();
+
+    if (payload.action === 'saveUser' && payload.username && payload.user) {
+      const k = sanitizeFirebaseKey(payload.username);
+      const record = { username: k, ...payload.user, updatedAt: nowIso };
+      if (fb) {
+        await fb.set(fb.ref(fb.db, `users/${k}`), record);
+      } else {
+        await fbRestRequest(`users/${k}`, 'PUT', record);
+      }
+      return { ok: true };
+    }
+
+    if (payload.action === 'deleteUser' && payload.username) {
+      const k = sanitizeFirebaseKey(payload.username);
+      if (fb) {
+        await fb.remove(fb.ref(fb.db, `users/${k}`));
+      } else {
+        await fbRestRequest(`users/${k}`, 'DELETE');
+      }
+      return { ok: true };
+    }
+
+    if (payload.action === 'saveAllUsers' && payload.users && typeof payload.users === 'object') {
+      const cleanMap = {};
+      Object.keys(payload.users).forEach(rawK => {
+        const k = sanitizeFirebaseKey(rawK);
+        if (k) cleanMap[k] = { username: k, ...payload.users[rawK], updatedAt: nowIso };
+      });
+      if (fb) {
+        await fb.set(fb.ref(fb.db, 'users'), cleanMap);
+      } else {
+        await fbRestRequest('users', 'PUT', cleanMap);
+      }
+      return { ok: true };
+    }
+
+    if (payload.action === 'saveMaintenance' && payload.maintenance) {
+      if (fb) {
+        await fb.set(fb.ref(fb.db, 'maintenance'), payload.maintenance);
+      } else {
+        await fbRestRequest('maintenance', 'PUT', payload.maintenance);
+      }
+      return { ok: true };
+    }
+
+    if (payload.action === 'saveBanners' && Array.isArray(payload.banners)) {
+      if (fb) {
+        await fb.set(fb.ref(fb.db, 'banners'), payload.banners);
+      } else {
+        await fbRestRequest('banners', 'PUT', payload.banners);
+      }
+      return { ok: true };
+    }
+
+    if (payload.action === 'saveFeedback' && payload.feedback) {
+      const fbId = String(payload.feedback.id || Date.now());
+      if (fb) {
+        await fb.set(fb.ref(fb.db, `feedback/${fbId}`), payload.feedback);
+      } else {
+        await fbRestRequest(`feedback/${fbId}`, 'PUT', payload.feedback);
+      }
+      return { ok: true };
+    }
+
+    if (payload.action === 'saveSettings' && payload.settings) {
+      if (fb) {
+        await fb.set(fb.ref(fb.db, 'settings'), payload.settings);
+      } else {
+        await fbRestRequest('settings', 'PUT', payload.settings);
+      }
+      return { ok: true };
+    }
+
+    return null;
   } catch (err) {
-    console.warn('[CloudSync] POST failed:', err);
+    console.warn('[FirebaseSync] Write failed:', err);
     return null;
   }
 }
 
-async function cloudGet(action) {
-  if (!APPS_SCRIPT_URL || !navigator.onLine) return null;
-  try {
-    const url = APPS_SCRIPT_URL + (APPS_SCRIPT_URL.includes('?') ? '&' : '?') + 'action=' + encodeURIComponent(action) + '&_t=' + Date.now();
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    return await res.json();
-  } catch (err) {
-    console.warn('[CloudSync] GET failed:', err);
-    return null;
+function applyCloudSnapshot(data) {
+  if (!data || typeof data !== 'object') return;
+
+  if (data.users && typeof data.users === 'object') {
+    const deletedSet = getDeletedUsersSet();
+    const nextUsers = {};
+    Object.keys(DEFAULT_USERS).forEach(dk => {
+      if (!deletedSet.has(dk)) {
+        nextUsers[dk] = { ...DEFAULT_USERS[dk], views: [...DEFAULT_USERS[dk].views] };
+      }
+    });
+
+    if (Array.isArray(data.users)) {
+      data.users.forEach(u => {
+        const k = sanitizeFirebaseKey(u && (u.username || u.name));
+        if (!k || deletedSet.has(k)) return;
+        nextUsers[k] = normalizeUserObj(k, u, USERS[k] || nextUsers[k] || {});
+      });
+    } else {
+      Object.keys(data.users).forEach(rawKey => {
+        const k = sanitizeFirebaseKey(rawKey);
+        if (!k || deletedSet.has(k)) return;
+        const u = data.users[rawKey];
+        nextUsers[k] = normalizeUserObj(k, u, USERS[k] || nextUsers[k] || {});
+      });
+    }
+
+    USERS = nextUsers;
+    try {
+      localStorage.setItem('tc_users', JSON.stringify(USERS));
+    } catch (e) {}
+
+    if (CURRENT_USER && USERS[CURRENT_USER]) {
+      CURRENT_ROLE = USERS[CURRENT_USER].role || '';
+      ALLOWED_VIEWS = Array.isArray(USERS[CURRENT_USER].views)
+        ? sanitizeViews(USERS[CURRENT_USER].views)
+        : ['home', 'jobcards', 'gatepass'];
+      if (typeof applyAllowedNavigation === 'function') applyAllowedNavigation();
+      if (typeof renderProfileContactCard === 'function') renderProfileContactCard();
+    }
+    if (typeof renderAdminUserList === 'function') renderAdminUserList();
+  }
+
+  if (data.maintenance && typeof data.maintenance === 'object') {
+    MAINT_SCOPES.forEach(({ key }) => {
+      if (data.maintenance[key] && typeof data.maintenance[key] === 'object') {
+        MAINTENANCE_STATE[key] = {
+          active: Boolean(data.maintenance[key].active),
+          remark: String(data.maintenance[key].remark || '')
+        };
+      }
+    });
+    try {
+      localStorage.setItem('tc_maintenance', JSON.stringify(MAINTENANCE_STATE));
+    } catch (e) {}
+    if (typeof renderMaintenanceUI === 'function') renderMaintenanceUI();
+  }
+
+  if (data.banners) {
+    const arr = Array.isArray(data.banners)
+      ? data.banners.filter(Boolean)
+      : Object.values(data.banners).filter(Boolean);
+    BANNERS = arr;
+    try {
+      localStorage.setItem('tc_banners', JSON.stringify(BANNERS));
+    } catch (e) {}
+    if (typeof loadBanners === 'function') loadBanners();
+  }
+
+  if (data.feedback) {
+    const fbArr = Array.isArray(data.feedback)
+      ? data.feedback.filter(Boolean)
+      : Object.values(data.feedback).filter(Boolean);
+    fbArr.sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
+    try {
+      localStorage.setItem('tc_feedback', JSON.stringify(fbArr.slice(0, 50)));
+    } catch (e) {}
+    if (typeof renderFeedbackHistory === 'function') renderFeedbackHistory();
+  }
+
+  if (data.settings && typeof data.settings === 'object') {
+    if (data.settings.company) localStorage.setItem('tc_company', data.settings.company);
+    if (data.settings.dept) localStorage.setItem('tc_dept', data.settings.dept);
+    if (data.settings.prepBy !== undefined) localStorage.setItem('tc_prep', data.settings.prepBy);
+    if (data.settings.verBy !== undefined) localStorage.setItem('tc_ver', data.settings.verBy);
   }
 }
+
+function attachFirebaseRealtimeListeners() {
+  if (FIREBASE_LIVE_ATTACHED || !window.FIREBASE_RTDB) return;
+  FIREBASE_LIVE_ATTACHED = true;
+  const { db, ref, onValue } = window.FIREBASE_RTDB;
+
+  onValue(ref(db, 'users'), (snap) => {
+    const val = snap.val();
+    if (!val) {
+      // Seed default users to Firebase on first ever connection if empty
+      cloudPost({ action: 'saveAllUsers', users: USERS });
+      return;
+    }
+    applyCloudSnapshot({ users: val });
+  }, (err) => {
+    console.warn('[FirebaseRTDB] Live users listener error:', err);
+  });
+
+  onValue(ref(db, 'maintenance'), (snap) => {
+    if (snap.exists()) applyCloudSnapshot({ maintenance: snap.val() });
+  });
+
+  onValue(ref(db, 'banners'), (snap) => {
+    if (snap.exists()) applyCloudSnapshot({ banners: snap.val() });
+  });
+
+  onValue(ref(db, 'feedback'), (snap) => {
+    if (snap.exists()) applyCloudSnapshot({ feedback: snap.val() });
+  });
+
+  onValue(ref(db, 'settings'), (snap) => {
+    if (snap.exists()) applyCloudSnapshot({ settings: snap.val() });
+  });
+}
+
+window.addEventListener('firebase-rtdb-ready', attachFirebaseRealtimeListeners);
+if (window.FIREBASE_RTDB) attachFirebaseRealtimeListeners();
 
 async function syncAllFromCloud() {
-  if (!APPS_SCRIPT_URL || !navigator.onLine) return false;
+  if (!navigator.onLine) return false;
   try {
-    const data = await cloudGet('getAll');
-    if (!data) return false;
-
-    if (data.users && typeof data.users === 'object') {
-      const deletedSet = getDeletedUsersSet();
-      const nextUsers = {};
-      Object.keys(DEFAULT_USERS).forEach(dk => {
-        nextUsers[dk] = { ...DEFAULT_USERS[dk], views: [...DEFAULT_USERS[dk].views] };
-      });
-
-      if (Array.isArray(data.users)) {
-        data.users.forEach(u => {
-          const k = String((u && (u.username || u.name)) || '').trim().toLowerCase();
-          if (!k || deletedSet.has(k)) return;
-          nextUsers[k] = normalizeUserObj(k, u, USERS[k] || nextUsers[k] || {});
-        });
-      } else {
-        Object.keys(data.users).forEach(rawKey => {
-          const k = String(rawKey || '').trim().toLowerCase();
-          if (!k || deletedSet.has(k)) return;
-          const u = data.users[rawKey];
-          nextUsers[k] = normalizeUserObj(k, u, USERS[k] || nextUsers[k] || {});
-        });
-      }
-
-      USERS = nextUsers;
-      localStorage.setItem('tc_users', JSON.stringify(USERS));
+    let data = null;
+    if (window.FIREBASE_RTDB) {
+      const { db, ref, get } = window.FIREBASE_RTDB;
+      const snap = await get(ref(db, '/'));
+      if (snap.exists()) data = snap.val();
+    } else {
+      data = await fbRestRequest('', 'GET');
     }
 
-    if (data.maintenance && typeof data.maintenance === 'object') {
-      MAINT_SCOPES.forEach(({ key }) => {
-        if (data.maintenance[key] && typeof data.maintenance[key] === 'object') {
-          MAINTENANCE_STATE[key] = {
-            active: Boolean(data.maintenance[key].active),
-            remark: String(data.maintenance[key].remark || '')
-          };
-        }
-      });
-      localStorage.setItem('tc_maintenance', JSON.stringify(MAINTENANCE_STATE));
+    if (!data || typeof data !== 'object') {
+      // Seed initial default users if Firebase root is completely empty
+      await cloudPost({ action: 'saveAllUsers', users: USERS });
+      return true;
     }
 
-    if (Array.isArray(data.banners)) {
-      BANNERS = data.banners;
-      localStorage.setItem('tc_banners', JSON.stringify(BANNERS));
+    if (!data.users) {
+      await cloudPost({ action: 'saveAllUsers', users: USERS });
     }
 
-    if (Array.isArray(data.feedback)) {
-      localStorage.setItem('tc_feedback', JSON.stringify(data.feedback.slice(0, 50)));
-    }
-
-    if (data.settings && typeof data.settings === 'object') {
-      if (data.settings.company) localStorage.setItem('tc_company', data.settings.company);
-      if (data.settings.dept) localStorage.setItem('tc_dept', data.settings.dept);
-      if (data.settings.prepBy !== undefined) localStorage.setItem('tc_prep', data.settings.prepBy);
-      if (data.settings.verBy !== undefined) localStorage.setItem('tc_ver', data.settings.verBy);
-    }
-
+    applyCloudSnapshot(data);
     return true;
   } catch (e) {
-    console.warn('[CloudSync] syncAllFromCloud error:', e);
+    console.warn('[FirebaseSync] syncAllFromCloud error:', e);
     return false;
   }
 }
+
+window.syncAllFromCloud = syncAllFromCloud;
 
 /* --- MAINTENANCE STATE --- */
 const MAINT_SCOPES = [

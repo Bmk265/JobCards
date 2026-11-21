@@ -780,10 +780,6 @@ body {
   background: #fee2e2;
   color: var(--danger-text);
 }
-.maint-badge.off {
-  background: var(--success-bg);
-  color: var(--success-text);
-}
 .maint-toggle-btn {
   padding: 6px 12px;
   border-radius: 8px;
@@ -2685,6 +2681,7 @@ body.has-offline-banner .app { padding-top: 48px; }
     <!-- Registration Form -->
     <div id="registerFormWrap" style="display: none;">
       <input type="text" id="regName" class="login-input" placeholder="Full Name" autocomplete="name">
+      <input type="email" id="regEmail" class="login-input" placeholder="Email ID (e.g. name@thermocables.com)" autocomplete="email">
       <div class="auth-grid-2">
         <input type="text" id="regDept" class="login-input" placeholder="Department (e.g. QC, Production)">
         <input type="text" id="regPlant" class="login-input" placeholder="Plant (e.g. Plant 1)">
@@ -3132,14 +3129,6 @@ body.has-offline-banner .app { padding-top: 48px; }
     </div>
 
     <div class="profile-actions-grid">
-      <button type="button" class="profile-tile" id="profileSyncTile" onclick="handleManualSync(event)">
-        <div class="profile-tile-icon" style="background: var(--success-bg); color: var(--success-text);">🔄</div>
-        <div class="profile-tile-text">
-          <strong>Sync Data</strong>
-          <span id="profileSyncSub">Refresh users &amp; CSVs</span>
-        </div>
-      </button>
-
       <button class="profile-tile" onclick="openQrModal(event)">
         <div class="profile-tile-icon qr">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -3181,7 +3170,10 @@ body.has-offline-banner .app { padding-top: 48px; }
     <div class="maint-card" id="adminUserMgmtCard" style="display: none;">
       <div class="maint-header">
         <h3>👥 Manage Users &amp; Module Access</h3>
-        <span class="maint-lock-pill" id="adminUserCountBadge">0 Users</span>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button type="button" class="btn-mini-edit" id="adminRefreshUsersBtn" onclick="loadUsersForAdmin()">🔄 Refresh</button>
+          <span class="maint-lock-pill" id="adminUserCountBadge">0 Users</span>
+        </div>
       </div>
 
       <div class="admin-user-form">
@@ -3412,6 +3404,49 @@ body.has-offline-banner .app { padding-top: 48px; }
 </div>
 
 <script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwtPsMohouynZCg2trSdWcWoDgBPXa7XL6suw5KIawWfKtfHXWbp424oI8ZGK4aaH6m/exec";
+
+// 1. Call this when a user submits the Registration Form
+async function registerUserToCloud(userDetails) {
+  try {
+    const response = await fetch(SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(userDetails)
+    });
+
+    const result = await response.json();
+    if (result.status === "success" || result.status === "exists") {
+      localStorage.setItem("currentUser", JSON.stringify(userDetails));
+      return result;
+    } else {
+      alert("Server error: " + result.message);
+      return result;
+    }
+  } catch (error) {
+    console.error("Registration failed:", error);
+    alert("Network error while registering. Please check your connection.");
+    return null;
+  }
+}
+
+// 2. Call this when Admin opens the Admin Panel (or clicks Refresh)
+async function loadUsersForAdmin() {
+  try {
+    const response = await fetch(SCRIPT_URL);
+    const result = await response.json();
+
+    if (result.status === "success") {
+      console.log("Live users from Google Sheet:", result.users);
+      renderAdminUserList(result.users);
+    } else {
+      alert("Could not load users: " + result.message);
+    }
+  } catch (error) {
+    console.error("Failed to fetch users:", error);
+  }
+}
+
 (function(){
 "use strict";
 
@@ -3423,7 +3458,6 @@ function hideGlobalLoader() {
   }
 }
 
-/* --- SAFETY: Force hide loader quickly on DOMContentLoaded and load --- */
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(hideGlobalLoader, 1500);
 });
@@ -3456,11 +3490,9 @@ let CURRENT_USER = '', CURRENT_ROLE = '', ALLOWED_VIEWS = [];
 let JOB_DATA = [], BOM_DATA = [], USER_PLAN_QTY = null;
 let loginStep = 1;
 
-/* --- STANDARD GATE PASS COUNT: 3 x 9 = 27 --- */
 const GP_STANDARD_COUNT = 27;
 const ALL_MODULE_KEYS = ['home', 'jobcards', 'bom', 'qccalc', 'gatepass'];
 
-/* --- DEFAULT & PERSISTED USERS STORE --- */
 const DEFAULT_USERS = {
   'admin':      { name: 'Administrator', dept: 'Administration', plant: 'Main Plant', phone: '', email: '', pass: 'Admin@Tcl',     role: 'Admin',      views: ['home', 'jobcards', 'bom', 'qccalc', 'gatepass'] },
   'rakesh':     { name: 'Rakesh',        dept: 'Operations',     plant: 'Main Plant', phone: '', email: '', pass: 'Rakesh@Tcl',    role: 'Manager',    views: ['home', 'jobcards', 'bom', 'gatepass'] },
@@ -3512,17 +3544,16 @@ function saveUsersStore(changedUserKey = null, deletedUserKey = null) {
     console.warn('Failed to save users:', e);
   }
   if (deletedUserKey) {
-    return cloudPost({ action: 'deleteUser', username: deletedUserKey });
+    cloudPost({ action: 'deleteUser', username: deletedUserKey });
   } else if (changedUserKey && USERS[changedUserKey]) {
-    return cloudPost({ action: 'saveUser', username: changedUserKey, user: USERS[changedUserKey] });
+    cloudPost({ action: 'saveUser', username: changedUserKey, user: USERS[changedUserKey] });
   } else {
-    return cloudPost({ action: 'saveAllUsers', users: USERS });
+    cloudPost({ action: 'saveAllUsers', users: USERS });
   }
 }
 
 let USERS = loadUsersStore();
-
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyiOsEWbiKuCLAAcjvztyjgroobotLSQ4MZVTD1htmtTBXUqH5QuMTepHztUzNdSazY/exec";
+const APPS_SCRIPT_URL = SCRIPT_URL;
 
 async function cloudPost(payload) {
   if (!APPS_SCRIPT_URL || !navigator.onLine) return null;
@@ -3553,27 +3584,18 @@ async function cloudGet(action) {
   }
 }
 
-let LAST_CLOUD_SYNC_INFO = '';
-
 async function syncAllFromCloud() {
-  if (!APPS_SCRIPT_URL || !navigator.onLine) {
-    LAST_CLOUD_SYNC_INFO = 'Offline';
-    return false;
-  }
+  if (!APPS_SCRIPT_URL || !navigator.onLine) return false;
   try {
     const data = await cloudGet('getAll');
-    if (!data || data.ok === false) {
-      LAST_CLOUD_SYNC_INFO = (data && data.error) ? ('Script error: ' + data.error) : 'No response from Apps Script';
-      return false;
-    }
+    if (!data) return false;
 
-    if (data.users && typeof data.users === 'object' && Object.keys(data.users).length > 0) {
+    if (data.users && typeof data.users === 'object') {
       const merged = loadUsersStore();
       Object.keys(data.users).forEach(rawKey => {
         const k = String(rawKey || '').trim().toLowerCase();
         if (!k) return;
         const u = data.users[rawKey];
-        if (!u || typeof u !== 'object') return;
         merged[k] = {
           name: u.name || k,
           dept: u.dept || 'General',
@@ -3617,16 +3639,12 @@ async function syncAllFromCloud() {
       if (data.settings.verBy !== undefined) localStorage.setItem('tc_ver', data.settings.verBy);
     }
 
-    const userCount = Object.keys(USERS).length;
-    LAST_CLOUD_SYNC_INFO = `Cloud OK (${userCount} users)`;
     return true;
   } catch (e) {
     console.warn('[CloudSync] syncAllFromCloud error:', e);
-    LAST_CLOUD_SYNC_INFO = 'Sync error';
     return false;
   }
 }
-
 
 /* --- MAINTENANCE STATE --- */
 const MAINT_SCOPES = [
@@ -3649,8 +3667,6 @@ function getDefaultMaintenanceState() {
   };
 }
 
-let MAINTENANCE_STATE = loadMaintenanceState();
-
 function loadMaintenanceState() {
   const def = getDefaultMaintenanceState();
   try {
@@ -3669,6 +3685,8 @@ function loadMaintenanceState() {
   return def;
 }
 
+let MAINTENANCE_STATE = loadMaintenanceState();
+
 function isAdminUser() {
   return CURRENT_ROLE === 'Admin' || CURRENT_USER === 'admin';
 }
@@ -3682,12 +3700,8 @@ function renderMaintenanceUI() {
   if (!listEl) return;
 
   const canEdit = isAdminUser();
-  if (badgeEl) {
-    badgeEl.textContent = canEdit ? 'Admin Editable' : 'Active Notices';
-  }
-  if (saveBtn) {
-    saveBtn.style.display = canEdit ? 'block' : 'none';
-  }
+  if (badgeEl) badgeEl.textContent = canEdit ? 'Admin Editable' : 'Active Notices';
+  if (saveBtn) saveBtn.style.display = canEdit ? 'block' : 'none';
 
   const activeScopes = MAINT_SCOPES.filter(({ key }) => Boolean(MAINTENANCE_STATE[key] && MAINTENANCE_STATE[key].active));
   const inactiveScopes = MAINT_SCOPES.filter(({ key }) => !(MAINTENANCE_STATE[key] && MAINTENANCE_STATE[key].active));
@@ -3762,9 +3776,7 @@ window.toggleMaintenanceScope = function(key) {
   MAINTENANCE_STATE[key].active = !MAINTENANCE_STATE[key].active;
 
   const remarkInput = document.getElementById(`maint-remark-${key}`);
-  if (remarkInput) {
-    MAINTENANCE_STATE[key].remark = remarkInput.value;
-  }
+  if (remarkInput) MAINTENANCE_STATE[key].remark = remarkInput.value;
   localStorage.setItem('tc_maintenance', JSON.stringify(MAINTENANCE_STATE));
   cloudPost({ action: 'saveMaintenance', maintenance: MAINTENANCE_STATE });
   renderMaintenanceUI();
@@ -3778,9 +3790,7 @@ window.saveMaintenanceSettings = function() {
   MAINT_SCOPES.forEach(({ key }) => {
     const input = document.getElementById(`maint-remark-${key}`);
     if (!MAINTENANCE_STATE[key]) MAINTENANCE_STATE[key] = { active: false, remark: '' };
-    if (input) {
-      MAINTENANCE_STATE[key].remark = input.value.trim();
-    }
+    if (input) MAINTENANCE_STATE[key].remark = input.value.trim();
   });
   localStorage.setItem('tc_maintenance', JSON.stringify(MAINTENANCE_STATE));
   cloudPost({ action: 'saveMaintenance', maintenance: MAINTENANCE_STATE });
@@ -3829,11 +3839,11 @@ function applyMaintenanceLocks() {
   }
 
   const moduleMap = [
-    { key: 'home',     label: 'Home Module',     noticeId: 'homeMaintenanceNotice',     wrapId: 'homeContentWrap' },
+    { key: 'home',     label: 'Home Module',      noticeId: 'homeMaintenanceNotice',     wrapId: 'homeContentWrap' },
     { key: 'jobcards', label: 'Job Cards Module', noticeId: 'jobcardsMaintenanceNotice', wrapId: 'jobcardsContentWrap' },
-    { key: 'bom',      label: 'BOM Module',      noticeId: 'bomMaintenanceNotice',      wrapId: 'bomContentWrap' },
-    { key: 'qccalc',   label: 'QC Calc Module',  noticeId: 'qccalcMaintenanceNotice',   wrapId: 'qccalcContentWrap' },
-    { key: 'gatepass', label: 'Gate Pass Module',noticeId: 'gatepassMaintenanceNotice', wrapId: 'gatepassContentWrap' }
+    { key: 'bom',      label: 'BOM Module',       noticeId: 'bomMaintenanceNotice',      wrapId: 'bomContentWrap' },
+    { key: 'qccalc',   label: 'QC Calc Module',   noticeId: 'qccalcMaintenanceNotice',   wrapId: 'qccalcContentWrap' },
+    { key: 'gatepass', label: 'Gate Pass Module', noticeId: 'gatepassMaintenanceNotice', wrapId: 'gatepassContentWrap' }
   ];
 
   moduleMap.forEach(({ key, label, noticeId, wrapId }) => {
@@ -4059,7 +4069,7 @@ window.saveAdminUser = function() {
   alert(origKey ? `User "@${targetKey}" updated.` : `User "@${targetKey}" created.`);
 };
 
-function renderAdminUserList() {
+function renderAdminUserList(cloudUsers) {
   const card = document.getElementById('adminUserMgmtCard');
   const listEl = document.getElementById('adminUserList');
   const badge = document.getElementById('adminUserCountBadge');
@@ -4071,6 +4081,33 @@ function renderAdminUserList() {
   }
 
   card.style.display = 'block';
+
+  if (Array.isArray(cloudUsers)) {
+    if (badge) badge.textContent = `${cloudUsers.length} Users`;
+    listEl.innerHTML = cloudUsers.map(u => {
+      const uname = String(u.username || u.name || '').toLowerCase();
+      const nameVal = u.name || uname || 'User';
+      const roleText = u.role || 'Unassigned';
+      const deptText = u.department || u.dept || 'General';
+      const plantText = u.plant || 'Main Plant';
+      const contactBits = [u.phone, u.email].filter(Boolean).join(' • ');
+      return `
+        <div class="admin-user-card">
+          <div class="admin-user-card-info">
+            <div class="admin-user-card-name">
+              <span>${esc(nameVal)}</span>
+              ${uname ? `<span style="font-size:0.74rem;color:var(--text-muted);font-weight:600;">@${esc(uname)}</span>` : ''}
+              <span class="admin-user-role-tag">${esc(roleText)}</span>
+            </div>
+            <div class="admin-user-card-sub">${esc(deptText)} • ${esc(plantText)}</div>
+            ${contactBits ? `<div class="admin-user-card-sub">${esc(contactBits)}</div>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+    return;
+  }
+
   const keys = Object.keys(USERS).sort();
   if (badge) badge.textContent = `${keys.length} Users`;
 
@@ -4104,19 +4141,19 @@ function renderAdminUserList() {
   }).join('');
 }
 
+window.renderAdminUserList = renderAdminUserList;
+
 /* --- BANNER STATE --- */
 let BANNERS = JSON.parse(localStorage.getItem('tc_banners')) || [];
 let CURRENT_BANNER_IDX = 0;
 let BANNER_INTERVAL = null;
 
-/* ---- Date/time formatting helpers ---- */
 function formatDateForDisplay(isoDate) {
   if (!isoDate) return '';
   const [y, m, d] = isoDate.split('-');
   return `${d}/${m}/${y}`;
 }
 
-/* ---- Gate Pass UI: populate dropdowns, defaults, live preview ---- */
 function initGatePassUI() {
   const hourSel = document.getElementById('gpHour');
   const minSel = document.getElementById('gpMinute');
@@ -4229,32 +4266,18 @@ window.handleLogin = async function() {
   const p = document.getElementById('loginPass').value;
   const err = document.getElementById('loginError');
   const passInput = document.getElementById('loginPass');
-  const btn = document.getElementById('loginBtn');
-
-  if (!u) {
-    err.textContent = 'Please enter your username.';
-    err.style.display = 'block';
-    return;
-  }
-
-  USERS = loadUsersStore();
 
   if (loginStep === 1) {
     if (!USERS[u] && navigator.onLine) {
-      btn.disabled = true;
-      btn.textContent = 'Checking...';
       await syncAllFromCloud();
-      btn.disabled = false;
-      btn.textContent = 'Next';
     }
     if (USERS[u]) {
-      const savedPass = String(USERS[u].pass || '');
-      if (!savedPass) {
+      if (!USERS[u].pass) {
         completeLogin(u);
       } else {
         passInput.style.display = 'block';
         passInput.focus();
-        btn.textContent = 'Sign In';
+        document.getElementById('loginBtn').textContent = 'Sign In';
         loginStep = 2;
         err.style.display = 'none';
       }
@@ -4263,8 +4286,7 @@ window.handleLogin = async function() {
       err.style.display = 'block';
     }
   } else {
-    const savedPass = USERS[u] ? String(USERS[u].pass || '') : '';
-    if (USERS[u] && String(p) === savedPass) {
+    if (USERS[u] && p === USERS[u].pass) {
       completeLogin(u);
     } else {
       err.textContent = 'Invalid Password';
@@ -4275,6 +4297,7 @@ window.handleLogin = async function() {
 
 window.handleRegister = async function() {
   const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
   const dept = document.getElementById('regDept').value.trim();
   const plant = document.getElementById('regPlant').value.trim();
   const username = document.getElementById('regUsername').value.trim().toLowerCase();
@@ -4283,7 +4306,6 @@ window.handleRegister = async function() {
 
   const err = document.getElementById('loginError');
   const ok = document.getElementById('loginSuccess');
-  const regBtn = document.getElementById('registerBtn');
   err.style.display = 'none';
   ok.style.display = 'none';
 
@@ -4292,13 +4314,16 @@ window.handleRegister = async function() {
     err.style.display = 'block';
     return;
   }
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    err.textContent = 'Please enter a valid email address.';
+    err.style.display = 'block';
+    return;
+  }
   if (!/^[a-z0-9_.-]+$/.test(username)) {
     err.textContent = 'Username can only contain letters, numbers, dot, underscore, or hyphen.';
     err.style.display = 'block';
     return;
   }
-
-  USERS = loadUsersStore();
   if (USERS[username]) {
     err.textContent = 'This username is already taken.';
     err.style.display = 'block';
@@ -4315,34 +4340,37 @@ window.handleRegister = async function() {
     return;
   }
 
-  regBtn.disabled = true;
-  regBtn.textContent = 'Creating Account...';
-
   USERS[username] = {
     name,
     dept,
     plant,
     phone: '',
-    email: '',
-    pass: String(pass),
-    role: 'Operator',
+    email,
+    pass,
+    role: '',
     views: ['home', 'jobcards', 'gatepass']
   };
-  await saveUsersStore(username);
+  saveUsersStore(username);
+
+  await registerUserToCloud({
+    name,
+    email,
+    department: dept,
+    plant,
+    username
+  });
 
   document.getElementById('regName').value = '';
+  document.getElementById('regEmail').value = '';
   document.getElementById('regDept').value = '';
   document.getElementById('regPlant').value = '';
   document.getElementById('regUsername').value = '';
   document.getElementById('regPass').value = '';
   document.getElementById('regConfirmPass').value = '';
 
-  regBtn.disabled = false;
-  regBtn.textContent = 'Create Account';
-
   ok.textContent = `Registration successful for @${username}. Signing you in...`;
   ok.style.display = 'block';
-  setTimeout(() => completeLogin(username), 400);
+  setTimeout(() => completeLogin(username), 450);
 };
 
 function completeLogin(u) {
@@ -4365,6 +4393,7 @@ function completeLogin(u) {
     document.getElementById('profileBannerTile').style.display = 'flex';
     loadAdminSettings();
     renderAdminUserList();
+    loadUsersForAdmin();
   } else {
     document.getElementById('adminPanel').style.display = 'none';
     document.getElementById('profileBannerTile').style.display = 'none';
@@ -4383,8 +4412,8 @@ function completeLogin(u) {
 
   const hr = now.getHours();
   let greeting = 'Good Evening';
-  if(hr < 12) greeting = 'Good Morning';
-  else if(hr < 17) greeting = 'Good Afternoon';
+  if (hr < 12) greeting = 'Good Morning';
+  else if (hr < 17) greeting = 'Good Afternoon';
   document.getElementById('dashGreeting').textContent = greeting;
 
   loadJobDataFromCSV();
@@ -4478,46 +4507,10 @@ async function refreshData() {
 
 window.refreshData = refreshData;
 
-window.handleManualSync = async function(event) {
-  if (event) event.stopPropagation();
-  const sub = document.getElementById('profileSyncSub');
-  if (!navigator.onLine) {
-    setSyncState('offline');
-    if (sub) sub.textContent = 'Offline — cached only';
-    return;
-  }
-  if (sub) sub.textContent = 'Syncing...';
-  const ok = await refreshData();
-  if (sub) {
-    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    sub.textContent = ok
-      ? `${LAST_CLOUD_SYNC_INFO} • ${timeStr}`
-      : `${LAST_CLOUD_SYNC_INFO || 'Sync failed'} — tap to retry`;
-  }
-};
-
 window.addEventListener('online', () => {
   console.log('[sync] Back online — refreshing data');
   refreshData();
 });
-
-setInterval(() => {
-  if (navigator.onLine && CURRENT_USER && !isSyncing) {
-    syncAllFromCloud().then(ok => {
-      if (ok && CURRENT_USER && USERS[CURRENT_USER]) {
-        CURRENT_ROLE = USERS[CURRENT_USER].role || '';
-        ALLOWED_VIEWS = Array.isArray(USERS[CURRENT_USER].views) ? sanitizeViews(USERS[CURRENT_USER].views) : ['home', 'jobcards', 'gatepass'];
-        applyAllowedNavigation();
-        if (document.getElementById('view-profile')?.classList.contains('active')) {
-          renderProfileContactCard();
-          renderAdminUserList();
-          renderMaintenanceUI();
-        }
-        applyMaintenanceLocks();
-      }
-    });
-  }
-}, 30000);
 
 window.addEventListener('offline', () => {
   console.log('[sync] Gone offline');
@@ -4592,17 +4585,8 @@ window.switchMainView = function(viewName) {
     document.getElementById('nav-profile')?.classList.add('active');
     renderProfileContactCard();
     renderAdminUserList();
+    if (isAdminUser()) loadUsersForAdmin();
     renderMaintenanceUI();
-    if (navigator.onLine) {
-      syncAllFromCloud().then(ok => {
-        if (ok) {
-          renderProfileContactCard();
-          renderAdminUserList();
-          renderMaintenanceUI();
-          applyAllowedNavigation();
-        }
-      });
-    }
   }
 
   document.getElementById('headerTitle').textContent = 'Thermocables';
@@ -4621,1099 +4605,1047 @@ window.switchQcTab = function(tabName, event) {
 /* --- KNOWLEDGE MODAL LOGIC --- */
 window.openKnowledge = function(key) {
   const data = {
-    '5s': { icon: '🏭', title: 'The 5S Methodology', content: `<p>The 5S methodology is a systematic approach to workplace organization that improves efficiency, safety, and morale. It is the foundation of Lean Manufacturing.</p><h5>1. Seiri (Sort)</h5><p>Separate necessary items from unnecessary ones. Remove all tools, equipment, and materials that are not needed for current production.</p><h5>2. Seiton (Set in Order)</h5><p>Arrange necessary items in good order for easy use. "A place for everything, and everything in its place."</p><h5>3. Seiso (Shine)</h5><p>Clean your workplace completely. Cleaning also acts an inspection to find leaks, cracks, or loose bolts.</p><h5>4. Seiketsu (Standardize)</h5><p>Maintain high standards of housekeeping. Create visual rules (like floor markings or color-coded tools).</p><h5>5. Shitsuke (Sustain)</h5><p>Make a habit of maintaining the standards. This requires discipline, training, and regular audits.</p>` },
+    '5s': { icon: '🏭', title: 'The 5S Methodology', content: `<p>The 5S methodology is a systematic approach to workplace organization that improves efficiency, safety, and morale. It is the foundation of Lean Manufacturing.</p><h5>1. Seiri (Sort)</h5><p>Separate necessary items from unnecessary ones. Remove all tools, equipment, and materials that are not needed for current production.</p><h5>2. Seiton (Set in Order)</h5><p>Arrange necessary items in good order for easy use. "A place for everything, and everything in its place."</p><h5>3. Seiso (Shine)</h5><p>Clean your workplace completely. Cleaning also acts as an inspection to find leaks, cracks, or loose bolts.</p><h5>4. Seiketsu (Standardize)</h5><p>Maintain high standards of housekeeping. Create visual rules (like floor markings or color-coded tools).</p><h5>5. Shitsuke (Sustain)</h5><p>Make a habit of maintaining the standards. This requires discipline, training, and regular audits.</p>` },
     'lean': { icon: '⚙️', title: 'Lean Manufacturing', content: `<p>Lean manufacturing is a production method aimed primarily at reducing times within the production system as well as response times from suppliers and to customers. It is derived from the Toyota Production System (TPS).</p><h5>Key Principles:</h5><ul><li><b>Kaizen:</b> Continuous, incremental improvement involving everyone.</li><li><b>Poka-yoke:</b> Mistake-proofing. Designing processes so mistakes are impossible to make.</li><li><b>Just-In-Time (JIT):</b> Producing only what is needed, when it is needed.</li><li><b>Gemba:</b> "The real place." Going to the factory floor to observe and solve problems.</li></ul><h5>The 7 Wastes (Muda):</h5><ul><li>Transportation, Inventory, Motion, Waiting, Overproduction, Overprocessing, Defects.</li></ul>` },
     'standards': { icon: '📜', title: 'IEC Cable Standards', content: `<p>International Electrotechnical Commission (IEC) standards are globally recognized benchmarks for cable manufacturing and testing.</p><table><tr><th>Standard</th><th>Description</th></tr><tr><td><b>IEC 60228</b></td><td>Conductors of insulated cables. Defines Class 1 (solid), Class 2 (stranded), Class 5 (flexible), and Class 6 (extra flexible).</td></tr><tr><td><b>IEC 60502</b></td><td>Power cables with extruded insulation (PVC, XLPE, EPR) for rated voltages from 1kV to 30kV.</td></tr><tr><td><b>IEC 60332</b></td><td>Tests on electric and optical fibre cables under fire conditions. (Flame propagation).</td></tr><tr><td><b>IEC 60754</b></td><td>Test on gases evolved during combustion of materials from cables (Halogen acid gas).</td></tr><tr><td><b>IEC 61034</b></td><td>Measurement of smoke density of cables burning under defined conditions.</td></tr></table>` },
     'formulas': { icon: '📐', title: 'Engineering Formulas', content: `<p>Essential formulas used in cable design and quality control:</p><h5>1. Conductor Resistance</h5><p>The DC resistance of a conductor is calculated using:</p><div class="formula-box">R = (ρ × L) / A</div><ul><li><b>R</b> = Resistance (Ω)</li><li><b>ρ</b> = Resistivity (Copper ≈ 0.01724 Ω·mm²/m at 20°C)</li><li><b>L</b> = Length (m)</li><li><b>A</b> = Cross-sectional Area (mm²)</li></ul><h5>2. Voltage Drop</h5><p>For a single-phase circuit:</p><div class="formula-box">Vd = (2 × I × L × R) / 1000</div><ul><li><b>I</b> = Current (A)</li><li><b>L</b> = Cable Length (m)</li><li><b>R</b> = Resistance (Ω/km)</li></ul><h5>3. Capacitance</h5><p>Capacitance per unit length (pF/m) is crucial for communication cables and high-voltage cables.</p><div class="formula-box">C = (2 × π × ε) / ln(D/d)</div><ul><li><b>ε</b> = Permittivity of insulation</li><li><b>D</b> = Diameter over insulation</li><li><b>d</b> = Conductor diameter</li></ul>` },
-    'construction': { icon: '🔌', title: 'Cable Construction Anatomy', content: `<p>A standard power or control cable consists of several protective layers to ensure safety and longevity.</p><h5>From Inside Out:</h5><ul><li><b>1. Conductor:</b> Annealed copper or aluminum. Carries the current. Stranded for flexibility.</li><li><b>2. Insulation:</b> XLPE, PVC, or Rubber. Prevents current leakage and protects against electric shock.</li><li><b>3. Bedding/Inner Sheath:</b> Extruded PVC or tape. Binds the cores together and prevents moisture ingress.</li><li><b>4. Armouring:</b> Steel wire (SWA) or steel tape (STA). Provides mechanical protection against crushing and rodents.</li><li><b>5. Outer Sheath:</b> Extruded PVC, PE, or LSZH (Low Smoke Zero Halogen). Protects against UV, chemicals, and fire.</li></ul><p style="margin-top:12px;"><b>Did you know?</b> The "Skin Effect" at high frequencies means AC current flows mostly on the surface of the conductor. This is why high-frequency cables use Litz wire to increase surface area.</p>` }
+    'construction': { icon: '🔌', title: 'Cable Construction', content: `<p>Typical layers of a power or control cable:</p><h5>1. Conductor</h5><p>Carries electrical current (solid or stranded annealed copper / aluminium).</p><h5>2. Insulation</h5><p>Electrically isolates the conductor (PVC, XLPE, or EPR) to withstand rated voltage.</p><h5>3. Inner Sheath / Bedding</h5><p>Provides a circular bed and mechanical protection over insulated cores.</p><h5>4. Armouring</h5><p>Galvanized steel wire or strip for mechanical protection against impact and crushing.</p><h5>5. Outer Sheath</h5><p>Protects against moisture, chemicals, UV, and fire (FR / FRLS / ZHFR).</p>` }
   };
+
   const item = data[key];
-  if(!item) return;
+  if (!item) return;
   document.getElementById('modalIcon').textContent = item.icon;
   document.getElementById('modalTitle').textContent = item.title;
   document.getElementById('modalBody').innerHTML = item.content;
   document.getElementById('knowledgeModal').classList.add('open');
 };
-window.closeKnowledge = function(event) {
-  if(event && event.target.classList.contains('modal-content')) return;
+
+window.closeKnowledge = function(e) {
+  if (e && e.target !== e.currentTarget && !e.target.classList.contains('modal-close')) return;
   document.getElementById('knowledgeModal').classList.remove('open');
 };
 
-/* --- QR MODAL LOGIC --- */
-window.openQrModal = function(event) {
-  if(event) event.stopPropagation();
-  const currentUrl = window.location.href;
-  document.getElementById('qrCodeImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(currentUrl)}`;
-  document.getElementById('qrModal').classList.add('open');
-};
-window.closeQrModal = function(event) {
-  if(event && event.target.classList.contains('modal-content')) return;
-  document.getElementById('qrModal').classList.remove('open');
-};
+/* --- BANNER & FEEDBACK & QR MODALS --- */
+function loadBanners() {
+  const bannerEl = document.getElementById('promoBanner');
+  if (!bannerEl) return;
 
-/* --- FEEDBACK / ISSUE / SUGGESTION MODAL LOGIC --- */
-window.openFeedbackModal = function(event) {
-  if(event) event.stopPropagation();
-  renderFeedbackHistory();
-  document.getElementById('feedbackModal').classList.add('open');
-};
-window.closeFeedbackModal = function(event) {
-  if(event && event.target.classList.contains('modal-content')) return;
-  document.getElementById('feedbackModal').classList.remove('open');
-};
+  if (BANNER_INTERVAL) {
+    clearInterval(BANNER_INTERVAL);
+    BANNER_INTERVAL = null;
+  }
 
-window.submitFeedback = async function() {
-  const typeEl = document.getElementById('fbType');
-  const modEl = document.getElementById('fbModule');
-  const msgEl = document.getElementById('fbMessage');
-  const msg = msgEl.value.trim();
-  if (!msg) {
-    alert('Please enter your issue or improvement suggestion.');
-    msgEl.focus();
+  if (!BANNERS || BANNERS.length === 0) {
+    bannerEl.style.display = 'none';
+    renderAdminBannerList();
     return;
   }
 
-  const uKey = String(CURRENT_USER || 'guest').trim().toLowerCase();
-  const uProfile = (USERS && USERS[uKey]) ? USERS[uKey] : {};
-  const userName = String(uProfile.name || uKey || 'Guest').trim();
-  const userDept = String(uProfile.dept || '-').trim() || '-';
-  const userPlant = String(uProfile.plant || '-').trim() || '-';
-  const userPhone = String(uProfile.phone || '-').trim() || '-';
-  const userEmail = String(uProfile.email || '-').trim() || '-';
-  const timestamp = new Date().toLocaleString('en-GB', { hour12: false });
+  if (CURRENT_BANNER_IDX >= BANNERS.length) CURRENT_BANNER_IDX = 0;
 
-  let items = [];
-  try {
-    items = JSON.parse(localStorage.getItem('tc_feedback')) || [];
-  } catch (e) {
-    items = [];
+  function showBanner(idx) {
+    const b = BANNERS[idx];
+    if (!b) return;
+    bannerEl.style.display = 'flex';
+    if (b.image) {
+      bannerEl.style.backgroundImage = `url('${b.image.replace(/'/g, "%27")}')`;
+    } else {
+      bannerEl.style.backgroundImage = 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #2563eb 100%)';
+    }
+
+    const dotsHtml = BANNERS.length > 1
+      ? `<div class="promo-banner-dots">${BANNERS.map((_, i) => `<span class="promo-banner-dot ${i === idx ? 'active' : ''}"></span>`).join('')}</div>`
+      : '';
+    const linkBadge = b.link ? `<div class="promo-banner-link-badge">↗</div>` : '';
+
+    bannerEl.innerHTML = `
+      <div class="promo-banner-overlay"></div>
+      ${linkBadge}
+      <div class="promo-banner-content">${esc(b.text || 'Announcement')}</div>
+      ${dotsHtml}
+    `;
   }
 
-  const entry = {
-    id: Date.now(),
-    type: String(typeEl.value || 'Feedback'),
-    module: String(modEl.value || 'General'),
-    message: msg,
-    details: msg,
-    user: uKey,
-    username: uKey,
-    name: userName,
-    submittedBy: `${userName} (@${uKey})`,
-    department: userDept,
-    dept: userDept,
-    plant: userPlant,
-    phone: userPhone,
-    email: userEmail,
-    createdAt: timestamp
+  showBanner(CURRENT_BANNER_IDX);
+  if (BANNERS.length > 1) {
+    BANNER_INTERVAL = setInterval(() => {
+      CURRENT_BANNER_IDX = (CURRENT_BANNER_IDX + 1) % BANNERS.length;
+      showBanner(CURRENT_BANNER_IDX);
+    }, 5000);
+  }
+  renderAdminBannerList();
+}
+
+window.handleBannerClick = function() {
+  const b = BANNERS[CURRENT_BANNER_IDX];
+  if (b && b.link) {
+    const href = b.link.trim();
+    if (/^https?:\/\//i.test(href)) {
+      window.open(href, '_blank', 'noopener,noreferrer');
+    }
+  }
+};
+
+window.openBannerModal = function() {
+  if (!isAdminUser()) return;
+  renderAdminBannerList();
+  document.getElementById('bannerModal').classList.add('open');
+};
+
+window.closeBannerModal = function(e) {
+  if (e && e.target !== e.currentTarget && !e.target.classList.contains('modal-close')) return;
+  document.getElementById('bannerModal').classList.remove('open');
+};
+
+window.addBanner = function() {
+  if (!isAdminUser()) return;
+  const text = document.getElementById('setBannerText').value.trim();
+  const link = document.getElementById('setBannerLink').value.trim();
+  const fileInput = document.getElementById('setBannerFile');
+  const file = fileInput && fileInput.files && fileInput.files[0];
+
+  const finishAdd = (imageDataUrl) => {
+    if (!text && !imageDataUrl) {
+      alert('Please enter a banner title or select an image.');
+      return;
+    }
+    BANNERS.unshift({
+      id: Date.now(),
+      text,
+      link,
+      image: imageDataUrl || ''
+    });
+    localStorage.setItem('tc_banners', JSON.stringify(BANNERS));
+    cloudPost({ action: 'saveBanners', banners: BANNERS });
+    document.getElementById('setBannerText').value = '';
+    document.getElementById('setBannerLink').value = '';
+    if (fileInput) fileInput.value = '';
+    CURRENT_BANNER_IDX = 0;
+    loadBanners();
   };
 
-  items.unshift(entry);
-
-  try {
-    localStorage.setItem('tc_feedback', JSON.stringify(items.slice(0, 50)));
-    await cloudPost({
-      action: 'addFeedback',
-      feedback: entry,
-      type: entry.type,
-      module: entry.module,
-      name: userName,
-      username: uKey,
-      department: userDept,
-      plant: userPlant,
-      phone: userPhone,
-      email: userEmail,
-      details: msg,
-      message: msg,
-      time: timestamp
-    });
-  } catch (e) {
-    console.warn('Could not persist feedback:', e);
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = () => finishAdd(String(reader.result || ''));
+    reader.readAsDataURL(file);
+  } else {
+    finishAdd('');
   }
-
-  msgEl.value = '';
-  renderFeedbackHistory();
-  alert('Submitted. Thank you for your feedback.');
 };
+
+window.deleteBanner = function(id) {
+  if (!isAdminUser()) return;
+  BANNERS = BANNERS.filter(b => String(b.id) !== String(id));
+  localStorage.setItem('tc_banners', JSON.stringify(BANNERS));
+  cloudPost({ action: 'saveBanners', banners: BANNERS });
+  loadBanners();
+};
+
+function renderAdminBannerList() {
+  const listEl = document.getElementById('adminBannerList');
+  if (!listEl) return;
+  if (!BANNERS || BANNERS.length === 0) {
+    listEl.innerHTML = `<div style="font-size:0.8rem;color:var(--text-muted);text-align:center;">No active banners.</div>`;
+    return;
+  }
+  listEl.innerHTML = BANNERS.map(b => `
+    <div class="admin-banner-item">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
+        ${b.image ? `<img src="${b.image}" class="admin-banner-thumb" alt="">` : `<div class="admin-banner-thumb" style="display:flex;align-items:center;justify-content:center;">📢</div>`}
+        <div style="min-width:0;">
+          <div style="font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(b.text || 'Image Banner')}</div>
+          ${b.link ? `<div style="font-size:0.72rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(b.link)}</div>` : ''}
+        </div>
+      </div>
+      <button type="button" class="btn-mini-del" onclick="deleteBanner('${b.id}')">Delete</button>
+    </div>
+  `).join('');
+}
 
 function renderFeedbackHistory() {
   const listEl = document.getElementById('feedbackHistoryList');
   if (!listEl) return;
-  let items = [];
+  let logs = [];
   try {
-    items = JSON.parse(localStorage.getItem('tc_feedback')) || [];
+    logs = JSON.parse(localStorage.getItem('tc_feedback')) || [];
   } catch (e) {
-    items = [];
+    logs = [];
   }
-
-  if (items.length === 0) {
-    listEl.innerHTML = `<div style="font-size:0.78rem;color:var(--text-muted);text-align:center;padding:8px;">No recent submissions yet.</div>`;
+  if (!logs.length) {
+    listEl.innerHTML = '';
     return;
   }
-
-  listEl.innerHTML = items.slice(0, 8).map(item => `
+  listEl.innerHTML = logs.slice(0, 10).map(item => `
     <div class="feedback-log-item">
       <div class="feedback-log-meta">
-        <span>${esc(item.type)} • ${esc(item.module)} (${esc(typeof item.user === 'object' ? (item.user.name || item.user.username || 'user') : item.user)})</span>
-        <span>${esc(item.createdAt)}</span>
+        <span>${esc(item.type)} • ${esc(item.module)}</span>
+        <span>${esc(item.user || '')}</span>
       </div>
-      <div style="color:var(--text-primary);white-space:pre-wrap;">${esc(item.message)}</div>
+      <div>${esc(item.message)}</div>
     </div>
   `).join('');
 }
 
-/* --- BANNER MANAGEMENT LOGIC --- */
-window.openBannerModal = function(event) {
-  if(event) event.stopPropagation();
-  if (!isAdminUser()) {
-    alert('Only Admin can manage banners.');
-    return;
-  }
-  document.getElementById('bannerModal').classList.add('open');
-  renderAdminBanners();
-};
-window.closeBannerModal = function(event) {
-  if(event && event.target.classList.contains('modal-content')) return;
-  document.getElementById('bannerModal').classList.remove('open');
+window.openFeedbackModal = function() {
+  renderFeedbackHistory();
+  document.getElementById('feedbackModal').classList.add('open');
 };
 
-function loadBanners() {
-  BANNERS = JSON.parse(localStorage.getItem('tc_banners')) || [];
-  const container = document.getElementById('promoBanner');
-  if (!container) return;
+window.closeFeedbackModal = function(e) {
+  if (e && e.target !== e.currentTarget && !e.target.classList.contains('modal-close')) return;
+  document.getElementById('feedbackModal').classList.remove('open');
+};
 
-  const activeBanners = BANNERS.filter(b => b.active);
-  if (activeBanners.length === 0) {
-    container.style.display = 'none';
-    clearInterval(BANNER_INTERVAL);
+window.submitFeedback = function() {
+  const type = document.getElementById('fbType').value;
+  const moduleName = document.getElementById('fbModule').value;
+  const message = document.getElementById('fbMessage').value.trim();
+  if (!message) {
+    alert('Please enter details before submitting.');
+    document.getElementById('fbMessage').focus();
     return;
   }
 
-  container.style.display = 'flex';
-  CURRENT_BANNER_IDX = 0;
-  showBanner(activeBanners);
+  const entry = {
+    id: Date.now(),
+    type,
+    module: moduleName,
+    message,
+    user: CURRENT_USER || 'guest',
+    time: new Date().toISOString()
+  };
 
-  clearInterval(BANNER_INTERVAL);
-  if (activeBanners.length > 1) {
-    BANNER_INTERVAL = setInterval(() => {
-      CURRENT_BANNER_IDX = (CURRENT_BANNER_IDX + 1) % activeBanners.length;
-      showBanner(activeBanners);
-    }, 5000);
-  }
-}
-
-function showBanner(activeBanners) {
-  const container = document.getElementById('promoBanner');
-  const b = activeBanners[CURRENT_BANNER_IDX];
-  const hasTitle = Boolean(b.text && b.text.trim());
-
-  const titleHtml = hasTitle ? `<div class="promo-banner-content">${esc(b.text.trim())}</div>` : '';
-  const linkBadgeHtml = b.link ? `<div class="promo-banner-link-badge" title="Open Link">↗</div>` : '';
-  const dotsHtml = activeBanners.length > 1
-    ? `<div class="promo-banner-dots">${activeBanners.map((_, idx) => `<span class="promo-banner-dot ${idx === CURRENT_BANNER_IDX ? 'active' : ''}"></span>`).join('')}</div>`
-    : '';
-
-  if (b.img) {
-    container.style.background = `url('${b.img}') center/cover no-repeat`;
-    container.innerHTML = `
-      ${hasTitle ? '<div class="promo-banner-overlay"></div>' : ''}
-      ${linkBadgeHtml}
-      ${titleHtml}
-      ${dotsHtml}
-    `;
-  } else {
-    container.style.background = `linear-gradient(135deg, #0f172a 0%, #1e40af 60%, #2563eb 100%)`;
-    container.innerHTML = `
-      ${linkBadgeHtml}
-      ${titleHtml}
-      ${dotsHtml}
-    `;
-  }
-  container.setAttribute('data-link', b.link || '');
-}
-
-window.handleBannerClick = function(event) {
-  const container = document.getElementById('promoBanner');
-  const link = container.getAttribute('data-link');
-  if (link) {
-    window.open(link, '_blank');
-  }
-};
-
-function renderAdminBanners() {
-  const list = document.getElementById('adminBannerList');
-  if (!list) return;
-  if (BANNERS.length === 0) {
-    list.innerHTML = '<div style="font-size: 0.8rem; color: var(--text-muted); text-align: center; padding: 12px;">No banners published yet.</div>';
-    return;
-  }
-  list.innerHTML = BANNERS.map((b, i) => `
-    <div class="admin-banner-item">
-      ${b.img ? `<img src="${b.img}" class="admin-banner-thumb">` : `<div class="admin-banner-thumb" style="display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#64748b; background:linear-gradient(135deg,#e2e8f0,#cbd5e1);">TEXT</div>`}
-      <div style="flex: 1; min-width: 0; padding: 0 12px;">
-        <div style="font-weight: 700; color: ${b.text ? '#0f172a' : '#64748b'}; font-style: ${b.text ? 'normal' : 'italic'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${b.text ? esc(b.text) : 'Image-only banner'}</div>
-        <div style="font-size: 0.7rem; font-weight: 600; color: ${b.active ? '#059669' : '#94a3b8'}; margin-top: 2px;">${b.active ? '● Active' : '○ Hidden'}</div>
-      </div>
-      <div style="display: flex; gap: 6px;">
-        <button onclick="toggleBanner(${i})" style="background: ${b.active ? '#10b981' : '#cbd5e1'}; color: white; border: none; padding: 6px 10px; border-radius: 8px; font-size: 0.72rem; font-weight: 700; cursor: pointer;">${b.active ? 'ON' : 'OFF'}</button>
-        <button onclick="deleteBanner(${i})" style="background: #fee2e2; color: #dc2626; border: none; padding: 6px 10px; border-radius: 8px; font-size: 0.72rem; font-weight: 700; cursor: pointer;">Del</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-window.addBanner = function() {
-  const text = document.getElementById('setBannerText').value.trim();
-  const link = document.getElementById('setBannerLink').value.trim();
-  const fileInput = document.getElementById('setBannerFile');
-  const hasFile = fileInput.files && fileInput.files[0];
-
-  if (!text && !hasFile) {
-    alert("Please enter a banner title or upload an image.");
-    return;
-  }
-
-  if (hasFile) {
-    const file = fileInput.files[0];
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const img = new Image();
-      img.onload = function() {
-        const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 900;
-        const MAX_HEIGHT = 400;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height *= MAX_WIDTH / width;
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width *= MAX_HEIGHT / height;
-            height = MAX_HEIGHT;
-          }
-        }
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
-
-        BANNERS.push({ text, img: dataUrl, link, active: true });
-        saveAndRefreshBanners();
-        fileInput.value = '';
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  } else {
-    BANNERS.push({ text, img: '', link, active: true });
-    saveAndRefreshBanners();
-  }
-};
-
-function saveAndRefreshBanners() {
+  let logs = [];
   try {
-    localStorage.setItem('tc_banners', JSON.stringify(BANNERS));
-    cloudPost({ action: 'saveBanners', banners: BANNERS });
-  } catch(e) {
-    alert("Storage limit exceeded. Please delete some banners or upload a smaller image.");
-    return;
-  }
-  document.getElementById('setBannerText').value = '';
-  document.getElementById('setBannerLink').value = '';
-  renderAdminBanners();
-  loadBanners();
-}
-
-window.deleteBanner = function(i) {
-  if (!confirm("Delete this banner?")) return;
-  BANNERS.splice(i, 1);
-  saveAndRefreshBanners();
-};
-
-window.toggleBanner = function(i) {
-  BANNERS[i].active = !BANNERS[i].active;
-  saveAndRefreshBanners();
-};
-
-/* --- SHARED CSV HELPERS --- */
-function normalizeHeader(h){ return String(h||'').toLowerCase().replace(/[\s_\-\/\.]+/g,''); }
-function findHeader(headers, ...candidates){ for(const c of candidates){ const found = headers.find(h => normalizeHeader(h) === normalizeHeader(c)); if(found) return found; } return null; }
-function esc(s){ return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function formatQty(n) { if(n === null || n === undefined || isNaN(n)) return '—'; return Number(n).toFixed(4).replace(/\.?0+$/, '') || '0'; }
-function formatScientific(num) { if (num === 0) return '0'; const e = Math.floor(Math.log10(Math.abs(num))); const m = num / Math.pow(10, e); return `${m.toFixed(2)}&times; 10<sup>${e}</sup>`; }
-
-/* --- JOB DATA (OFFLINE-AWARE) --- */
-async function loadJobDataFromCSV() {
-  try {
-    const response = await fetch('data.csv', { cache: 'no-store' });
-    if (!response.ok) throw new Error('HTTP ' + response.status);
-    const text = await response.text();
-    return new Promise((resolve) => {
-      Papa.parse(text, {
-        header: true,
-        skipEmptyLines: true,
-        complete: (results) => {
-          processJobCSVData(results.data);
-          resolve(true);
-        }
-      });
-    });
+    logs = JSON.parse(localStorage.getItem('tc_feedback')) || [];
   } catch (e) {
-    console.warn('[offline] data.csv unavailable — using cached version if present');
-    return false;
+    logs = [];
   }
+  logs.unshift(entry);
+  logs = logs.slice(0, 50);
+  localStorage.setItem('tc_feedback', JSON.stringify(logs));
+  cloudPost({ action: 'saveFeedback', feedback: entry });
+
+  document.getElementById('fbMessage').value = '';
+  renderFeedbackHistory();
+  alert('Thank you! Your feedback has been recorded.');
+};
+
+window.openQrModal = function() {
+  const img = document.getElementById('qrCodeImage');
+  const appUrl = window.location.href;
+  if (img) {
+    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(appUrl)}`;
+  }
+  document.getElementById('qrModal').classList.add('open');
+};
+
+window.closeQrModal = function(e) {
+  if (e && e.target !== e.currentTarget && !e.target.classList.contains('modal-close')) return;
+  document.getElementById('qrModal').classList.remove('open');
+};
+
+/* --- CSV DATA LOADING & JOB CARDS / BOM --- */
+function esc(v) {
+  if (v === null || v === undefined) return '';
+  return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function processJobCSVData(rows) {
-  const headers = Object.keys(rows[0] || {});
-  const soItemKey = findHeader(headers, 'SO-ITEM', 'SOITEM', 'INDEX'), opKey = findHeader(headers, 'OPERATION DETAIL', 'OPERATION');
-  if (!soItemKey || !opKey) return;
-  JOB_DATA = [];
-  rows.forEach((row, i) => {
-    const soItem = String(row[soItemKey] || '').trim(), op = String(row[opKey] || '').trim();
-    if (!soItem || !op) return;
+function stripExt(n) {
+  return String(n || '').replace(/\.[^/.]+$/, '').trim();
+}
 
-    const details = [];
-    const hCols = headers.filter(h => h.trim().toUpperCase().endsWith('H'));
-    hCols.forEach(hCol => {
-      const base = hCol.trim().toUpperCase().slice(0, -1);
-      const dCol = headers.find(h => h.trim().toUpperCase() === base + 'D');
-      const label = String(row[hCol] || '').trim();
-      if (dCol) {
-        const val = String(row[dCol] || '').trim();
-        if (label !== '' || val !== '') details.push([label || hCol, val || '—']);
-      } else if (label !== '') {
-        details.push([label, '—']);
+function parseTable(rows) {
+  if (!rows || rows.length < 2) return [];
+  let headerIdx = -1;
+  for (let i = 0; i < Math.min(20, rows.length); i++) {
+    const nonEmpty = rows[i].filter(c => c !== '' && c !== null && c !== undefined);
+    if (nonEmpty.length >= 2) { headerIdx = i; break; }
+  }
+  if (headerIdx === -1) return [];
+  const rawHeaders = rows[headerIdx].map(h => String(h || '').trim());
+  const headers = rawHeaders.map((h, idx) => h || `Column_${idx + 1}`);
+  const out = [];
+  for (let r = headerIdx + 1; r < rows.length; r++) {
+    const row = rows[r];
+    if (!row || row.every(c => c === '' || c === null || c === undefined)) continue;
+    const obj = {};
+    headers.forEach((h, i) => {
+      const v = row[i];
+      obj[h] = (v === null || v === undefined) ? '' : String(v).trim();
+    });
+    out.push(obj);
+  }
+  return out;
+}
+
+function getField(row, names) {
+  const keys = Object.keys(row);
+  for (const n of names) {
+    if (row[n] !== undefined && row[n] !== '') return row[n];
+    const target = n.toLowerCase().replace(/[^a-z0-9]/g, '');
+    for (const k of keys) {
+      if (k.toLowerCase().replace(/[^a-z0-9]/g, '') === target && row[k] !== '') {
+        return row[k];
+      }
+    }
+  }
+  return '';
+}
+
+function loadJobDataFromCSV() {
+  return new Promise(resolve => {
+    Papa.parse('data.csv', {
+      download: true,
+      header: true,
+      skipEmptyLines: true,
+      complete: results => {
+        if (results.data && results.data.length > 0) {
+          JOB_DATA = results.data.map(r => {
+            const clean = {};
+            Object.keys(r).forEach(k => { clean[k.trim()] = String(r[k] ?? '').trim(); });
+            return clean;
+          });
+          localStorage.setItem('tc_job_cache', JSON.stringify(JOB_DATA));
+          resolve(true);
+        } else {
+          try { JOB_DATA = JSON.parse(localStorage.getItem('tc_job_cache')) || []; } catch (e) { JOB_DATA = []; }
+          resolve(JOB_DATA.length > 0);
+        }
+      },
+      error: () => {
+        try { JOB_DATA = JSON.parse(localStorage.getItem('tc_job_cache')) || []; } catch (e) { JOB_DATA = []; }
+        resolve(JOB_DATA.length > 0);
       }
     });
+  });
+}
 
-    JOB_DATA.push({
-      order: i,
-      soItem,
-      so: soItem.split('#')[0].trim(),
-      operation: op,
-      qty: row[findHeader(headers, 'QTY', 'QUANTITY')] || '',
-      customer: row[findHeader(headers, 'CUSTOMER')] || '',
-      size: row[findHeader(headers, 'SIZE')] || '',
-      currentOp: row[findHeader(headers, 'CURRENT OPERATION', 'CURRENTOP')] || '',
-      nextOp: row[findHeader(headers, 'NEXT OPERATION', 'NEXTOP')] || '',
-      details,
-      drum: row[findHeader(headers, 'DRUM')] || ''
+function loadBomDataFromCSV() {
+  return new Promise(resolve => {
+    Papa.parse('bom.csv', {
+      download: true,
+      header: true,
+      skipEmptyLines: true,
+      complete: results => {
+        if (results.data && results.data.length > 0) {
+          BOM_DATA = results.data.map(r => {
+            const clean = {};
+            Object.keys(r).forEach(k => { clean[k.trim()] = String(r[k] ?? '').trim(); });
+            return clean;
+          });
+          localStorage.setItem('tc_bom_cache', JSON.stringify(BOM_DATA));
+          resolve(true);
+        } else {
+          try { BOM_DATA = JSON.parse(localStorage.getItem('tc_bom_cache')) || []; } catch (e) { BOM_DATA = []; }
+          resolve(BOM_DATA.length > 0);
+        }
+      },
+      error: () => {
+        try { BOM_DATA = JSON.parse(localStorage.getItem('tc_bom_cache')) || []; } catch (e) { BOM_DATA = []; }
+        resolve(BOM_DATA.length > 0);
+      }
     });
   });
 }
-function jobNumberOf(row){ return row.soItem ? row.soItem.split('#')[0].trim() : ''; }
-function buildJobIndex(){ const map = new Map(); JOB_DATA.forEach(r => { const j = jobNumberOf(r); if(!j) return; if(!map.has(j)) map.set(j, {opCount:0, ops:new Set()}); const rec = map.get(j); if(r.operation) rec.ops.add(r.operation); }); map.forEach(v => v.opCount = v.ops.size); return map; }
-function allJobNumbers(){ return Array.from(buildJobIndex().keys()).sort(); }
 
-/* --- JOB CARDS CONTROLLER (AUTO-SHOW) --- */
-const jobInput = document.getElementById('jobInput'), opSelect = document.getElementById('opSelect'), jobGrid = document.getElementById('jobGrid'), suggestBox = document.getElementById('suggestBox');
-let SUGGEST_INDEX = -1, SUGGEST_ITEMS = [];
+/* --- JOB CARDS UI --- */
+const jobInput = document.getElementById('jobInput');
+const suggestBox = document.getElementById('suggestBox');
+const opSelect = document.getElementById('opSelect');
+const jobGrid = document.getElementById('jobGrid');
+const jobResultTitle = document.getElementById('jobResultTitle');
+const jobResultCount = document.getElementById('jobResultCount');
 
-function renderSuggestions(term){
-  const matches = allJobNumbers().filter(j => j.toLowerCase().includes(term.toLowerCase())); const idx = buildJobIndex(); SUGGEST_INDEX = -1;
-  if(matches.length === 0){ SUGGEST_ITEMS = []; suggestBox.innerHTML = `<div class="suggest-empty">No jobs match</div>`; suggestBox.classList.add('open'); return; }
-  SUGGEST_ITEMS = matches; let html = `<div class="suggest-hint">${matches.length} jobs found</div>`;
-  matches.forEach((j, i) => {
-    const rec = idx.get(j) || {opCount:0};
-    html += `<div class="suggest-item" data-job="${esc(j)}" data-idx="${i}"><span>${esc(j)}</span><span class="meta">${rec.opCount} ops</span></div>`;
+function getJobNo(r) { return getField(r, ['Job No', 'JobNo', 'Job Number', 'Job', 'JC No']); }
+function getOpName(r) { return getField(r, ['Operation', 'Op', 'Operation Name', 'Stage']); }
+function getDrumNo(r) { return getField(r, ['Drum No', 'DrumNo', 'Drum']); }
+
+function getUniqueJobs() {
+  const seen = new Set();
+  const list = [];
+  JOB_DATA.forEach(r => {
+    const j = getJobNo(r);
+    if (j && !seen.has(j)) {
+      seen.add(j);
+      list.push({ job: j, drum: getDrumNo(r) });
+    }
   });
-  suggestBox.innerHTML = html; suggestBox.classList.add('open');
-}
-function closeSuggestions(){ suggestBox.classList.remove('open'); SUGGEST_INDEX = -1; }
-
-function findExactJob(term){
-  const t = String(term || '').trim().toLowerCase();
-  if(!t) return null;
-  for(const k of buildJobIndex().keys()){ if(k.toLowerCase() === t) return k; }
-  return null;
+  return list;
 }
 
-function refreshOpSelect(jobArg, autoSelectFirst){
-  const job = (jobArg === undefined ? jobInput.value : jobArg).trim();
-  opSelect.innerHTML = '';
-  if(!job){ opSelect.innerHTML = '<option value="">— Select Job First —</option>'; opSelect.disabled = true; return; }
-  const jn = job.toLowerCase(); const seen = new Set(); const list = [];
-  JOB_DATA.forEach(r => { if(jobNumberOf(r).toLowerCase() === jn && !seen.has(r.operation)){ seen.add(r.operation); list.push(r.operation); } });
-  if(list.length === 0){ opSelect.innerHTML = '<option value="">— No Operations —</option>'; opSelect.disabled = true; return; }
-  const ph = document.createElement('option'); ph.value = ''; ph.textContent = '— Select Op —'; opSelect.appendChild(ph);
-  list.forEach(op => { const o = document.createElement('option'); o.value = op; o.textContent = op; opSelect.appendChild(o); });
-  opSelect.disabled = false;
-  if(list.length === 1 || autoSelectFirst) opSelect.value = list[0];
-}
+function showJobSuggestions(q) {
+  const query = String(q || '').trim().toLowerCase();
+  const all = getUniqueJobs();
+  const matches = query
+    ? all.filter(x => x.job.toLowerCase().includes(query) || x.drum.toLowerCase().includes(query))
+    : all.slice(0, 30);
 
-function pickSuggestion(jobNo){
-  jobInput.value = jobNo;
-  closeSuggestions();
-  refreshOpSelect(jobNo, true);
-  if(opSelect.value) renderJobResults();
-}
-
-jobInput.addEventListener('input', () => {
-  const term = jobInput.value.trim();
-  const exact = findExactJob(term);
-  if(exact){
-    closeSuggestions();
-    refreshOpSelect(exact, true);
-    if(opSelect.value) renderJobResults();
-  } else {
-    renderSuggestions(term);
-    refreshOpSelect(term, false);
-    document.getElementById('jobResultTitle').textContent = 'Enter details above';
-    document.getElementById('jobResultCount').textContent = '0 records';
-    jobGrid.innerHTML = '<div class="empty"><div class="icon">🔎</div><p>Start typing a <b>job number</b> above.</p></div>';
-  }
-});
-jobInput.addEventListener('focus', () => { renderSuggestions(jobInput.value.trim()); });
-jobInput.addEventListener('keydown', (e) => {
-  if(e.key !== 'Enter') return;
-  e.preventDefault();
-  const first = suggestBox.querySelector('.suggest-item');
-  if(suggestBox.classList.contains('open') && first) pickSuggestion(first.dataset.job);
-  else if(opSelect.value) renderJobResults();
-  closeSuggestions();
-});
-suggestBox.addEventListener('mousedown', e => { const item = e.target.closest('.suggest-item'); if(item) pickSuggestion(item.dataset.job); });
-opSelect.addEventListener('change', () => { if(opSelect.value) renderJobResults(); });
-document.addEventListener('click', e => { if(!document.getElementById('jobField').contains(e.target)) closeSuggestions(); });
-
-function renderJobResults(){
-  const job = jobInput.value.trim(), op = opSelect.value;
-  if(!job || !op) return;
-  const matches = JOB_DATA.filter(r => jobNumberOf(r).toLowerCase() === job.toLowerCase() && r.operation === op);
-  document.getElementById('jobResultTitle').textContent = `${job} • ${op}`;
-  document.getElementById('jobResultCount').textContent = `${matches.length} records`;
-  if(matches.length === 0){
-    jobGrid.innerHTML = `<div class="empty"><div class="icon">📭</div><p>No records for <b>${esc(job)}</b> / <b>${esc(op)}</b></p></div>`;
+  if (!matches.length) {
+    suggestBox.innerHTML = `<div class="suggest-empty">No matching jobs found</div>`;
+    suggestBox.classList.add('open');
     return;
   }
-  let html = '';
-  matches.forEach(row => {
-    let specs = '';
-    specs += `<div class="spec accent"><div class="k">JOB NO</div><div class="v"><span class="chip-val">${esc(jobNumberOf(row))}</span></div></div>`;
-    specs += `<div class="spec"><div class="k">INDEX</div><div class="v">${esc(row.soItem)}</div></div>`;
-    specs += `<div class="spec"><div class="k">QTY</div><div class="v">${esc(row.qty||'—')}</div></div>`;
-    specs += `<div class="spec"><div class="k">CUSTOMER</div><div class="v">${esc(row.customer||'—')}</div></div>`;
-    specs += `<div class="spec"><div class="k">SIZE</div><div class="v">${esc(row.size||'—')}</div></div>`;
-    specs += `<div class="spec"><div class="k">CURR OP</div><div class="v">${esc(row.currentOp||'—')}</div></div>`;
-    specs += `<div class="spec"><div class="k">NEXT OP</div><div class="v">${esc(row.nextOp||'—')}</div></div>`;
-    (row.details||[]).forEach(([k,v])=>{ specs += `<div class="spec"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div></div>`; });
 
-    html += `<div class="card printable-card">
-      <div class="card-head"><h3><span class="bullet"></span>${esc(row.soItem)}</h3><span class="op-tag">${esc(row.operation)}</span></div>
-      <div class="specs">${specs}</div>
-      <div class="card-foot"><span>🏷️ ${esc(row.so)}</span><span class="drum">🥁 ${esc(row.drum||'—')}</span></div>
-    </div>`;
-  });
-  jobGrid.innerHTML = html;
+  suggestBox.innerHTML = `<div class="suggest-hint">Select a Job Number</div>` + matches.slice(0, 40).map(x => `
+    <div class="suggest-item" data-job="${esc(x.job)}">
+      <span>${esc(x.job)}</span>
+      ${x.drum ? `<span class="meta">${esc(x.drum)}</span>` : ''}
+    </div>
+  `).join('');
+  suggestBox.classList.add('open');
 }
 
+function populateJobOperations(jobNo) {
+  const rows = JOB_DATA.filter(r => getJobNo(r).toLowerCase() === String(jobNo || '').trim().toLowerCase());
+  const ops = Array.from(new Set(rows.map(r => getOpName(r)).filter(Boolean)));
+  opSelect.innerHTML = '';
+  if (!ops.length) {
+    opSelect.disabled = true;
+    opSelect.innerHTML = `<option value="">— No Operations —</option>`;
+    return;
+  }
+  opSelect.disabled = false;
+  opSelect.innerHTML = `<option value="__ALL__">All Operations (${ops.length})</option>` +
+    ops.map(op => `<option value="${esc(op)}">${esc(op)}</option>`).join('');
+}
+
+function renderJobResults() {
+  const jVal = jobInput.value.trim();
+  const opVal = opSelect.value;
+
+  if (!jVal) {
+    jobResultTitle.textContent = 'Enter details above';
+    jobResultCount.textContent = '0 records';
+    jobGrid.innerHTML = `<div class="empty"><div class="icon">🔎</div><p>Start typing a <b>job number</b> above.</p></div>`;
+    return;
+  }
+
+  let rows = JOB_DATA.filter(r => getJobNo(r).toLowerCase() === jVal.toLowerCase());
+  if (opVal && opVal !== '__ALL__') {
+    rows = rows.filter(r => getOpName(r) === opVal);
+  }
+
+  jobResultTitle.textContent = `Job ${jVal}${opVal && opVal !== '__ALL__' ? ' • ' + opVal : ''}`;
+  jobResultCount.textContent = `${rows.length} ${rows.length === 1 ? 'record' : 'records'}`;
+
+  if (!rows.length) {
+    jobGrid.innerHTML = `<div class="empty"><div class="icon">📭</div><p>No records found for <b>${esc(jVal)}</b>.</p></div>`;
+    return;
+  }
+
+  jobGrid.innerHTML = rows.map(r => {
+    const jobNo = getJobNo(r) || jVal;
+    const op = getOpName(r) || 'General';
+    const drum = getDrumNo(r);
+    const extraKeys = Object.keys(r).filter(k => {
+      const nk = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+      return !['jobno', 'jobnumber', 'job', 'jcno', 'operation', 'op', 'operationname', 'stage', 'drumno', 'drum'].includes(nk) && r[k] !== '';
+    });
+
+    const specsHtml = extraKeys.map(k => `
+      <div class="spec">
+        <div class="k">${esc(k)}</div>
+        <div class="v"><span class="chip-val">${esc(r[k])}</span></div>
+      </div>
+    `).join('') || `<div class="spec"><div class="k">Status</div><div class="v">Active</div></div>`;
+
+    return `
+      <div class="card printable-card">
+        <div class="card-head">
+          <h3><span class="bullet"></span>${esc(jobNo)}</h3>
+          <span class="op-tag">${esc(op)}</span>
+        </div>
+        <div class="specs">${specsHtml}</div>
+        <div class="card-foot">
+          <span>Job Card</span>
+          ${drum ? `<span class="drum">Drum: ${esc(drum)}</span>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+jobInput.addEventListener('focus', () => showJobSuggestions(jobInput.value));
+jobInput.addEventListener('input', () => {
+  showJobSuggestions(jobInput.value);
+  populateJobOperations(jobInput.value);
+});
+suggestBox.addEventListener('click', e => {
+  const item = e.target.closest('.suggest-item');
+  if (!item) return;
+  const chosen = item.getAttribute('data-job');
+  jobInput.value = chosen;
+  suggestBox.classList.remove('open');
+  populateJobOperations(chosen);
+  renderJobResults();
+});
+document.addEventListener('click', e => {
+  if (!document.getElementById('jobField')?.contains(e.target)) suggestBox.classList.remove('open');
+  if (!document.getElementById('bomField')?.contains(e.target)) bomSuggestBox.classList.remove('open');
+});
+opSelect.addEventListener('change', renderJobResults);
 document.getElementById('searchBtn').addEventListener('click', renderJobResults);
 document.getElementById('resetBtn').addEventListener('click', () => {
   jobInput.value = '';
-  opSelect.innerHTML = '<option value="">— Select Job First —</option>';
+  opSelect.innerHTML = `<option value="">— Select Job First —</option>`;
   opSelect.disabled = true;
-  jobGrid.innerHTML = '<div class="empty"><div class="icon">🔎</div><p>Start typing a <b>job number</b> above.</p></div>';
-  document.getElementById('jobResultTitle').textContent = 'Enter details above';
-  document.getElementById('jobResultCount').textContent = '0 records';
+  renderJobResults();
 });
 
-/* --- BOM DATA (OFFLINE-AWARE) --- */
-let CURRENT_BOM_LINES = [];
-let LAST_BOM_ITEM = null;
-
-async function loadBomDataFromCSV() {
-  try {
-    const response = await fetch('bom.csv', { cache: 'no-store' });
-    if (!response.ok) throw new Error('HTTP ' + response.status);
-    const text = await response.text();
-    return new Promise((resolve) => {
-      Papa.parse(text, {
-        header: false,
-        skipEmptyLines: false,
-        complete: function (results) {
-          const allRows = results.data;
-          if (!allRows || allRows.length < 2) return resolve(false);
-
-          function rowHasHeader(row) {
-            if (!row || !row.length) return false;
-            return row.some(cell => {
-              const n = normalizeHeader(cell);
-              return n === 'soitemno' || n === 'soitem';
-            });
-          }
-
-          let headerRowIndex = 0;
-          if (!rowHasHeader(allRows[0]) && rowHasHeader(allRows[1])) {
-            headerRowIndex = 1;
-          }
-
-          const headerRow = allRows[headerRowIndex].map(h => String(h || '').trim());
-          const dataRows = allRows
-            .slice(headerRowIndex + 1)
-            .filter(r => r.some(c => String(c || '').trim() !== ''));
-
-          const rows = dataRows.map(r => {
-            const obj = {};
-            headerRow.forEach((h, i) => { obj[h] = r[i] !== undefined ? r[i] : ''; });
-            return obj;
-          }).filter(o => Object.values(o).some(v => String(v || '').trim() !== ''));
-
-          processBomCSVData(rows);
-          resolve(true);
-        }
-      });
-    });
-  } catch (e) {
-    console.warn('[offline] bom.csv unavailable — using cached version if present');
-    return false;
-  }
-}
-
-function processBomCSVData(rows) {
-  if(!rows || !rows.length) return;
-  const headers = Object.keys(rows[0] || {});
-
-  const soItemKey = findHeader(headers, 'SO/ITEM NO', 'SOITEMNO', 'SO ITEM NO', 'SO-ITEM', 'SOITEM');
-  const operationKey = findHeader(headers, 'OPERATION JDM', 'OPERATIONJDM', 'OPERATION');
-  const groupKey = findHeader(headers, 'GROUP');
-  const opnKey = findHeader(headers, 'OPN CODE', 'OPNCODE', 'OPN');
-  const materialCodeKey = findHeader(headers, 'MATERIAL CODE', 'MATERIALCODE');
-  const materialDiscKey = findHeader(headers, 'MATERIAL DISC', 'MATERIALDISC', 'MATERIAL');
-  const bomPerKmKey = findHeader(headers, 'BOM/KM - JDM', 'BOMKMJDM', 'BOM/KM', 'BOM/KM-JDM');
-  const customerKey = findHeader(headers, 'CUSTOMER JDM', 'CUSTOMERJDM');
-  const sizeKey = findHeader(headers, 'SIZE');
-  const colourKey = findHeader(headers, 'COLOUR', 'COLOR');
-  const planQtyKey = findHeader(headers, 'PLAN/PRD QTY', 'PLANPRDQTY');
-
-  if (!soItemKey) { console.warn('BOM CSV missing SO/ITEM NO header'); return; }
-
-  const grouped = new Map();
-
-  rows.forEach(row => {
-    const rawSoItem = String(row[soItemKey] || '').trim();
-    const soItemRaw = cleanSoItem(rawSoItem);
-    if(!soItemRaw) return;
-
-    if(!grouped.has(soItemRaw)){
-      grouped.set(soItemRaw, {
-        soItem: soItemRaw,
-        customer: String(row[customerKey] || '').trim(),
-        size: String(row[sizeKey] || '').trim(),
-        defaultPlanQty: parseFloat(row[planQtyKey]) || 0,
-        colour: String(row[colourKey] || '').trim(),
-        lines: [],
-        operationJDMToOpnCode: new Map()
-      });
-    }
-
-    const rec = grouped.get(soItemRaw);
-    const matCode = String(row[materialCodeKey] || '').trim();
-    const matDisc = String(row[materialDiscKey] || '').trim();
-    const rowGroup = String(row[groupKey] || '').trim() || 'OTHER';
-    const opnCode = String(row[opnKey] || '').trim();
-    const opJDM = String(row[operationKey] || '').trim();
-    const bomPerKm = parseFloat(row[bomPerKmKey]) || 0;
-
-    if(opJDM && opnCode && !rec.operationJDMToOpnCode.has(opJDM)){
-      rec.operationJDMToOpnCode.set(opJDM, opnCode);
-    }
-
-    if(!matCode && !matDisc) return;
-
-    rec.lines.push({
-      group: rowGroup,
-      opnCode,
-      operationJDM: opJDM,
-      matCode,
-      matDisc: matDisc || matCode,
-      bomPerKm
-    });
-  });
-
-  BOM_DATA = Array.from(grouped.values());
-}
-
-function cleanSoItem(str){ return String(str||'').replace(/#/g, '').trim(); }
-function getAllBomKeys(){ return BOM_DATA.map(b => b.soItem).sort(); }
-function filterBomKeys(term){ const q = cleanSoItem(term).toLowerCase(); return q ? getAllBomKeys().filter(k => k.toLowerCase().includes(q)) : getAllBomKeys(); }
-function bomOpsForItem(soItem){ if(!soItem) return []; const item = BOM_DATA.find(b => b.soItem === soItem); if(!item) return []; const list = []; item.operationJDMToOpnCode.forEach((code, name) => list.push({ name, code })); list.sort(); return list; }
-
-function refreshBomOpSelect(){
-  const soItem = document.getElementById('bomInput').value.trim();
-  const bomOpSelect = document.getElementById('bomOpSelect');
-  bomOpSelect.innerHTML = '';
-  if(!soItem){ bomOpSelect.innerHTML = '<option value="">— Select SO-ITEM First —</option>'; bomOpSelect.disabled = true; return; }
-  const ops = bomOpsForItem(soItem);
-  if(ops.length === 0){ bomOpSelect.innerHTML = '<option value="">— No Operations —</option>'; bomOpSelect.disabled = true; return; }
-  const ph = document.createElement('option'); ph.value = ''; ph.textContent = '— All Operations —'; bomOpSelect.appendChild(ph);
-  ops.forEach(o => { const opt = document.createElement('option'); opt.value = o.name; opt.textContent = o.name; bomOpSelect.appendChild(opt); });
-  bomOpSelect.disabled = false;
-}
-
-/* --- BOM CONTROLLER (AUTO-SHOW) --- */
+/* --- BOM UI --- */
 const bomInput = document.getElementById('bomInput');
 const bomSuggestBox = document.getElementById('bomSuggestBox');
-let BOM_SUGGEST_INDEX = -1, BOM_SUGGEST_ITEMS = [];
+const bomOpSelect = document.getElementById('bomOpSelect');
+const bomGrid = document.getElementById('bomGrid');
+const bomResultTitle = document.getElementById('bomResultTitle');
+const bomResultCount = document.getElementById('bomResultCount');
 
-function renderBomSuggestions(term){
-  const matches = filterBomKeys(term); BOM_SUGGEST_INDEX = -1;
-  if(matches.length === 0){ BOM_SUGGEST_ITEMS = []; bomSuggestBox.innerHTML = `<div class="suggest-empty">No items match <b>“${esc(term)}”</b></div>`; bomSuggestBox.classList.add('open'); return; }
-  BOM_SUGGEST_ITEMS = matches; let html = `<div class="suggest-hint">${matches.length} items found</div>`;
-  matches.slice(0, 50).forEach((k, i) => {
-    const item = BOM_DATA.find(b => b.soItem === k);
-    const lineCount = item ? item.lines.length : 0;
-    html += `<div class="suggest-item" data-bom="${esc(k)}" data-idx="${i}"><span>${esc(k)}</span><span class="meta">${lineCount} lines</span></div>`;
+function getBomKey(r) { return getField(r, ['SO-ITEM', 'SO ITEM', 'SoItem', 'INDEX', 'Index', 'Item', 'Part No']); }
+function getBomJdm(r) { return getField(r, ['Operation JDM', 'Operation', 'JDM', 'Stage']); }
+function getBomMatCode(r) { return getField(r, ['Material Code', 'Mat Code', 'Code', 'Component Code']); }
+function getBomMatDesc(r) { return getField(r, ['Material Description', 'Description', 'Mat Desc', 'Material']); }
+function getBomQty(r) { return getField(r, ['Qty', 'Quantity', 'Req Qty', 'Std Qty', 'Base Qty']); }
+
+function getUniqueBomKeys() {
+  const seen = new Set();
+  const list = [];
+  BOM_DATA.forEach(r => {
+    const k = getBomKey(r);
+    if (k && !seen.has(k)) {
+      seen.add(k);
+      list.push({ key: k, jdm: getBomJdm(r) });
+    }
   });
-  bomSuggestBox.innerHTML = html; bomSuggestBox.classList.add('open');
-}
-function closeBomSuggestions(){ bomSuggestBox.classList.remove('open'); BOM_SUGGEST_INDEX = -1; }
-
-function findExactBomItem(term){
-  const t = cleanSoItem(term);
-  if(!t) return null;
-  const hit = BOM_DATA.find(b => b.soItem.toLowerCase() === t.toLowerCase());
-  return hit ? hit.soItem : null;
+  return list;
 }
 
-function pickBomSuggestion(soItem){
-  bomInput.value = soItem;
-  closeBomSuggestions();
-  refreshBomOpSelect();
+function showBomSuggestions(q) {
+  const query = String(q || '').trim().toLowerCase();
+  const all = getUniqueBomKeys();
+  const matches = query
+    ? all.filter(x => x.key.toLowerCase().includes(query) || x.jdm.toLowerCase().includes(query))
+    : all.slice(0, 30);
+
+  if (!matches.length) {
+    bomSuggestBox.innerHTML = `<div class="suggest-empty">No matching SO-ITEM / INDEX found</div>`;
+    bomSuggestBox.classList.add('open');
+    return;
+  }
+
+  bomSuggestBox.innerHTML = `<div class="suggest-hint">Select SO-ITEM / INDEX</div>` + matches.slice(0, 40).map(x => `
+    <div class="suggest-item" data-bomkey="${esc(x.key)}">
+      <span>${esc(x.key)}</span>
+      ${x.jdm ? `<span class="meta">${esc(x.jdm)}</span>` : ''}
+    </div>
+  `).join('');
+  bomSuggestBox.classList.add('open');
+}
+
+function populateBomOperations(keyVal) {
+  const rows = BOM_DATA.filter(r => getBomKey(r).toLowerCase() === String(keyVal || '').trim().toLowerCase());
+  const jdms = Array.from(new Set(rows.map(r => getBomJdm(r)).filter(Boolean)));
+  bomOpSelect.innerHTML = '';
+  if (!jdms.length) {
+    bomOpSelect.disabled = true;
+    bomOpSelect.innerHTML = `<option value="">— No Operation JDM —</option>`;
+    return;
+  }
+  bomOpSelect.disabled = false;
+  bomOpSelect.innerHTML = `<option value="__ALL__">All Operations (${jdms.length})</option>` +
+    jdms.map(j => `<option value="${esc(j)}">${esc(j)}</option>`).join('');
+}
+
+window.updateBomPlanQty = function(val) {
+  const num = parseFloat(val);
+  USER_PLAN_QTY = (!isNaN(num) && num > 0) ? num : null;
   renderBomResults();
-}
+};
 
-bomInput.addEventListener('input', () => {
-  const term = bomInput.value.trim();
-  const exact = findExactBomItem(term);
-  if(exact){
-    closeBomSuggestions();
-    refreshBomOpSelect();
-    renderBomResults();
-  } else {
-    renderBomSuggestions(term);
-    refreshBomOpSelect();
-    document.getElementById('bomResultTitle').textContent = 'Enter details above';
-    document.getElementById('bomResultCount').textContent = '0 records';
-    document.getElementById('bomGrid').innerHTML = '<div class="empty"><div class="icon">📦</div><p>Start typing a <b>SO-ITEM</b> above.</p></div>';
-  }
-});
-bomInput.addEventListener('focus', () => { renderBomSuggestions(bomInput.value.trim()); });
-bomInput.addEventListener('keydown', (e) => {
-  if(e.key !== 'Enter') return;
-  e.preventDefault();
-  const first = bomSuggestBox.querySelector('.suggest-item');
-  if(bomSuggestBox.classList.contains('open') && first) pickBomSuggestion(first.dataset.bom);
-  else renderBomResults();
-  closeBomSuggestions();
-});
-bomSuggestBox.addEventListener('mousedown', e => { const item = e.target.closest('.suggest-item'); if(item) pickBomSuggestion(item.dataset.bom); });
-document.addEventListener('click', e => { if(!document.getElementById('bomField').contains(e.target)) closeBomSuggestions(); });
+function renderBomResults() {
+  const bVal = bomInput.value.trim();
+  const jdmVal = bomOpSelect.value;
 
-function renderBomResults(){
-  const soItem = bomInput.value.trim(), selectedOpName = document.getElementById('bomOpSelect').value;
-  const item = BOM_DATA.find(b => b.soItem === soItem);
-  if(!item){
-    document.getElementById('bomResultTitle').textContent = 'Enter details above';
-    document.getElementById('bomResultCount').textContent = '0 records';
-    document.getElementById('bomGrid').innerHTML = `<div class="empty"><div class="icon">📦</div><p>No BOM found for <b>${esc(soItem)}</b></p></div>`;
+  if (!bVal) {
+    bomResultTitle.textContent = 'Enter details above';
+    bomResultCount.textContent = '0 records';
+    bomGrid.innerHTML = `<div class="empty"><div class="icon">📦</div><p>Start typing a <b>SO-ITEM</b> above.</p></div>`;
     return;
   }
 
-  if(LAST_BOM_ITEM !== soItem){ USER_PLAN_QTY = null; LAST_BOM_ITEM = soItem; }
+  let rows = BOM_DATA.filter(r => getBomKey(r).toLowerCase() === bVal.toLowerCase());
+  if (jdmVal && jdmVal !== '__ALL__') {
+    rows = rows.filter(r => getBomJdm(r) === jdmVal);
+  }
 
-  const effectivePlanQty = (USER_PLAN_QTY !== null && !isNaN(USER_PLAN_QTY)) ? USER_PLAN_QTY : item.defaultPlanQty;
-  let lines = item.lines;
-  if(selectedOpName) lines = lines.filter(l => l.operationJDM === selectedOpName);
+  bomResultTitle.textContent = `BOM: ${bVal}${jdmVal && jdmVal !== '__ALL__' ? ' • ' + jdmVal : ''}`;
+  bomResultCount.textContent = `${rows.length} ${rows.length === 1 ? 'record' : 'records'}`;
 
-  document.getElementById('bomResultTitle').textContent = soItem + (selectedOpName ? ` • ${selectedOpName}` : '');
-  document.getElementById('bomResultCount').textContent = `${lines.length} records`;
-
-  if(lines.length === 0){
-    document.getElementById('bomGrid').innerHTML = `<div class="empty"><div class="icon">📦</div><p>No BOM lines for this operation.</p></div>`;
-    CURRENT_BOM_LINES = [];
+  if (!rows.length) {
+    bomGrid.innerHTML = `<div class="empty"><div class="icon">📭</div><p>No BOM rows found for <b>${esc(bVal)}</b>.</p></div>`;
     return;
   }
 
-  const groupMap = new Map();
-  lines.forEach(l => { const g = l.group || 'OTHER'; if(!groupMap.has(g)) groupMap.set(g, []); groupMap.get(g).push(l); });
+  const multiplier = USER_PLAN_QTY !== null ? USER_PLAN_QTY : 1;
+  const groups = {};
+  rows.forEach(r => {
+    const g = getBomJdm(r) || 'Materials';
+    if (!groups[g]) groups[g] = [];
+    groups[g].push(r);
+  });
 
-  let html = `<div class="card printable-card">
-    <div class="card-head"><h3>${esc(item.soItem)}</h3><span class="op-tag">BOM</span></div>
-    <div class="qc-card-body">
-      <div class="result-section">
-        <div class="result-title-bar">PLAN/PRD QTY</div>
-        <div class="result-card primary" style="justify-content:center; padding:8px 12px;">
-          <input type="number" id="planQtyInput" class="plan-input" value="${esc(effectivePlanQty)}" step="any" placeholder="0">
+  const groupsHtml = Object.keys(groups).map(gName => {
+    const itemsHtml = groups[gName].map(r => {
+      const code = getBomMatCode(r) || '—';
+      const desc = getBomMatDesc(r) || '—';
+      const rawQty = parseFloat(getBomQty(r));
+      const scaledQty = !isNaN(rawQty) ? (rawQty * multiplier).toFixed(2).replace(/\.00$/, '') : (getBomQty(r) || '—');
+      return `
+        <div class="bom-row">
+          <div>${esc(code)}</div>
+          <div>${esc(desc)}</div>
+          <div>${esc(scaledQty)}</div>
         </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="bom-group-header">${esc(gName)}</div>
+      ${itemsHtml}
+    `;
+  }).join('');
+
+  bomGrid.innerHTML = `
+    <div class="card printable-card" style="grid-column: 1 / -1;">
+      <div class="card-head">
+        <h3><span class="bullet"></span>${esc(bVal)}</h3>
+        <span class="op-tag">${esc(jdmVal && jdmVal !== '__ALL__' ? jdmVal : 'All JDM')}</span>
+      </div>
+      <div style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); background: var(--bg-app);">
+        <label style="display:block;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:6px;">
+          Plan Multiplier / Qty (1 = Base)
+        </label>
+        <input type="number" class="plan-input" step="any" min="0" value="${USER_PLAN_QTY !== null ? USER_PLAN_QTY : ''}" placeholder="1" oninput="updateBomPlanQty(this.value)">
       </div>
       <div class="bom-table">
-        <div class="bom-table-head"><div>Material Code</div><div>Material Description</div><div>Req Qty</div></div>`;
-
-  CURRENT_BOM_LINES = [];
-
-  groupMap.forEach((groupLines, groupName) => {
-    html += `<div class="bom-group-header">${esc(groupName)}</div>`;
-    groupLines.forEach((l, idx) => {
-      const calculatedQty = l.bomPerKm * effectivePlanQty;
-      const rowId = `bom-qty-${groupName.replace(/\W/g, '')}-${idx}`;
-      CURRENT_BOM_LINES.push({ id: rowId, bomPerKm: l.bomPerKm });
-      html += `<div class="bom-row">
-        <div>${esc(l.matCode)}</div>
-        <div>${esc(l.matDisc)}</div>
-        <div id="${rowId}">${formatQty(calculatedQty)}</div>
-      </div>`;
-    });
-  });
-
-  html += `</div></div>
-    <div class="card-foot"><span>${esc(item.customer || '—')}</span><span class="drum">${esc(item.size || '—')}</span></div>
-  </div>`;
-
-  document.getElementById('bomGrid').innerHTML = html;
-
-  const planInput = document.getElementById('planQtyInput');
-  if(planInput){
-    planInput.addEventListener('input', () => {
-      const val = parseFloat(planInput.value);
-      USER_PLAN_QTY = isNaN(val) ? 0 : val;
-      CURRENT_BOM_LINES.forEach(itemLine => {
-        const el = document.getElementById(itemLine.id);
-        if(el) el.textContent = formatQty(itemLine.bomPerKm * USER_PLAN_QTY);
-      });
-    });
-  }
+        <div class="bom-table-head">
+          <div>Code</div>
+          <div>Material</div>
+          <div>Qty</div>
+        </div>
+        ${groupsHtml}
+      </div>
+      <div class="card-foot">
+        <span>Bill of Materials</span>
+        <span class="drum">Scale: ${multiplier}×</span>
+      </div>
+    </div>
+  `;
 }
 
-document.getElementById('bomOpSelect').addEventListener('change', renderBomResults);
+bomInput.addEventListener('focus', () => showBomSuggestions(bomInput.value));
+bomInput.addEventListener('input', () => {
+  showBomSuggestions(bomInput.value);
+  populateBomOperations(bomInput.value);
+});
+bomSuggestBox.addEventListener('click', e => {
+  const item = e.target.closest('.suggest-item');
+  if (!item) return;
+  const chosen = item.getAttribute('data-bomkey');
+  bomInput.value = chosen;
+  bomSuggestBox.classList.remove('open');
+  populateBomOperations(chosen);
+  renderBomResults();
+});
+bomOpSelect.addEventListener('change', renderBomResults);
 document.getElementById('bomSearchBtn').addEventListener('click', renderBomResults);
 document.getElementById('bomResetBtn').addEventListener('click', () => {
-  USER_PLAN_QTY = null; LAST_BOM_ITEM = null; bomInput.value = '';
-  document.getElementById('bomOpSelect').innerHTML = '<option value="">— Select SO-ITEM First —</option>';
-  document.getElementById('bomOpSelect').disabled = true;
-  document.getElementById('bomGrid').innerHTML = '<div class="empty"><div class="icon">📦</div><p>Start typing a <b>SO-ITEM</b> above.</p></div>';
-  document.getElementById('bomResultTitle').textContent = 'Enter details above';
-  document.getElementById('bomResultCount').textContent = '0 records';
+  bomInput.value = '';
+  USER_PLAN_QTY = null;
+  bomOpSelect.innerHTML = `<option value="">— Select SO-ITEM First —</option>`;
+  bomOpSelect.disabled = true;
+  renderBomResults();
 });
 
-/* --- QC CALCULATORS (1. CR CALC & UNBALANCE, 2. ARMOUR COVERAGE, ETC.) --- */
-function calculateCRCombined() {
-  const spec = parseFloat(document.getElementById('specCR')?.value);
-  const max = parseFloat(document.getElementById('maxCR')?.value);
-  const min = parseFloat(document.getElementById('minCR')?.value);
+/* --- QC CALCULATOR LOGIC --- */
+function fmtNum(n, d = 3) {
+  if (typeof n !== 'number' || !isFinite(n)) return '—';
+  return Number(n.toFixed(d)).toString();
+}
+
+window.calculateCRCombined = function() {
+  const spec = parseFloat(document.getElementById('specCR').value);
+  const maxC = parseFloat(document.getElementById('maxCR').value);
+  const minC = parseFloat(document.getElementById('minCR').value);
 
   const outUnb = document.getElementById('outUnbalance');
   const outHigh = document.getElementById('outHigh');
   const outLow = document.getElementById('outLow');
 
-  if (!isNaN(max) && !isNaN(min) && max > 0) {
-    outUnb.textContent = (((max - min) / max) * 100).toFixed(2);
+  if (!isNaN(maxC) && !isNaN(minC) && maxC > 0) {
+    outUnb.textContent = fmtNum(((maxC - minC) / maxC) * 100, 2);
   } else {
     outUnb.textContent = '—';
   }
 
-  if (!isNaN(spec) && !isNaN(max) && spec !== 0) {
-    outHigh.textContent = (((max - spec) / spec) * 100).toFixed(2);
+  if (!isNaN(spec) && spec > 0) {
+    outHigh.textContent = !isNaN(maxC) ? fmtNum(((maxC - spec) / spec) * 100, 2) : '—';
+    outLow.textContent = !isNaN(minC) ? fmtNum(((spec - minC) / spec) * 100, 2) : '—';
   } else {
     outHigh.textContent = '—';
-  }
-
-  if (!isNaN(spec) && !isNaN(min) && spec !== 0) {
-    outLow.textContent = (((min - spec) / spec) * 100).toFixed(2);
-  } else {
     outLow.textContent = '—';
   }
 
-  const obs = parseFloat(document.getElementById('obsCR')?.value);
-  const len = parseFloat(document.getElementById('lenCR')?.value);
-  const temp = parseFloat(document.getElementById('tempCR')?.value);
-  const outCalCR = document.getElementById('outCalCR');
+  const obs = parseFloat(document.getElementById('obsCR').value);
+  const len = parseFloat(document.getElementById('lenCR').value);
+  const temp = parseFloat(document.getElementById('tempCR').value);
+  const outCal = document.getElementById('outCalCR');
 
-  if (!isNaN(obs) && !isNaN(len) && !isNaN(temp) && len !== 0) {
-    const cal = (obs / len) * (1 / (1 + 0.00393 * (temp - 20)));
-    outCalCR.textContent = cal.toFixed(6);
+  if (!isNaN(obs) && !isNaN(len) && len > 0) {
+    const t = !isNaN(temp) ? temp : 20;
+    const alpha = 0.00393;
+    const cal = (obs / len) * (1 / (1 + alpha * (t - 20)));
+    outCal.textContent = fmtNum(cal, 5);
   } else {
-    outCalCR.textContent = '—';
+    outCal.textContent = '—';
+  }
+};
+
+function calculateIR() {
+  const reading = parseFloat(document.getElementById('irReading').value);
+  const len = parseFloat(document.getElementById('irLength').value);
+  const bigD = parseFloat(document.getElementById('irCoreDia').value);
+  const smallD = parseFloat(document.getElementById('irCondDia').value);
+
+  const irOut = document.getElementById('irResultOut');
+  const irConstOut = document.getElementById('irConstOut');
+  const vrConstOut = document.getElementById('vrConstOut');
+
+  if (!isNaN(reading) && !isNaN(len) && len > 0) {
+    irOut.textContent = fmtNum(reading * 1e6, 2);
+    const irConst = reading * len;
+    irConstOut.textContent = fmtNum(irConst, 3);
+    if (!isNaN(bigD) && !isNaN(smallD) && bigD > smallD && smallD > 0) {
+      const vr = (irConst * 1e6) / (2 * Math.PI * Math.log(bigD / smallD));
+      vrConstOut.textContent = fmtNum(vr, 2);
+    } else {
+      vrConstOut.textContent = '—';
+    }
+  } else {
+    irOut.textContent = '—';
+    irConstOut.textContent = '—';
+    vrConstOut.textContent = '—';
   }
 }
-
-function calculateArmCov() {
-  const cableDia = parseFloat(document.getElementById('covCableDia')?.value);
-  const wireDia = parseFloat(document.getElementById('covWireDia')?.value);
-  const lay = parseFloat(document.getElementById('covLay')?.value);
-  const wires = parseFloat(document.getElementById('covWires')?.value);
-  const outCov = document.getElementById('outCov');
-
-  if (!isNaN(cableDia) && !isNaN(wireDia) && !isNaN(lay) && !isNaN(wires) && lay !== 0) {
-    const dMean = cableDia + wireDia;
-    const alpha = Math.atan((Math.PI * dMean) / lay);
-    const cov = ((wires * wireDia) / (Math.PI * dMean * Math.cos(alpha))) * 100;
-    outCov.textContent = isFinite(cov) ? cov.toFixed(2) : '—';
-  } else {
-    outCov.textContent = '—';
-  }
-}
-
-window.calculateCRCombined = calculateCRCombined;
-window.calculateArmCov = calculateArmCov;
-
-['specCR', 'maxCR', 'minCR', 'obsCR', 'lenCR', 'tempCR'].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.addEventListener('input', calculateCRCombined);
+['irReading', 'irLength', 'irCoreDia', 'irCondDia'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', calculateIR);
 });
-['covCableDia', 'covWireDia', 'covLay', 'covWires'].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.addEventListener('input', calculateArmCov);
+
+function calculateCap() {
+  const reading = parseFloat(document.getElementById('capReading').value);
+  const len = parseFloat(document.getElementById('capLength').value);
+  const out = document.getElementById('capResultOut');
+  if (!isNaN(reading) && !isNaN(len) && len > 0) {
+    out.textContent = fmtNum(reading / len, 3);
+  } else {
+    out.textContent = '—';
+  }
+}
+['capReading', 'capLength'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', calculateCap);
 });
 
-const irR = document.getElementById('irReading'), irL = document.getElementById('irLength'), irD = document.getElementById('irCoreDia'), irCond = document.getElementById('irCondDia');
-function calcIR(){
-  const r = parseFloat(irR.value), l = parseFloat(irL.value), D = parseFloat(irD.value), d = parseFloat(irCond.value);
-  if(isNaN(r) || isNaN(l) || r <= 0 || l <= 0){ document.getElementById('irResultOut').textContent = '—'; document.getElementById('irConstOut').textContent = '—'; document.getElementById('vrConstOut').textContent = '—'; return; }
-  const totalIR = r * 1e6;
-  document.getElementById('irResultOut').innerHTML = formatScientific(totalIR);
-  const irConst = r * l;
-  document.getElementById('irConstOut').textContent = irConst.toFixed(2);
-  if(!isNaN(D) && !isNaN(d) && D > d && d > 0){
-    const vrConst = (totalIR * l) / (2 * Math.PI * Math.log(D / d));
-    document.getElementById('vrConstOut').innerHTML = formatScientific(vrConst);
-  } else { document.getElementById('vrConstOut').textContent = '—'; }
-}
-[irR, irL, irD, irCond].forEach(el => el.addEventListener('input', calcIR));
+function calculateHvFail() {
+  const totalLen = parseFloat(document.getElementById('hvLength').value);
+  const topCr = parseFloat(document.getElementById('hvTopCr').value);
+  const botCr = parseFloat(document.getElementById('hvBottomCr').value);
 
-const capR = document.getElementById('capReading'), capL = document.getElementById('capLength');
-function calcCap(){
-  const r = parseFloat(capR.value), l = parseFloat(capL.value);
-  if(isNaN(r) || isNaN(l) || l <= 0){ document.getElementById('capResultOut').textContent = '—'; return; }
-  document.getElementById('capResultOut').textContent = (r / l).toFixed(2);
-}
-[capR, capL].forEach(el => el.addEventListener('input', calcCap));
+  const totalOut = document.getElementById('hvTotalCrOut');
+  const topOut = document.getElementById('hvTopSideOut');
+  const botOut = document.getElementById('hvBottomSideOut');
 
-const hvL = document.getElementById('hvLength'), hvT = document.getElementById('hvTopCr'), hvB = document.getElementById('hvBottomCr');
-function calcHV(){
-  const l = parseFloat(hvL.value), t = parseFloat(hvT.value), b = parseFloat(hvB.value);
-  if(isNaN(l) || isNaN(t) || isNaN(b) || (t + b) === 0){ document.getElementById('hvTotalCrOut').textContent = '—'; document.getElementById('hvTopSideOut').textContent = '—'; document.getElementById('hvBottomSideOut').textContent = '—'; return; }
-  const total = t + b;
-  document.getElementById('hvTotalCrOut').textContent = total.toFixed(6);
-  const topDist = l * (t / total);
-  document.getElementById('hvTopSideOut').textContent = topDist.toFixed(2);
-  document.getElementById('hvBottomSideOut').textContent = (l - topDist).toFixed(2);
-}
-[hvL, hvT, hvB].forEach(el => el.addEventListener('input', calcHV));
+  const sumCr = (!isNaN(topCr) && !isNaN(botCr)) ? (topCr + botCr) : NaN;
+  totalOut.textContent = !isNaN(sumCr) ? fmtNum(sumCr, 4) : '—';
 
-const thMin = document.getElementById('thickMin'), thMax = document.getElementById('thickMax');
-function calcThick(){
-  const min = parseFloat(thMin.value), max = parseFloat(thMax.value);
-  if(isNaN(min) || isNaN(max) || max === 0){ document.getElementById('thickAvgOut').textContent = '—'; document.getElementById('thickConcOut').textContent = '—'; return; }
-  document.getElementById('thickAvgOut').textContent = ((min + max) / 2).toFixed(3);
-  document.getElementById('thickConcOut').textContent = (((max - min) / max) * 100).toFixed(2);
-}
-[thMin, thMax].forEach(el => el.addEventListener('input', calcThick));
-
-const brD = document.getElementById('brD'), brBigD = document.getElementById('brBigD'), brN = document.getElementById('brN'), brM = document.getElementById('brM'), brL = document.getElementById('brL');
-function calcBraid(){
-  const d = parseFloat(brD.value), bigD = parseFloat(brBigD.value), N = parseFloat(brN.value), M = parseFloat(brM.value), L = parseFloat(brL.value);
-  if(isNaN(d) || isNaN(bigD) || isNaN(N) || isNaN(M) || isNaN(L) || L === 0){ document.getElementById('brTotalWiresOut').textContent = '—'; document.getElementById('brFOut').textContent = '—'; document.getElementById('brCovOut').textContent = '—'; return; }
-  const totalWires = N * M;
-  document.getElementById('brTotalWiresOut').textContent = totalWires;
-  const meanD = bigD + (2 * d);
-  const tanTheta = (2 * Math.PI * meanD) / (M * L);
-  const cosTheta = 1 / Math.sqrt(1 + (tanTheta * tanTheta));
-  const F = (N * d) / (2 * Math.PI * meanD * cosTheta);
-  document.getElementById('brFOut').textContent = F.toFixed(4);
-  document.getElementById('brCovOut').textContent = ((2 * F - F * F) * 100).toFixed(2);
-}
-[brD, brBigD, brN, brM, brL].forEach(el => el.addEventListener('input', calcBraid));
-
-const tShape = document.getElementById('tensileShape'), tDia = document.getElementById('tDia'), tThick = document.getElementById('tThick'), dWidth = document.getElementById('dWidth'), dThick = document.getElementById('dThick'), tLoad = document.getElementById('tLoad'), tElong = document.getElementById('tElong'), tInit = document.getElementById('tInit');
-function toggleTensileShape(){
-  const isTubular = tShape.value === 'tubular';
-  document.getElementById('tubularInputs').style.display = isTubular ? 'block' : 'none';
-  document.getElementById('dumbbellInputs').style.display = isTubular ? 'none' : 'block';
-  calcTensile();
-}
-function calcTensile(){
-  let area = NaN;
-  if(tShape.value === 'tubular'){
-    const dia = parseFloat(tDia.value), th = parseFloat(tThick.value);
-    if(!isNaN(dia) && !isNaN(th)) area = (Math.PI / 4) * (dia * dia - (dia - 2 * th) * (dia - 2 * th));
+  if (!isNaN(totalLen) && totalLen > 0 && !isNaN(sumCr) && sumCr > 0 && !isNaN(topCr) && !isNaN(botCr)) {
+    const topDist = totalLen * (topCr / sumCr);
+    const botDist = totalLen * (botCr / sumCr);
+    topOut.textContent = fmtNum(topDist, 2);
+    botOut.textContent = fmtNum(botDist, 2);
   } else {
-    const w = parseFloat(dWidth.value), th = parseFloat(dThick.value);
-    if(!isNaN(w) && !isNaN(th)) area = w * th;
+    topOut.textContent = '—';
+    botOut.textContent = '—';
   }
-  const load = parseFloat(tLoad.value), elong = parseFloat(tElong.value), init = parseFloat(tInit.value);
-  if(!isNaN(area) && area > 0){
-    document.getElementById('tAreaOut').textContent = area.toFixed(2);
-    if(!isNaN(load)) document.getElementById('tTsOut').textContent = (load / area).toFixed(2);
-    else document.getElementById('tTsOut').textContent = '—';
-  } else { document.getElementById('tAreaOut').textContent = '—'; document.getElementById('tTsOut').textContent = '—'; }
-  if(!isNaN(elong) && !isNaN(init) && init > 0) document.getElementById('tElongOut').textContent = (((elong - init) / init) * 100).toFixed(1);
-  else document.getElementById('tElongOut').textContent = '—';
 }
-tShape.addEventListener('change', toggleTensileShape);
-[tDia, tThick, dWidth, dThick, tLoad, tElong, tInit].forEach(el => el.addEventListener('input', calcTensile));
+['hvLength', 'hvTopCr', 'hvBottomCr'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', calculateHvFail);
+});
 
-const hShape = document.getElementById('hotSetShape'), hCore = document.getElementById('hCoreDia'), hCond = document.getElementById('hCondDia'), hThick = document.getElementById('hThick'), hWidth = document.getElementById('hWidth'), hInit = document.getElementById('hInit'), hElong = document.getElementById('hElong'), hCool = document.getElementById('hCool');
-function toggleHotSetShape(){
-  const isTubular = hShape.value === 'tubular';
-  document.getElementById('tubularHotInputs').style.display = isTubular ? 'block' : 'none';
-  document.getElementById('dumbbellHotInputs').style.display = isTubular ? 'none' : 'block';
-  calcHotSet();
-}
-function calcHotSet(){
-  let area = NaN;
-  if(hShape.value === 'tubular'){
-    const d1 = parseFloat(hCore.value), d2 = parseFloat(hCond.value);
-    if(!isNaN(d1) && !isNaN(d2)) area = (Math.PI / 4) * (d1 * d1 - d2 * d2);
+function calculateThick() {
+  const minT = parseFloat(document.getElementById('thickMin').value);
+  const maxT = parseFloat(document.getElementById('thickMax').value);
+  const avgOut = document.getElementById('thickAvgOut');
+  const concOut = document.getElementById('thickConcOut');
+
+  if (!isNaN(minT) && !isNaN(maxT) && maxT > 0) {
+    const avg = (minT + maxT) / 2;
+    const conc = (minT / maxT) * 100;
+    avgOut.textContent = fmtNum(avg, 3);
+    concOut.textContent = fmtNum(conc, 2);
   } else {
-    const th = parseFloat(hThick.value), w = parseFloat(hWidth.value);
-    if(!isNaN(th) && !isNaN(w)) area = th * w;
+    avgOut.textContent = '—';
+    concOut.textContent = '—';
   }
-  if(!isNaN(area) && area > 0) document.getElementById('hWeightOut').textContent = (area * 0.2).toFixed(2);
-  else document.getElementById('hWeightOut').textContent = '—';
-  const init = parseFloat(hInit.value), elong = parseFloat(hElong.value), cool = parseFloat(hCool.value);
-  if(!isNaN(init) && !isNaN(elong) && init > 0) document.getElementById('hHotOut').textContent = (((elong - init) / init) * 100).toFixed(1);
-  else document.getElementById('hHotOut').textContent = '—';
-  if(!isNaN(init) && !isNaN(cool) && init > 0) document.getElementById('hPermOut').textContent = (((cool - init) / init) * 100).toFixed(1);
-  else document.getElementById('hPermOut').textContent = '—';
 }
-hShape.addEventListener('change', toggleHotSetShape);
-[hCore, hCond, hThick, hWidth, hInit, hElong, hCool].forEach(el => el.addEventListener('input', calcHotSet));
+['thickMin', 'thickMax'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', calculateThick);
+});
 
-/* --- PRINT ENGINE --- */
-window.triggerPrint = function(event, mode){
+function calculateBraid() {
+  const d = parseFloat(document.getElementById('brD').value);
+  const bigD = parseFloat(document.getElementById('brBigD').value);
+  const n = parseFloat(document.getElementById('brN').value);
+  const m = parseFloat(document.getElementById('brM').value);
+  const l = parseFloat(document.getElementById('brL').value);
+
+  const totalWiresOut = document.getElementById('brTotalWiresOut');
+  const fOut = document.getElementById('brFOut');
+  const covOut = document.getElementById('brCovOut');
+
+  const totalWires = (!isNaN(n) && !isNaN(m)) ? (n * m) : NaN;
+  totalWiresOut.textContent = !isNaN(totalWires) ? fmtNum(totalWires, 0) : '—';
+
+  if (!isNaN(d) && !isNaN(bigD) && !isNaN(totalWires) && !isNaN(l) && l > 0 && (bigD + d) > 0) {
+    const meanDia = bigD + d;
+    const angle = Math.atan((2 * Math.PI * meanDia) / l);
+    const fVal = (totalWires * d) / (2 * Math.PI * meanDia * Math.cos(angle));
+    const covVal = (1 - Math.pow(1 - fVal, 2)) * 100;
+    fOut.textContent = fmtNum(fVal, 4);
+    covOut.textContent = fmtNum(covVal, 2);
+  } else {
+    fOut.textContent = '—';
+    covOut.textContent = '—';
+  }
+}
+['brD', 'brBigD', 'brN', 'brM', 'brL'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', calculateBraid);
+});
+
+document.getElementById('tensileShape')?.addEventListener('change', function() {
+  const isTub = this.value === 'tubular';
+  document.getElementById('tubularInputs').style.display = isTub ? 'block' : 'none';
+  document.getElementById('dumbbellInputs').style.display = isTub ? 'none' : 'block';
+  calculateTensile();
+});
+
+function calculateTensile() {
+  const shape = document.getElementById('tensileShape')?.value || 'tubular';
+  const load = parseFloat(document.getElementById('tLoad').value);
+  const elong = parseFloat(document.getElementById('tElong').value);
+  const init = parseFloat(document.getElementById('tInit').value);
+
+  let area = NaN;
+  if (shape === 'tubular') {
+    const dia = parseFloat(document.getElementById('tDia').value);
+    const thick = parseFloat(document.getElementById('tThick').value);
+    if (!isNaN(dia) && !isNaN(thick) && dia > thick && thick > 0) {
+      area = Math.PI * thick * (dia - thick);
+    }
+  } else {
+    const w = parseFloat(document.getElementById('dWidth').value);
+    const th = parseFloat(document.getElementById('dThick').value);
+    if (!isNaN(w) && !isNaN(th) && w > 0 && th > 0) {
+      area = w * th;
+    }
+  }
+
+  document.getElementById('tAreaOut').textContent = !isNaN(area) ? fmtNum(area, 3) : '—';
+  document.getElementById('tTsOut').textContent = (!isNaN(load) && !isNaN(area) && area > 0) ? fmtNum(load / area, 2) : '—';
+  document.getElementById('tElongOut').textContent = (!isNaN(elong) && !isNaN(init) && init > 0)
+    ? fmtNum(((elong - init) / init) * 100, 1)
+    : '—';
+}
+['tDia', 'tThick', 'dWidth', 'dThick', 'tLoad', 'tElong', 'tInit'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', calculateTensile);
+});
+
+document.getElementById('hotSetShape')?.addEventListener('change', function() {
+  const isTub = this.value === 'tubular';
+  document.getElementById('tubularHotInputs').style.display = isTub ? 'block' : 'none';
+  document.getElementById('dumbbellHotInputs').style.display = isTub ? 'none' : 'block';
+  calculateHotSet();
+});
+
+function calculateHotSet() {
+  const shape = document.getElementById('hotSetShape')?.value || 'tubular';
+  const init = parseFloat(document.getElementById('hInit').value);
+  const elong = parseFloat(document.getElementById('hElong').value);
+  const cool = parseFloat(document.getElementById('hCool').value);
+
+  let area = NaN;
+  if (shape === 'tubular') {
+    const coreD = parseFloat(document.getElementById('hCoreDia').value);
+    const condD = parseFloat(document.getElementById('hCondDia').value);
+    if (!isNaN(coreD) && !isNaN(condD) && coreD > condD) {
+      area = (Math.PI / 4) * (coreD * coreD - condD * condD);
+    }
+  } else {
+    const th = parseFloat(document.getElementById('hThick').value);
+    const w = parseFloat(document.getElementById('hWidth').value);
+    if (!isNaN(th) && !isNaN(w) && th > 0 && w > 0) {
+      area = th * w;
+    }
+  }
+
+  const weightOut = document.getElementById('hWeightOut');
+  if (!isNaN(area) && !isNaN(init) && init > 0) {
+    const weightGrams = area * (init / 1000) * 1.45;
+    weightOut.textContent = fmtNum(weightGrams, 3);
+  } else {
+    weightOut.textContent = '—';
+  }
+
+  document.getElementById('hHotOut').textContent = (!isNaN(elong) && !isNaN(init) && init > 0)
+    ? fmtNum(((elong - init) / init) * 100, 1)
+    : '—';
+
+  document.getElementById('hPermOut').textContent = (!isNaN(cool) && !isNaN(init) && init > 0)
+    ? fmtNum(((cool - init) / init) * 100, 1)
+    : '—';
+}
+['hCoreDia', 'hCondDia', 'hThick', 'hWidth', 'hInit', 'hElong', 'hCool'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', calculateHotSet);
+});
+
+window.calculateArmCov = function() {
+  const cableDia = parseFloat(document.getElementById('covCableDia').value);
+  const wireDia = parseFloat(document.getElementById('covWireDia').value);
+  const lay = parseFloat(document.getElementById('covLay').value);
+  const wires = parseFloat(document.getElementById('covWires').value);
+  const out = document.getElementById('outCov');
+
+  if (!isNaN(cableDia) && !isNaN(wireDia) && !isNaN(lay) && !isNaN(wires) && lay > 0 && wires > 0 && (cableDia + wireDia) > 0) {
+    const meanDia = cableDia + wireDia;
+    const sinAlpha = lay / Math.sqrt(Math.pow(Math.PI * meanDia, 2) + Math.pow(lay, 2));
+    const cov = ((wires * wireDia) / (Math.PI * meanDia * sinAlpha)) * 100;
+    out.textContent = fmtNum(cov, 2);
+  } else {
+    out.textContent = '—';
+  }
+};
+
+/* --- GATE PASS & PRINT --- */
+function generateGatePasses(deptText, dateDisplay, timeDisplay) {
+  const container = document.getElementById('gatePassPrintArea');
+  if (!container) return;
+
+  const cols = 3;
+  const rows = 9;
+  container.style.setProperty('--gp-rows', String(rows));
+  container.classList.remove('gp-dense');
+
+  const safeDept = esc((deptText || '').trim().toUpperCase() || 'PRODUCTION');
+  const safeDate = esc(dateDisplay);
+  const safeTime = esc(timeDisplay);
+
+  let html = '';
+  for (let i = 1; i <= GP_STANDARD_COUNT; i++) {
+    const serial = `GP-${String(i).padStart(2, '0')}`;
+    html += `
+      <div class="gate-pass-card">
+        <div class="gp-company">THERMOCABLES LTD.</div>
+        <div class="gp-dept">${safeDept}</div>
+        <div class="gp-serial">${serial}</div>
+        <div class="gp-datetime">
+          <span>${safeDate}</span>
+          <span>${safeTime}</span>
+        </div>
+        <div class="gp-sig-area">
+          <div class="gp-sig-line"></div>
+          <div class="gp-sig-label">Sign / Auth</div>
+        </div>
+      </div>
+    `;
+  }
+  container.innerHTML = html;
+}
+
+window.triggerPrint = function(event, mode) {
   if (event) event.preventDefault();
+
+  const now = new Date();
   document.getElementById('pCompany').textContent = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
   document.getElementById('pDept').textContent = localStorage.getItem('tc_dept') || 'QC DEPARTMENT';
   document.getElementById('pPrepBy').textContent = localStorage.getItem('tc_prep') || '—';
   document.getElementById('pVerBy').textContent = localStorage.getItem('tc_ver') || '—';
-
-  const now = new Date();
-  document.getElementById('pDate').textContent = now.toLocaleDateString('en-GB');
+  document.getElementById('pDate').textContent = now.toLocaleDateString();
   document.getElementById('pTime').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-  const printInputsDiv = document.getElementById('printInputs');
-  printInputsDiv.innerHTML = '';
+  document.body.classList.remove('printing-gatepass');
 
   if (mode === 'gatepass') {
     const deptEl = document.getElementById('gpDept');
     const dateEl = document.getElementById('gpDate');
-    const hourEl = document.getElementById('gpHour');
-    const minEl = document.getElementById('gpMinute');
-    const apEl = document.getElementById('gpAmPm');
-
-    const dateVal = dateEl.value;
-    const hourVal = hourEl.value;
-    const minVal = minEl.value;
-    const amPmVal = apEl.value;
+    const h = document.getElementById('gpHour').value;
+    const m = document.getElementById('gpMinute').value;
+    const ap = document.getElementById('gpAmPm').value;
 
     dateEl.classList.remove('gp-invalid');
-    if (!dateVal) {
+    if (!dateEl.value) {
       dateEl.classList.add('gp-invalid');
-      alert('Please select a Date for the gate pass.');
+      alert('Please select a Gate Pass date.');
       dateEl.focus();
       return;
     }
 
-    const totalCount = GP_STANDARD_COUNT;
-    const cols = 3;
-    const rows = Math.ceil(totalCount / cols);
-
-    const companyName = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
-    const deptName = (deptEl.value || '').trim() || (localStorage.getItem('tc_gp_dept') || localStorage.getItem('tc_dept') || 'PRODUCTION').trim();
-    const displayDate = formatDateForDisplay(dateVal);
-    const displayTime = `${hourVal}:${minVal} ${amPmVal}`;
-
-    const gpArea = document.getElementById('gatePassPrintArea');
-    gpArea.style.setProperty('--gp-rows', rows);
-    gpArea.classList.toggle('gp-dense', rows > 9);
-
-    const cardsHtml = [];
-    for (let i = 1; i <= totalCount; i++) {
-      const serial = `TC-GP-${String(i).padStart(2, '0')}`;
-      cardsHtml.push(`
-        <div class="gate-pass-card">
-          <div class="gp-company">${esc(companyName)}</div>
-          ${deptName ? `<div class="gp-dept">${esc(deptName)}</div>` : ''}
-          <div class="gp-serial">${serial}</div>
-          <div class="gp-datetime">
-            <span>Date: ${esc(displayDate)}</span>
-            <span>Out: ${esc(displayTime)}</span>
-          </div>
-          <div class="gp-sig-area">
-            <div class="gp-sig-line"></div>
-            <div class="gp-sig-label">Sign</div>
-          </div>
-        </div>
-      `);
-    }
-
-    gpArea.innerHTML = cardsHtml.join('');
-
+    const formattedDate = formatDateForDisplay(dateEl.value);
+    const formattedTime = `${h}:${m} ${ap}`;
+    generateGatePasses(deptEl.value, formattedDate, formattedTime);
     document.body.classList.add('printing-gatepass');
-    setTimeout(() => {
-      window.print();
-      setTimeout(() => {
-        document.body.classList.remove('printing-gatepass');
-        gpArea.innerHTML = '';
-        gpArea.style.removeProperty('--gp-rows');
-        gpArea.classList.remove('gp-dense');
-      }, 300);
-    }, 100);
+    window.print();
+    setTimeout(() => document.body.classList.remove('printing-gatepass'), 500);
     return;
   }
 
-  let rowsHtml = '';
+  const inputsSection = document.getElementById('printInputs');
+  let tableHtml = '';
 
   if (mode === 'job') {
-    document.getElementById('pDocTitle').textContent = 'JOB CARD';
-    document.getElementById('pTestType').textContent = 'JOB CARD DETAILS';
-    rowsHtml += `<tr><th>Job No</th><td>${esc(jobInput.value || '—')}</td></tr>`;
-    rowsHtml += `<tr><th>Operation</th><td>${esc(opSelect.value || '—')}</td></tr>`;
+    document.getElementById('pDocTitle').textContent = 'JOB CARD SPECIFICATION';
+    document.getElementById('pTestType').textContent = `Job: ${jobInput.value || '—'} | Op: ${opSelect.value || '—'}`;
+    tableHtml = `<table class="print-inputs-table"><tr><th>Job Number</th><th>Operation</th></tr><tr><td>${esc(jobInput.value || '—')}</td><td>${esc(opSelect.value || '—')}</td></tr></table>`;
   } else if (mode === 'bom') {
     document.getElementById('pDocTitle').textContent = 'BILL OF MATERIALS (BOM)';
-    document.getElementById('pTestType').textContent = 'BOM CALCULATION';
-    rowsHtml += `<tr><th>SO-ITEM</th><td>${esc(bomInput.value || '—')}</td></tr>`;
-    rowsHtml += `<tr><th>Operation JDM</th><td>${esc(document.getElementById('bomOpSelect').value || 'All Operations')}</td></tr>`;
-    const planQtyVal = document.getElementById('planQtyInput');
-    if (planQtyVal) rowsHtml += `<tr><th>Plan / PRD Qty</th><td>${esc(planQtyVal.value || '0')}</td></tr>`;
+    document.getElementById('pTestType').textContent = `SO-ITEM: ${bomInput.value || '—'} | Scale: ${USER_PLAN_QTY || 1}×`;
+    tableHtml = `<table class="print-inputs-table"><tr><th>SO-ITEM / INDEX</th><th>Operation JDM</th><th>Plan Qty</th></tr><tr><td>${esc(bomInput.value || '—')}</td><td>${esc(bomOpSelect.value || 'All')}</td><td>${esc(USER_PLAN_QTY || 1)}</td></tr></table>`;
   } else if (mode === 'qc') {
-    const activeTab = document.querySelector('.qc-tab-btn.active');
-    const testName = activeTab ? activeTab.textContent.trim().toUpperCase() : 'QC CALCULATION';
-    document.getElementById('pDocTitle').textContent = 'QUALITY CONTROL REPORT';
-    document.getElementById('pTestType').textContent = testName;
+    const activeBtn = document.querySelector('.qc-tab-btn.active');
+    const tabLabel = activeBtn ? activeBtn.textContent.trim() : 'QC CALCULATION';
+    document.getElementById('pDocTitle').textContent = `QC TEST REPORT — ${tabLabel}`;
+    document.getElementById('pTestType').textContent = tabLabel;
+
     const activeCard = document.querySelector('.qc-card.active');
     if (activeCard) {
+      const pairs = [];
       activeCard.querySelectorAll('.input-group').forEach(grp => {
-        const lblEl = grp.querySelector('label');
-        const inputEl = grp.querySelector('input, select');
-        if (lblEl && inputEl) {
-          const cloneLbl = lblEl.cloneNode(true);
-          const hint = cloneLbl.querySelector('.unit-hint');
-          if (hint) hint.remove();
-          let valText = inputEl.value;
-          if (inputEl.tagName === 'SELECT') valText = inputEl.options[inputEl.selectedIndex]?.text || valText;
-          if (valText !== '' && valText !== null) {
-            rowsHtml += `<tr><th>${esc(cloneLbl.textContent.trim())}</th><td>${esc(valText)}</td></tr>`;
-          }
+        const lbl = grp.querySelector('label')?.childNodes[0]?.textContent?.trim() || 'Input';
+        const inp = grp.querySelector('input, select');
+        if (inp && inp.offsetParent !== null) {
+          pairs.push(`<tr><td>${esc(lbl)}</td><td>${esc(inp.value || '—')}</td></tr>`);
         }
       });
+      if (pairs.length) {
+        tableHtml = `<table class="print-inputs-table"><tr><th>Parameter</th><th>Entered Value</th></tr>${pairs.join('')}</table>`;
+      }
     }
   }
 
-  if (rowsHtml) {
-    printInputsDiv.innerHTML = `<table class="print-inputs-table">${rowsHtml}</table>`;
-  }
-
+  inputsSection.innerHTML = tableHtml;
   window.print();
 };
 
 initGatePassUI();
+renderMaintenanceUI();
 })();
 </script>
 </body>

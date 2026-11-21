@@ -2797,6 +2797,20 @@ body.has-offline-banner .app { padding-top: 48px; }
         <div class="result-title" id="jobResultTitle">Enter details above</div>
         <div class="counter" id="jobResultCount">0 records</div>
       </div>
+      <div id="jobCsvFallbackBox" class="no-print" style="display:none;margin:10px 0 12px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,0.88);border:1px dashed #60a5fa;">
+        <div id="jobCsvStatusText" style="font-size:0.82rem;color:#1e3a8a;font-weight:600;margin-bottom:8px;"></div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+          <label class="btn-mini-edit" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;margin:0;">
+            📂 Load data.csv
+            <input type="file" accept=".csv,text/csv" style="display:none;" onchange="handleManualCsvFile('job', this)">
+          </label>
+          <button type="button" class="btn-mini-edit" onclick="toggleCsvPasteBox('job')">📋 Paste CSV Text</button>
+        </div>
+        <div id="jobCsvPasteWrap" style="display:none;margin-top:8px;">
+          <textarea id="jobCsvPasteArea" rows="4" placeholder="Paste CSV content with headers here..." style="width:100%;padding:8px;border-radius:8px;border:1px solid #cbd5e1;font-size:0.8rem;font-family:monospace;"></textarea>
+          <button type="button" class="btn-search" style="margin-top:6px;padding:7px 14px;font-size:0.82rem;" onclick="handleManualCsvPaste('job')">Import Pasted CSV</button>
+        </div>
+      </div>
       <div class="grid" id="jobGrid">
         <div class="empty"><div class="icon">🔎</div><p>Start typing a <b>job number</b> above.</p></div>
       </div>
@@ -2825,6 +2839,20 @@ body.has-offline-banner .app { padding-top: 48px; }
       <div class="result-bar">
         <div class="result-title" id="bomResultTitle">Enter details above</div>
         <div class="result-counter counter" id="bomResultCount">0 records</div>
+      </div>
+      <div id="bomCsvFallbackBox" class="no-print" style="display:none;margin:10px 0 12px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,0.88);border:1px dashed #60a5fa;">
+        <div id="bomCsvStatusText" style="font-size:0.82rem;color:#1e3a8a;font-weight:600;margin-bottom:8px;"></div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+          <label class="btn-mini-edit" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;margin:0;">
+            📂 Load bom.csv
+            <input type="file" accept=".csv,text/csv" style="display:none;" onchange="handleManualCsvFile('bom', this)">
+          </label>
+          <button type="button" class="btn-mini-edit" onclick="toggleCsvPasteBox('bom')">📋 Paste CSV Text</button>
+        </div>
+        <div id="bomCsvPasteWrap" style="display:none;margin-top:8px;">
+          <textarea id="bomCsvPasteArea" rows="4" placeholder="Paste BOM CSV content with headers here..." style="width:100%;padding:8px;border-radius:8px;border:1px solid #cbd5e1;font-size:0.8rem;font-family:monospace;"></textarea>
+          <button type="button" class="btn-search" style="margin-top:6px;padding:7px 14px;font-size:0.82rem;" onclick="handleManualCsvPaste('bom')">Import Pasted CSV</button>
+        </div>
       </div>
       <div class="grid" id="bomGrid">
         <div class="empty"><div class="icon">📦</div><p>Start typing a <b>SO-ITEM</b> above.</p></div>
@@ -3409,23 +3437,31 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyiOsEWbiKuCLAAcjvzt
 // 1. Call this when a user submits the Registration Form
 async function registerUserToCloud(userDetails) {
   try {
+    const payload = {
+      action: "register",
+      ...userDetails,
+      dept: userDetails.dept || userDetails.department || "General",
+      department: userDetails.department || userDetails.dept || "General",
+      pass: userDetails.pass || "",
+      role: userDetails.role || "",
+      views: Array.isArray(userDetails.views) ? userDetails.views : ["home", "jobcards", "gatepass"]
+    };
     const response = await fetch(SCRIPT_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(userDetails)
+      body: JSON.stringify(payload)
     });
 
     const result = await response.json();
     if (result.status === "success" || result.status === "exists") {
-      localStorage.setItem("currentUser", JSON.stringify(userDetails));
+      localStorage.setItem("currentUser", JSON.stringify(payload));
       return result;
     } else {
-      alert("Server error: " + result.message);
+      console.warn("Registration cloud warning:", result.message);
       return result;
     }
   } catch (error) {
-    console.error("Registration failed:", error);
-    alert("Network error while registering. Please check your connection.");
+    console.error("Registration cloud sync failed (saved locally):", error);
     return null;
   }
 }
@@ -3436,14 +3472,18 @@ async function loadUsersForAdmin() {
     const response = await fetch(SCRIPT_URL);
     const result = await response.json();
 
-    if (result.status === "success") {
+    if (result.status === "success" && Array.isArray(result.users)) {
       console.log("Live users from Google Sheet:", result.users);
-      renderAdminUserList(result.users);
-    } else {
+      if (typeof window.mergeCloudUsersIntoStore === "function") {
+        window.mergeCloudUsersIntoStore(result.users);
+      }
+      renderAdminUserList();
+    } else if (result.message) {
       alert("Could not load users: " + result.message);
     }
   } catch (error) {
     console.error("Failed to fetch users:", error);
+    renderAdminUserList();
   }
 }
 
@@ -3596,15 +3636,18 @@ async function syncAllFromCloud() {
         const k = String(rawKey || '').trim().toLowerCase();
         if (!k) return;
         const u = data.users[rawKey];
+        const prev = merged[k] || {};
         merged[k] = {
-          name: u.name || k,
-          dept: u.dept || 'General',
-          plant: u.plant || 'Main Plant',
-          phone: u.phone || '',
-          email: u.email || '',
-          pass: u.pass !== undefined ? u.pass : '',
-          role: u.role !== undefined ? u.role : '',
-          views: Array.isArray(u.views) ? sanitizeViews(u.views) : ['home', 'jobcards', 'gatepass']
+          name: u.name || prev.name || k,
+          dept: u.dept || u.department || prev.dept || 'General',
+          plant: u.plant || prev.plant || 'Main Plant',
+          phone: u.phone !== undefined && u.phone !== '' ? u.phone : (prev.phone || ''),
+          email: u.email !== undefined && u.email !== '' ? u.email : (prev.email || ''),
+          pass: (u.pass !== undefined && u.pass !== '') ? u.pass : (prev.pass || ''),
+          role: (u.role !== undefined && u.role !== '') ? u.role : (prev.role || ''),
+          views: (Array.isArray(u.views) && u.views.length > 0)
+            ? sanitizeViews(u.views)
+            : (Array.isArray(prev.views) && prev.views.length > 0 ? sanitizeViews(prev.views) : ['home', 'jobcards', 'gatepass'])
         };
       });
       USERS = merged;
@@ -4069,6 +4112,43 @@ window.saveAdminUser = function() {
   alert(origKey ? `User "@${targetKey}" updated.` : `User "@${targetKey}" created.`);
 };
 
+function mergeCloudUsersIntoStore(cloudUsers) {
+  if (!Array.isArray(cloudUsers)) return;
+  let changed = false;
+  cloudUsers.forEach(u => {
+    const rawKey = String(u.username || u.name || '').trim().toLowerCase();
+    if (!rawKey) return;
+    const prev = USERS[rawKey] || {};
+    let parsedViews = null;
+    if (Array.isArray(u.views)) {
+      parsedViews = sanitizeViews(u.views);
+    } else if (typeof u.views === 'string' && u.views.trim()) {
+      parsedViews = sanitizeViews(u.views.split(',').map(v => v.trim().toLowerCase()));
+    }
+    USERS[rawKey] = {
+      name: u.name || prev.name || rawKey,
+      dept: u.department || u.dept || prev.dept || 'General',
+      plant: u.plant || prev.plant || 'Main Plant',
+      phone: u.phone || prev.phone || '',
+      email: u.email || prev.email || '',
+      pass: (u.pass !== undefined && u.pass !== '') ? String(u.pass) : (prev.pass || ''),
+      role: (u.role !== undefined && u.role !== '') ? String(u.role) : (prev.role || ''),
+      views: (parsedViews && parsedViews.length > 0)
+        ? parsedViews
+        : (Array.isArray(prev.views) && prev.views.length > 0 ? sanitizeViews(prev.views) : ['home', 'jobcards', 'gatepass'])
+    };
+    changed = true;
+  });
+  if (changed) {
+    try {
+      localStorage.setItem('tc_users', JSON.stringify(USERS));
+    } catch (e) {
+      console.warn('Failed to cache merged users:', e);
+    }
+  }
+}
+window.mergeCloudUsersIntoStore = mergeCloudUsersIntoStore;
+
 function renderAdminUserList(cloudUsers) {
   const card = document.getElementById('adminUserMgmtCard');
   const listEl = document.getElementById('adminUserList');
@@ -4083,29 +4163,7 @@ function renderAdminUserList(cloudUsers) {
   card.style.display = 'block';
 
   if (Array.isArray(cloudUsers)) {
-    if (badge) badge.textContent = `${cloudUsers.length} Users`;
-    listEl.innerHTML = cloudUsers.map(u => {
-      const uname = String(u.username || u.name || '').toLowerCase();
-      const nameVal = u.name || uname || 'User';
-      const roleText = u.role || 'Unassigned';
-      const deptText = u.department || u.dept || 'General';
-      const plantText = u.plant || 'Main Plant';
-      const contactBits = [u.phone, u.email].filter(Boolean).join(' • ');
-      return `
-        <div class="admin-user-card">
-          <div class="admin-user-card-info">
-            <div class="admin-user-card-name">
-              <span>${esc(nameVal)}</span>
-              ${uname ? `<span style="font-size:0.74rem;color:var(--text-muted);font-weight:600;">@${esc(uname)}</span>` : ''}
-              <span class="admin-user-role-tag">${esc(roleText)}</span>
-            </div>
-            <div class="admin-user-card-sub">${esc(deptText)} • ${esc(plantText)}</div>
-            ${contactBits ? `<div class="admin-user-card-sub">${esc(contactBits)}</div>` : ''}
-          </div>
-        </div>
-      `;
-    }).join('');
-    return;
+    mergeCloudUsersIntoStore(cloudUsers);
   }
 
   const keys = Object.keys(USERS).sort();
@@ -4340,7 +4398,7 @@ window.handleRegister = async function() {
     return;
   }
 
-  USERS[username] = {
+  const newUserRecord = {
     name,
     dept,
     plant,
@@ -4350,14 +4408,20 @@ window.handleRegister = async function() {
     role: '',
     views: ['home', 'jobcards', 'gatepass']
   };
+  USERS[username] = newUserRecord;
   saveUsersStore(username);
 
   await registerUserToCloud({
+    username,
     name,
     email,
+    dept,
     department: dept,
     plant,
-    username
+    phone: '',
+    pass,
+    role: '',
+    views: newUserRecord.views
   });
 
   document.getElementById('regName').value = '';
@@ -4893,6 +4957,105 @@ function getField(row, names) {
   return '';
 }
 
+function normalizeParsedRows(rows) {
+  if (!Array.isArray(rows)) return [];
+  return rows
+    .map(r => {
+      const clean = {};
+      Object.keys(r || {}).forEach(k => {
+        if (k && k.trim()) clean[k.trim()] = String(r[k] ?? '').trim();
+      });
+      return clean;
+    })
+    .filter(r => Object.values(r).some(v => v !== ''));
+}
+
+function updateCsvFallbackUI(type, loadedFromCacheOrError) {
+  const box = document.getElementById(type === 'job' ? 'jobCsvFallbackBox' : 'bomCsvFallbackBox');
+  const status = document.getElementById(type === 'job' ? 'jobCsvStatusText' : 'bomCsvStatusText');
+  const count = type === 'job' ? JOB_DATA.length : BOM_DATA.length;
+  if (!box) return;
+  if (count === 0 || loadedFromCacheOrError) {
+    box.style.display = 'block';
+    if (status) {
+      status.textContent = count > 0
+        ? `Using ${count} cached records (direct CSV file unreachable). You can upload or paste an updated CSV below:`
+        : `No ${type === 'job' ? 'data.csv' : 'bom.csv'} records loaded yet (common when opened offline or via file://). Select a CSV file or paste CSV data below:`;
+    }
+  } else {
+    box.style.display = 'none';
+  }
+}
+
+window.handleManualCsvFile = function(type, inputEl) {
+  const file = inputEl && inputEl.files && inputEl.files[0];
+  if (!file) return;
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    complete: results => {
+      const cleaned = normalizeParsedRows(results.data);
+      if (!cleaned.length) {
+        alert('No valid rows found in the selected CSV file.');
+        return;
+      }
+      if (type === 'job') {
+        JOB_DATA = cleaned;
+        localStorage.setItem('tc_job_cache', JSON.stringify(JOB_DATA));
+        updateCsvFallbackUI('job', false);
+        if (jobInput && jobInput.value.trim()) populateJobOperations(jobInput.value.trim());
+        renderJobResults();
+      } else {
+        BOM_DATA = cleaned;
+        localStorage.setItem('tc_bom_cache', JSON.stringify(BOM_DATA));
+        updateCsvFallbackUI('bom', false);
+        if (bomInput && bomInput.value.trim()) populateBomOperations(bomInput.value.trim());
+        renderBomResults();
+      }
+      inputEl.value = '';
+      alert(`Loaded ${cleaned.length} records successfully.`);
+    },
+    error: err => {
+      alert('Failed to read CSV file: ' + (err && err.message ? err.message : 'Unknown error'));
+    }
+  });
+};
+
+window.handleManualCsvPaste = function(type) {
+  const ta = document.getElementById(type === 'job' ? 'jobCsvPasteArea' : 'bomCsvPasteArea');
+  const raw = ta ? ta.value.trim() : '';
+  if (!raw) {
+    alert('Please paste CSV text (including the header row) first.');
+    return;
+  }
+  const results = Papa.parse(raw, { header: true, skipEmptyLines: true });
+  const cleaned = normalizeParsedRows(results.data);
+  if (!cleaned.length) {
+    alert('Could not parse any valid rows. Make sure the first line contains column headers.');
+    return;
+  }
+  if (type === 'job') {
+    JOB_DATA = cleaned;
+    localStorage.setItem('tc_job_cache', JSON.stringify(JOB_DATA));
+    updateCsvFallbackUI('job', false);
+    if (jobInput && jobInput.value.trim()) populateJobOperations(jobInput.value.trim());
+    renderJobResults();
+  } else {
+    BOM_DATA = cleaned;
+    localStorage.setItem('tc_bom_cache', JSON.stringify(BOM_DATA));
+    updateCsvFallbackUI('bom', false);
+    if (bomInput && bomInput.value.trim()) populateBomOperations(bomInput.value.trim());
+    renderBomResults();
+  }
+  if (ta) ta.value = '';
+  alert(`Loaded ${cleaned.length} records from pasted CSV.`);
+};
+
+window.toggleCsvPasteBox = function(type) {
+  const wrap = document.getElementById(type === 'job' ? 'jobCsvPasteWrap' : 'bomCsvPasteWrap');
+  if (wrap) wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+};
+
 function loadJobDataFromCSV() {
   return new Promise(resolve => {
     Papa.parse('data.csv', {
@@ -4900,21 +5063,21 @@ function loadJobDataFromCSV() {
       header: true,
       skipEmptyLines: true,
       complete: results => {
-        if (results.data && results.data.length > 0) {
-          JOB_DATA = results.data.map(r => {
-            const clean = {};
-            Object.keys(r).forEach(k => { clean[k.trim()] = String(r[k] ?? '').trim(); });
-            return clean;
-          });
+        const cleaned = normalizeParsedRows(results.data);
+        if (cleaned.length > 0) {
+          JOB_DATA = cleaned;
           localStorage.setItem('tc_job_cache', JSON.stringify(JOB_DATA));
+          updateCsvFallbackUI('job', false);
           resolve(true);
         } else {
           try { JOB_DATA = JSON.parse(localStorage.getItem('tc_job_cache')) || []; } catch (e) { JOB_DATA = []; }
+          updateCsvFallbackUI('job', true);
           resolve(JOB_DATA.length > 0);
         }
       },
       error: () => {
         try { JOB_DATA = JSON.parse(localStorage.getItem('tc_job_cache')) || []; } catch (e) { JOB_DATA = []; }
+        updateCsvFallbackUI('job', true);
         resolve(JOB_DATA.length > 0);
       }
     });
@@ -4928,21 +5091,21 @@ function loadBomDataFromCSV() {
       header: true,
       skipEmptyLines: true,
       complete: results => {
-        if (results.data && results.data.length > 0) {
-          BOM_DATA = results.data.map(r => {
-            const clean = {};
-            Object.keys(r).forEach(k => { clean[k.trim()] = String(r[k] ?? '').trim(); });
-            return clean;
-          });
+        const cleaned = normalizeParsedRows(results.data);
+        if (cleaned.length > 0) {
+          BOM_DATA = cleaned;
           localStorage.setItem('tc_bom_cache', JSON.stringify(BOM_DATA));
+          updateCsvFallbackUI('bom', false);
           resolve(true);
         } else {
           try { BOM_DATA = JSON.parse(localStorage.getItem('tc_bom_cache')) || []; } catch (e) { BOM_DATA = []; }
+          updateCsvFallbackUI('bom', true);
           resolve(BOM_DATA.length > 0);
         }
       },
       error: () => {
         try { BOM_DATA = JSON.parse(localStorage.getItem('tc_bom_cache')) || []; } catch (e) { BOM_DATA = []; }
+        updateCsvFallbackUI('bom', true);
         resolve(BOM_DATA.length > 0);
       }
     });

@@ -5115,127 +5115,142 @@ function processBomCSVData(rows) {
       lastOperation = '';
       lastCustomer = customer;
       lastSize = size;
-      lastGroup = group;
-    } else {
+      lastGroup = '';
+    } else if (lastSoItem) {
       soItem = lastSoItem;
-      if (!customer) customer = lastCustomer;
-      if (!size) size = lastSize;
+      if (!customer && lastCustomer) customer = lastCustomer;
+      if (!size && lastSize) size = lastSize;
     }
 
     if (operation) {
       lastOperation = operation;
-      if (group) lastGroup = group;
-    } else {
+      lastGroup = '';
+    } else if (lastOperation) {
       operation = lastOperation;
-      if (group) lastGroup = group;
     }
 
-    if (!group && operation) {
-      group = lastGroup || operation;
-    } else if (group) {
+    if (group) {
       lastGroup = group;
+    } else if (lastGroup) {
+      group = lastGroup;
     }
 
-    let rawBomVal = bomPerKmKey ? row[bomPerKmKey] : '';
-    let bomValStr = String(rawBomVal || '').trim().replace(/,/g, '');
-    let bomPerKm = parseFloat(bomValStr);
-    if (isNaN(bomPerKm)) bomPerKm = 0;
+    if (!soItem || !operation) return;
 
-    let matCode = materialCodeKey ? String(row[materialCodeKey] || '').trim() : '';
-    let matDisc = materialDiscKey ? String(row[materialDiscKey] || '').trim() : '';
-    let opnCode = opnKey ? String(row[opnKey] || '').trim() : '';
-
-    if(!soItem && !matCode && !matDisc) return;
+    const bomPerKmRaw = bomPerKmKey ? row[bomPerKmKey] : '';
+    const bomPerKm = (bomPerKmRaw === '' || bomPerKmRaw === null || bomPerKmRaw === undefined) ? null : parseFloat(String(bomPerKmRaw).replace(/,/g, ''));
 
     BOM_DATA.push({
       order: idx,
-      soItem: soItem || '',
-      so: soItem.includes('/') ? soItem.split('/')[0].trim() : (soItem.split('#')[0].trim()),
-      operation: operation || '—',
-      group: group || '',
-      opnCode: opnCode || '',
-      materialCode: matCode || '',
-      materialDisc: matDisc || '',
-      bomPerKm: bomPerKm,
-      customer: customer || '',
-      size: size || ''
+      soItem,
+      operation,
+      group: group || 'Other',
+      opnCode: opnKey ? String(row[opnKey] || '').trim() : '',
+      materialCode: materialCodeKey ? String(row[materialCodeKey] || '').trim() : '',
+      materialDisc: materialDiscKey ? String(row[materialDiscKey] || '').trim() : '',
+      bomPerKm: (bomPerKm !== null && !isNaN(bomPerKm)) ? bomPerKm : null,
+      customer,
+      size
     });
   });
 }
 
-function buildBomSoItemIndex() {
+function allBomSoItems() {
+  const s = new Set();
+  BOM_DATA.forEach(r => { if(r.soItem) s.add(r.soItem); });
+  return Array.from(s).sort();
+}
+
+function buildBomSoIndex() {
   const map = new Map();
   BOM_DATA.forEach(r => {
-    const item = r.soItem;
-    if(!item) return;
-    if(!map.has(item)) {
-      map.set(item, { soItem: item, customer: r.customer, size: r.size, ops: new Set() });
-    }
-    const rec = map.get(item);
-    if(r.operation) rec.ops.add(r.operation);
-    if(!rec.customer && r.customer) rec.customer = r.customer;
-    if(!rec.size && r.size) rec.size = r.size;
+    if (!r.soItem) return;
+    if (!map.has(r.soItem)) map.set(r.soItem, new Set());
+    if (r.operation) map.get(r.soItem).add(r.operation);
   });
   return map;
 }
-function allBomSoItems() { return Array.from(buildBomSoItemIndex().keys()).sort(); }
 
+/* --- BOM CONTROLLER (AUTO-SHOW) --- */
 const bomInput = document.getElementById('bomInput'), bomOpSelect = document.getElementById('bomOpSelect'), bomGrid = document.getElementById('bomGrid'), bomSuggestBox = document.getElementById('bomSuggestBox');
 
-function renderBomSuggestions(term){
-  const t = term.toLowerCase();
-  const matches = allBomSoItems().filter(item => item.toLowerCase().includes(t));
-  const idx = buildBomSoItemIndex();
-  if(matches.length === 0){ bomSuggestBox.innerHTML = `<div class="suggest-empty">No SO-ITEMs match</div>`; bomSuggestBox.classList.add('open'); return; }
+function renderBomSuggestions(term) {
+  const idx = buildBomSoIndex();
+  const matches = allBomSoItems().filter(s => s.toLowerCase().includes(term.toLowerCase()));
+  if (matches.length === 0) {
+    bomSuggestBox.innerHTML = `<div class="suggest-empty">No SO-ITEMs match</div>`;
+    bomSuggestBox.classList.add('open');
+    return;
+  }
   let html = `<div class="suggest-hint">${matches.length} SO-ITEMs found</div>`;
-  matches.slice(0, 50).forEach((item) => {
-    const rec = idx.get(item);
-    const opCount = rec ? rec.ops.size : 0;
-    html += `<div class="suggest-item" data-item="${esc(item)}"><span>${esc(item)}</span><span class="meta">${opCount} ops</span></div>`;
+  matches.forEach(s => {
+    const opCount = idx.get(s) ? idx.get(s).size : 0;
+    html += `<div class="suggest-item" data-soitem="${esc(s)}"><span>${esc(s)}</span><span class="meta">${opCount} ops</span></div>`;
   });
   bomSuggestBox.innerHTML = html;
   bomSuggestBox.classList.add('open');
 }
 
-function closeBomSuggestions(){ bomSuggestBox.classList.remove('open'); }
+function closeBomSuggestions() { bomSuggestBox.classList.remove('open'); }
 
-function findExactBomItem(term){
+function findExactBomSoItem(term) {
   const t = String(term || '').trim().toLowerCase();
-  if(!t) return null;
-  for(const k of buildBomSoItemIndex().keys()){ if(k.toLowerCase() === t) return k; }
+  if (!t) return null;
+  for (const s of allBomSoItems()) {
+    if (s.toLowerCase() === t) return s;
+  }
   return null;
 }
 
-function refreshBomOpSelect(soItemArg, autoSelectAllOrFirst) {
-  const soItem = (soItemArg === undefined ? bomInput.value : soItemArg).trim();
+function refreshBomOpSelect(soItemArg, autoSelectFirst) {
+  const item = (soItemArg === undefined ? bomInput.value : soItemArg).trim();
   bomOpSelect.innerHTML = '';
-  if(!soItem){ bomOpSelect.innerHTML = '<option value="">— Select SO-ITEM First —</option>'; bomOpSelect.disabled = true; return; }
-  const it = soItem.toLowerCase();
+  if (!item) {
+    bomOpSelect.innerHTML = '<option value="">— Select SO-ITEM First —</option>';
+    bomOpSelect.disabled = true;
+    return;
+  }
   const seen = new Set();
-  const ops = [];
-  BOM_DATA.forEach(r => { if(r.soItem.toLowerCase() === it && r.operation && !seen.has(r.operation)){ seen.add(r.operation); ops.push(r.operation); } });
-  if(ops.length === 0){ bomOpSelect.innerHTML = '<option value="">— No Operations —</option>'; bomOpSelect.disabled = true; return; }
-
-  const allOpt = document.createElement('option'); allOpt.value = '__ALL__'; allOpt.textContent = 'ALL OPERATIONS'; bomOpSelect.appendChild(allOpt);
-  ops.forEach(op => { const o = document.createElement('option'); o.value = op; o.textContent = op; bomOpSelect.appendChild(o); });
+  const list = [];
+  BOM_DATA.forEach(r => {
+    if (r.soItem.toLowerCase() === item.toLowerCase() && r.operation && !seen.has(r.operation)) {
+      seen.add(r.operation);
+      list.push(r.operation);
+    }
+  });
+  if (list.length === 0) {
+    bomOpSelect.innerHTML = '<option value="">— No Operations —</option>';
+    bomOpSelect.disabled = true;
+    return;
+  }
+  const ph = document.createElement('option');
+  ph.value = '';
+  ph.textContent = '— Select Op JDM —';
+  bomOpSelect.appendChild(ph);
+  list.forEach(op => {
+    const o = document.createElement('option');
+    o.value = op;
+    o.textContent = op;
+    bomOpSelect.appendChild(o);
+  });
   bomOpSelect.disabled = false;
-  if(autoSelectAllOrFirst) bomOpSelect.value = '__ALL__';
+  if (list.length === 1 || autoSelectFirst) bomOpSelect.value = list[0];
 }
 
-function pickBomSuggestion(soItem){
+function pickBomSuggestion(soItem) {
   bomInput.value = soItem;
   closeBomSuggestions();
   refreshBomOpSelect(soItem, true);
-  renderBomResults();
+  if (bomOpSelect.value) renderBomResults();
 }
 
 bomInput.addEventListener('input', () => {
   const term = bomInput.value.trim();
-  const exact = findExactBomItem(term);
-  if(exact){
+  const exact = findExactBomSoItem(term);
+  if (exact) {
     closeBomSuggestions();
     refreshBomOpSelect(exact, true);
-    renderBomResults();
+    if (bomOpSelect.value) renderBomResults();
   } else {
     renderBomSuggestions(term);
     refreshBomOpSelect(term, false);
@@ -5245,95 +5260,98 @@ bomInput.addEventListener('input', () => {
   }
 });
 bomInput.addEventListener('focus', () => { renderBomSuggestions(bomInput.value.trim()); });
-bomInput.addEventListener('keydown', (e) => {
-  if(e.key !== 'Enter') return;
+bomInput.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
   e.preventDefault();
   const first = bomSuggestBox.querySelector('.suggest-item');
-  if(bomSuggestBox.classList.contains('open') && first) pickBomSuggestion(first.dataset.item);
-  else renderBomResults();
+  if (bomSuggestBox.classList.contains('open') && first) pickBomSuggestion(first.dataset.soitem);
+  else if (bomOpSelect.value) renderBomResults();
   closeBomSuggestions();
 });
-bomSuggestBox.addEventListener('mousedown', e => { const item = e.target.closest('.suggest-item'); if(item) pickBomSuggestion(item.dataset.item); });
-bomOpSelect.addEventListener('change', () => { if(bomOpSelect.value) renderBomResults(); });
-document.addEventListener('click', e => { if(!document.getElementById('bomField').contains(e.target)) closeBomSuggestions(); });
+bomSuggestBox.addEventListener('mousedown', e => { const item = e.target.closest('.suggest-item'); if(item) pickBomSuggestion(item.dataset.soitem); });
+bomOpSelect.addEventListener('change', () => { if (bomOpSelect.value) renderBomResults(); });
+document.addEventListener('click', e => { if (!document.getElementById('bomField').contains(e.target)) closeBomSuggestions(); });
 
 function renderBomResults() {
-  const soItem = bomInput.value.trim(), op = bomOpSelect.value;
-  if(!soItem) return;
+  const item = bomInput.value.trim();
+  const op = bomOpSelect.value;
+  if(!item || !op) return;
 
-  let matches = BOM_DATA.filter(r => r.soItem.toLowerCase() === soItem.toLowerCase());
-  if(op && op !== '__ALL__') {
-    matches = matches.filter(r => r.operation === op);
-  }
+  const matches = BOM_DATA.filter(r => r.soItem.toLowerCase() === item.toLowerCase() && r.operation === op);
+  document.getElementById('bomResultTitle').textContent = `${item} • ${op}`;
+  document.getElementById('bomResultCount').textContent = `${matches.length} records`;
 
-  document.getElementById('bomResultTitle').textContent = `${soItem} • ${op === '__ALL__' || !op ? 'ALL OPERATIONS' : op}`;
-  document.getElementById('bomResultCount').textContent = `${matches.length} items`;
-
-  if(matches.length === 0) {
-    bomGrid.innerHTML = `<div class="empty"><div class="icon">📭</div><p>No BOM records for <b>${esc(soItem)}</b></p></div>`;
+  if (matches.length === 0) {
+    bomGrid.innerHTML = `<div class="empty"><div class="icon">📭</div><p>No records for <b>${esc(item)}</b> / <b>${esc(op)}</b></p></div>`;
     return;
   }
 
-  const firstMatch = matches[0];
   CURRENT_BOM_LINES = matches;
-  LAST_BOM_ITEM = { soItem: firstMatch.soItem, customer: firstMatch.customer, size: firstMatch.size };
+  LAST_BOM_ITEM = { soItem: item, operation: op, customer: matches[0].customer, size: matches[0].size };
 
-  const defaultPlanQty = (USER_PLAN_QTY !== null && USER_PLAN_QTY > 0) ? USER_PLAN_QTY : 1;
-
-  let specsHtml = '';
-  specsHtml += `<div class="spec"><div class="k">CUSTOMER</div><div class="v">${esc(firstMatch.customer || '—')}</div></div>`;
-  specsHtml += `<div class="spec"><div class="k">SIZE</div><div class="v">${esc(firstMatch.size || '—')}</div></div>`;
-
-  let tableHtml = `<div class="bom-table">
-    <div class="bom-table-head"><div>CODE</div><div>MATERIAL DESCRIPTION</div><div>QTY</div></div>`;
-
-  const groups = new Map();
+  let grouped = new Map();
   matches.forEach(m => {
-    const grpKey = m.group || 'GENERAL';
-    if(!groups.has(grpKey)) groups.set(grpKey, []);
-    groups.get(grpKey).push(m);
+    const g = m.group || 'Other';
+    if (!grouped.has(g)) grouped.set(g, []);
+    grouped.get(g).push(m);
   });
 
-  groups.forEach((items, grpName) => {
-    tableHtml += `<div class="bom-group-header">${esc(grpName)}</div>`;
-    items.forEach(item => {
-      const calcQty = item.bomPerKm * defaultPlanQty;
-      tableHtml += `<div class="bom-row">
-        <div>${esc(item.materialCode || '—')}</div>
-        <div>${esc(item.materialDisc || '—')}</div>
-        <div class="bom-calc-qty" data-per-km="${item.bomPerKm}">${formatQty(calcQty)}</div>
+  let rowsHtml = '';
+  grouped.forEach((lines, grp) => {
+    rowsHtml += `<div class="bom-group-header">${esc(grp)}</div>`;
+    lines.forEach((line, i) => {
+      rowsHtml += `<div class="bom-row">
+        <div>${esc(line.materialCode || '—')}</div>
+        <div>${esc(line.materialDisc || '—')}</div>
+        <div id="bom-req-${i}">—</div>
       </div>`;
     });
   });
 
-  tableHtml += `</div>`;
+  const planVal = (USER_PLAN_QTY !== null && USER_PLAN_QTY !== '' && !isNaN(USER_PLAN_QTY)) ? USER_PLAN_QTY : 1;
 
-  let planInputHtml = `<div style="margin: 12px 0; background: #eff6ff; padding: 12px; border-radius: 10px; border: 1px solid #bfdbfe;">
-    <label for="bomPlanQtyInput" style="display:block; font-size:0.7rem; font-weight:800; color:#1d4ed8; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">PLAN QTY (KM)</label>
-    <input type="number" id="bomPlanQtyInput" class="plan-input" value="${defaultPlanQty}" min="0.001" step="any" oninput="handleBomPlanInput(event)" placeholder="Enter Qty">
-  </div>`;
-
-  let cardHtml = `<div class="card printable-card" style="grid-column: 1 / -1;">
-    <div class="card-head"><h3><span class="bullet"></span>${esc(firstMatch.soItem)}</h3><span class="op-tag">${esc(op === '__ALL__' || !op ? 'ALL OPS' : op)}</span></div>
-    <div class="specs">${specsHtml}</div>
-    <div style="padding: 12px;">
-      ${planInputHtml}
-      ${tableHtml}
+  const html = `<div class="card printable-card" style="grid-column: 1 / -1;">
+    <div class="card-head"><h3><span class="bullet"></span>${esc(LAST_BOM_ITEM.soItem)}</h3><span class="op-tag">${esc(LAST_BOM_ITEM.operation)}</span></div>
+    <div class="specs">
+      <div class="spec accent"><div class="k">PLAN QTY (M)</div><div class="v"><input type="number" id="planQtyInput" class="plan-input" placeholder="1" step="any" value="${esc(planVal)}"></div></div>
+      <div class="spec"><div class="k">CUSTOMER</div><div class="v">${esc(LAST_BOM_ITEM.customer || '—')}</div></div>
+      <div class="spec"><div class="k">SIZE</div><div class="v">${esc(LAST_BOM_ITEM.size || '—')}</div></div>
+    </div>
+    <div style="padding: 12px 14px 16px;">
+      <div class="bom-table">
+        <div class="bom-table-head"><div>MAT CODE</div><div>MATERIAL</div><div>REQ QTY</div></div>
+        ${rowsHtml}
+      </div>
     </div>
   </div>`;
 
-  bomGrid.innerHTML = cardHtml;
+  bomGrid.innerHTML = html;
+
+  const planInput = document.getElementById('planQtyInput');
+  if (planInput) {
+    planInput.addEventListener('input', () => {
+      USER_PLAN_QTY = planInput.value;
+      updateBomPlanQuantities();
+    });
+  }
+  updateBomPlanQuantities();
 }
 
-window.handleBomPlanInput = function(event) {
-  const val = parseFloat(event.target.value);
-  if (isNaN(val) || val < 0) return;
-  USER_PLAN_QTY = val;
-  document.querySelectorAll('.bom-calc-qty').forEach(el => {
-    const perKm = parseFloat(el.getAttribute('data-per-km')) || 0;
-    el.textContent = formatQty(perKm * val);
+function updateBomPlanQuantities() {
+  const planInput = document.getElementById('planQtyInput');
+  if (!planInput) return;
+  let planQty = parseFloat(planInput.value);
+  if (isNaN(planQty) || planQty <= 0) planQty = 1;
+  CURRENT_BOM_LINES.forEach((line, i) => {
+    const el = document.getElementById(`bom-req-${i}`);
+    if (!el) return;
+    if (line.bomPerKm === null) {
+      el.textContent = '—';
+    } else {
+      el.textContent = formatQty((line.bomPerKm / 1000) * planQty);
+    }
   });
-};
+}
 
 document.getElementById('bomSearchBtn').addEventListener('click', renderBomResults);
 document.getElementById('bomResetBtn').addEventListener('click', () => {
@@ -5433,6 +5451,7 @@ function processDrumRows(rows) {
   const headers = Object.keys(rows[0] || {});
 
   const jobKey = findHeader(headers, 'JOB NO / ITEM NO', 'JOBNOITEMNO', 'JOB NO', 'JOBNO', 'JOB NUMBER', 'JOB', 'SO-ITEM', 'SOITEM');
+  const customerKey = findHeader(headers, 'CUSTOMER NAME', 'CUSTOMERNAME', 'CUSTOMER');
   const itemDescKey = findHeader(headers, 'DESCRIPTION', 'ITEM DESCRIPTION', 'ITEMDESC', 'ITEM', 'MATERIAL DISC', 'MATERIAL');
   const totalDrumReqKey = findHeader(headers, 'TOTAL DRUM REQ', 'TOTALDRUMREQ', 'TOTAL DRUMS');
   const drumSizeKey = findHeader(headers, 'DRUM SIZE-CATEGORY', 'DRUM SIZECATEGORY', 'DRUM SIZE', 'DRUMSIZE', 'SIZE', 'DRUM');
@@ -5457,12 +5476,14 @@ function processDrumRows(rows) {
     const jobNo = String(row[jobKey] || '').trim();
     if (!jobNo) return;
 
+    const customer = customerKey ? String(row[customerKey] || '').trim() : '';
     const itemDesc = itemDescKey ? String(row[itemDescKey] || '').trim() : '';
 
     if (!grouped.has(jobNo)) {
       grouped.set(jobNo, {
         order: idx,
         jobNo,
+        customer: customer || '',
         itemDesc: itemDesc || '',
         drumCounts: new Map(),
         totalDrums: 0
@@ -5470,6 +5491,7 @@ function processDrumRows(rows) {
     }
 
     const entry = grouped.get(jobNo);
+    if (!entry.customer && customer) entry.customer = customer;
     if (!entry.itemDesc && itemDesc) entry.itemDesc = itemDesc;
 
     let addedFromPairs = 0;
@@ -5503,6 +5525,7 @@ function processDrumRows(rows) {
   DRUM_DATA = Array.from(grouped.values()).map(g => ({
     order: g.order,
     jobNo: g.jobNo,
+    customer: g.customer || '—',
     itemDesc: g.itemDesc || '—',
     drums: Array.from(g.drumCounts.entries()).map(([size, count]) => ({ size, count })),
     totalDrums: g.totalDrums
@@ -5525,19 +5548,23 @@ const drumGrid = document.getElementById('drumGrid');
 const drumSuggestBox = document.getElementById('drumSuggestBox');
 
 function renderDrumSuggestions(term) {
-  const t = String(term || '').trim().toLowerCase();
-  const matches = allDrumJobNos().filter(j => !t || j.toLowerCase().includes(t));
+  const matches = DRUM_DATA.filter(r =>
+    r.jobNo.toLowerCase().includes(term.toLowerCase()) ||
+    r.itemDesc.toLowerCase().includes(term.toLowerCase())
+  );
+
   if (matches.length === 0) {
     drumSuggestBox.innerHTML = `<div class="suggest-empty">No matching Job No / Item No</div>`;
     drumSuggestBox.classList.add('open');
     return;
   }
-  const byJob = new Map(DRUM_DATA.map(d => [d.jobNo, d]));
+
   let html = `<div class="suggest-hint">${matches.length} jobs found</div>`;
-  matches.slice(0, 50).forEach(j => {
-    const rec = byJob.get(j);
-    const total = rec ? formatQty(rec.totalDrums) : '0';
-    html += `<div class="suggest-item" data-drumjob="${esc(j)}"><span>${esc(j)}</span><span class="meta">${esc(total)} drums</span></div>`;
+  matches.slice(0, 40).forEach(r => {
+    html += `<div class="suggest-item" data-job="${esc(r.jobNo)}">
+      <span>${esc(r.jobNo)}${r.itemDesc && r.itemDesc !== '—' ? ` — <small style="color:var(--text-muted);font-weight:500;">${esc(r.itemDesc)}</small>` : ''}</span>
+      <span class="meta">${formatQty(r.totalDrums)} drums</span>
+    </div>`;
   });
   drumSuggestBox.innerHTML = html;
   drumSuggestBox.classList.add('open');
@@ -5559,28 +5586,41 @@ drumInput.addEventListener('input', () => {
   if (exact) {
     closeDrumSuggestions();
     renderDrumResults();
-  } else {
+  } else if (term.length > 0) {
     renderDrumSuggestions(term);
+  } else {
+    closeDrumSuggestions();
     document.getElementById('drumResultTitle').textContent = 'Enter Job No / Item No above';
     document.getElementById('drumResultCount').textContent = '0 records';
     drumGrid.innerHTML = '<div class="empty"><div class="icon">🥁</div><p>Start typing a <b>Job No / Item No</b> above.</p></div>';
   }
 });
-drumInput.addEventListener('focus', () => { renderDrumSuggestions(drumInput.value.trim()); });
+
+drumInput.addEventListener('focus', () => {
+  renderDrumSuggestions(drumInput.value.trim());
+});
+
 drumInput.addEventListener('keydown', (e) => {
   if (e.key !== 'Enter') return;
   e.preventDefault();
   const first = drumSuggestBox.querySelector('.suggest-item');
-  if (drumSuggestBox.classList.contains('open') && first) pickDrumSuggestion(first.dataset.drumjob);
-  else renderDrumResults();
+  if (drumSuggestBox.classList.contains('open') && first) {
+    pickDrumSuggestion(first.dataset.job);
+  } else {
+    renderDrumResults();
+  }
   closeDrumSuggestions();
 });
-drumSuggestBox.addEventListener('mousedown', e => {
+
+drumSuggestBox.addEventListener('mousedown', (e) => {
   const item = e.target.closest('.suggest-item');
-  if (item) pickDrumSuggestion(item.dataset.drumjob);
+  if (item) pickDrumSuggestion(item.dataset.job);
 });
-document.addEventListener('click', e => {
-  if (!document.getElementById('drumField').contains(e.target)) closeDrumSuggestions();
+
+document.addEventListener('click', (e) => {
+  if (!document.getElementById('drumField').contains(e.target)) {
+    closeDrumSuggestions();
+  }
 });
 
 function renderDrumResults() {
@@ -5614,8 +5654,8 @@ function renderDrumResults() {
         <div style="padding: 16px;">
           <div class="drum-summary-boxes">
             <div class="drum-info-box">
-              <div class="lbl">Job No / Item No</div>
-              <div class="val">${esc(rec.jobNo)}</div>
+              <div class="lbl">Customer Name</div>
+              <div class="val">${esc(rec.customer || '—')}</div>
             </div>
             <div class="drum-info-box">
               <div class="lbl">Item Description</div>
@@ -5654,38 +5694,27 @@ document.getElementById('drumResetBtn').addEventListener('click', () => {
 });
 
 /* --- QC CALCULATOR LOGIC --- */
-window.calculateCRCombined = function() {
-  const specVal = parseFloat(document.getElementById('specCR').value);
-  const maxVal = parseFloat(document.getElementById('maxCR').value);
-  const minVal = parseFloat(document.getElementById('minCR').value);
+function calculateCRCombined() {
+  const specCR = parseFloat(document.getElementById('specCR').value);
+  const maxCR = parseFloat(document.getElementById('maxCR').value);
+  const minCR = parseFloat(document.getElementById('minCR').value);
 
-  const outUnbalance = document.getElementById('outUnbalance');
+  const outUnb = document.getElementById('outUnbalance');
   const outHigh = document.getElementById('outHigh');
   const outLow = document.getElementById('outLow');
 
-  if (!isNaN(maxVal) && !isNaN(minVal) && maxVal > 0 && maxVal >= minVal) {
-    const unbalance = ((maxVal - minVal) / maxVal) * 100;
-    outUnbalance.textContent = unbalance.toFixed(2);
-  } else {
-    outUnbalance.textContent = '—';
-  }
-
-  if (!isNaN(specVal) && specVal > 0) {
-    if (!isNaN(maxVal)) {
-      const high = ((maxVal - specVal) / specVal) * 100;
-      outHigh.textContent = high.toFixed(2);
-    } else {
-      outHigh.textContent = '—';
-    }
-    if (!isNaN(minVal)) {
-      const low = ((minVal - specVal) / specVal) * 100;
-      outLow.textContent = low.toFixed(2);
-    } else {
-      outLow.textContent = '—';
-    }
-  } else {
+  if (isNaN(specCR) || isNaN(maxCR) || isNaN(minCR) || specCR === 0) {
+    outUnb.textContent = '—';
     outHigh.textContent = '—';
     outLow.textContent = '—';
+  } else {
+    const unbalance = ((maxCR - minCR) / maxCR) * 100;
+    const high = ((maxCR - specCR) / specCR) * 100;
+    const low = ((specCR - minCR) / specCR) * 100;
+
+    outUnb.textContent = unbalance.toFixed(2);
+    outHigh.textContent = high.toFixed(2);
+    outLow.textContent = low.toFixed(2);
   }
 
   const obs = parseFloat(document.getElementById('obsCR').value);
@@ -5693,188 +5722,307 @@ window.calculateCRCombined = function() {
   const temp = parseFloat(document.getElementById('tempCR').value);
   const outCalCR = document.getElementById('outCalCR');
 
-  if (!isNaN(obs) && !isNaN(len) && len > 0 && !isNaN(temp)) {
-    const k = 234.5;
-    const calCR = (obs * 1000 / len) * ((k + 20) / (k + temp));
-    outCalCR.textContent = calCR.toFixed(4);
-  } else {
+  if (isNaN(obs) || isNaN(len) || isNaN(temp) || len === 0) {
     outCalCR.textContent = '—';
+  } else {
+    const calCR = (obs / len) * (1 / (1 + 0.00393 * (temp - 20)));
+    outCalCR.textContent = calCR.toFixed(4);
   }
-};
-
-function calculateIR() {
-  const r = parseFloat(document.getElementById('irReading').value), l = parseFloat(document.getElementById('irLength').value), D = parseFloat(document.getElementById('irCoreDia').value), d = parseFloat(document.getElementById('irCondDia').value);
-  const irOut = document.getElementById('irResultOut'), irConstOut = document.getElementById('irConstOut'), vrConstOut = document.getElementById('vrConstOut');
-  if(!isNaN(r) && !isNaN(l) && l > 0) { irOut.innerHTML = formatScientific(r * 1e6); irConstOut.textContent = (r * l).toFixed(2); } else { irOut.textContent = '—'; irConstOut.textContent = '—'; }
-  if(!isNaN(r) && !isNaN(l) && l > 0 && !isNaN(D) && !isNaN(d) && D > d && d > 0) { const val = ((r * 1e6) * l) / (2 * Math.PI * Math.log(D / d)); vrConstOut.innerHTML = formatScientific(val); } else { vrConstOut.textContent = '—'; }
 }
-['irReading','irLength','irCoreDia','irCondDia'].forEach(id => document.getElementById(id).addEventListener('input', calculateIR));
 
-function calculateCapacitance() { const r = parseFloat(document.getElementById('capReading').value), l = parseFloat(document.getElementById('capLength').value), out = document.getElementById('capResultOut'); out.textContent = (!isNaN(r) && !isNaN(l) && l > 0) ? (r / l).toFixed(4) : '—'; }
-['capReading','capLength'].forEach(id => document.getElementById(id).addEventListener('input', calculateCapacitance));
+['irReading', 'irLength', 'irCoreDia', 'irCondDia'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    const r = parseFloat(document.getElementById('irReading').value);
+    const l = parseFloat(document.getElementById('irLength').value);
+    const d = parseFloat(document.getElementById('irCoreDia').value);
+    const cond = parseFloat(document.getElementById('irCondDia').value);
+    if (isNaN(r) || isNaN(l) || isNaN(d) || isNaN(cond) || l === 0 || cond === 0 || d <= cond) {
+      document.getElementById('irResultOut').innerHTML = '—';
+      document.getElementById('irConstOut').innerHTML = '—';
+      document.getElementById('vrConstOut').innerHTML = '—';
+      return;
+    }
+    const ir = r * 1e6;
+    const k = Math.log10(d / cond) / (2 * Math.PI);
+    const irConst = r * l / k;
+    const vrConst = ir * l / k;
+    document.getElementById('irResultOut').innerHTML = formatScientific(ir);
+    document.getElementById('irConstOut').innerHTML = formatScientific(irConst);
+    document.getElementById('vrConstOut').innerHTML = formatScientific(vrConst);
+  });
+});
 
-function calculateHVFail() { const len = parseFloat(document.getElementById('hvLength').value), top = parseFloat(document.getElementById('hvTopCr').value), bot = parseFloat(document.getElementById('hvBottomCr').value), totOut = document.getElementById('hvTotalCrOut'), topOut = document.getElementById('hvTopSideOut'), botOut = document.getElementById('hvBottomSideOut'); if(!isNaN(top) && !isNaN(bot)) { const tot = top + bot; totOut.textContent = tot.toFixed(4); if(!isNaN(len) && len > 0 && tot > 0) { topOut.textContent = ((top / tot) * len).toFixed(2); botOut.textContent = ((bot / tot) * len).toFixed(2); } else { topOut.textContent = '—'; botOut.textContent = '—'; } } else { totOut.textContent = '—'; topOut.textContent = '—'; botOut.textContent = '—'; } }
-['hvLength','hvTopCr','hvBottomCr'].forEach(id => document.getElementById(id).addEventListener('input', calculateHVFail));
+['capReading', 'capLength'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    const c = parseFloat(document.getElementById('capReading').value);
+    const l = parseFloat(document.getElementById('capLength').value);
+    if (isNaN(c) || isNaN(l) || l === 0) {
+      document.getElementById('capResultOut').textContent = '—';
+      return;
+    }
+    document.getElementById('capResultOut').textContent = (c / l).toFixed(2);
+  });
+});
 
-function calculateThickness() { const min = parseFloat(document.getElementById('thickMin').value), max = parseFloat(document.getElementById('thickMax').value), avgOut = document.getElementById('thickAvgOut'), concOut = document.getElementById('thickConcOut'); if(!isNaN(min) && !isNaN(max) && max > 0) { avgOut.textContent = ((min + max) / 2).toFixed(3); concOut.textContent = ((min / max) * 100).toFixed(2); } else { avgOut.textContent = '—'; concOut.textContent = '—'; } }
-['thickMin','thickMax'].forEach(id => document.getElementById(id).addEventListener('input', calculateThickness));
+['hvLength', 'hvTopCr', 'hvBottomCr'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    const l = parseFloat(document.getElementById('hvLength').value);
+    const t = parseFloat(document.getElementById('hvTopCr').value);
+    const b = parseFloat(document.getElementById('hvBottomCr').value);
+    if (isNaN(l) || isNaN(t) || isNaN(b) || (t + b) === 0) {
+      document.getElementById('hvTotalCrOut').textContent = '—';
+      document.getElementById('hvTopSideOut').textContent = '—';
+      document.getElementById('hvBottomSideOut').textContent = '—';
+      return;
+    }
+    const tot = t + b;
+    document.getElementById('hvTotalCrOut').textContent = tot.toFixed(4);
+    document.getElementById('hvTopSideOut').textContent = ((t / tot) * l).toFixed(2);
+    document.getElementById('hvBottomSideOut').textContent = ((b / tot) * l).toFixed(2);
+  });
+});
 
-function calculateBraid() { const d = parseFloat(document.getElementById('brD').value), D = parseFloat(document.getElementById('brBigD').value), N = parseFloat(document.getElementById('brN').value), M = parseFloat(document.getElementById('brM').value), L = parseFloat(document.getElementById('brL').value), totalWiresOut = document.getElementById('brTotalWiresOut'), fOut = document.getElementById('brFOut'), covOut = document.getElementById('brCovOut'); if(!isNaN(N) && !isNaN(M)) { const totalWires = N * M; totalWiresOut.textContent = totalWires; if(!isNaN(d) && !isNaN(D) && !isNaN(L) && L > 0 && (D + d) > 0) { const tanAlpha = (Math.PI * (D + d)) / L; const F = (totalWires * d) / (2 * Math.PI * (D + d) * Math.sqrt(1 + tanAlpha * tanAlpha)); const cov = (1 - Math.pow(1 - F, 2)) * 100; fOut.textContent = F.toFixed(4); covOut.textContent = cov.toFixed(2); } else { fOut.textContent = '—'; covOut.textContent = '—'; } } else { totalWiresOut.textContent = '—'; fOut.textContent = '—'; covOut.textContent = '—'; } }
-['brD','brBigD','brN','brM','brL'].forEach(id => document.getElementById(id).addEventListener('input', calculateBraid));
+['thickMin', 'thickMax'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    const min = parseFloat(document.getElementById('thickMin').value);
+    const max = parseFloat(document.getElementById('thickMax').value);
+    if (isNaN(min) || isNaN(max) || max === 0) {
+      document.getElementById('thickAvgOut').textContent = '—';
+      document.getElementById('thickConcOut').textContent = '—';
+      return;
+    }
+    document.getElementById('thickAvgOut').textContent = ((min + max) / 2).toFixed(3);
+    document.getElementById('thickConcOut').textContent = (((max - min) / max) * 100).toFixed(2);
+  });
+});
 
-document.getElementById('tensileShape').addEventListener('change', e => { const isTub = e.target.value === 'tubular'; document.getElementById('tubularInputs').style.display = isTub ? 'block' : 'none'; document.getElementById('dumbbellInputs').style.display = isTub ? 'none' : 'block'; calculateTensile(); });
-function calculateTensile() { const shape = document.getElementById('tensileShape').value, load = parseFloat(document.getElementById('tLoad').value), elong = parseFloat(document.getElementById('tElong').value), init = parseFloat(document.getElementById('tInit').value), areaOut = document.getElementById('tAreaOut'), tsOut = document.getElementById('tTsOut'), elongOut = document.getElementById('tElongOut'); let area = NaN; if(shape === 'tubular') { const dia = parseFloat(document.getElementById('tDia').value), thick = parseFloat(document.getElementById('tThick').value); if(!isNaN(dia) && !isNaN(thick) && dia > thick && thick > 0) area = Math.PI * thick * (dia - thick); } else { const width = parseFloat(document.getElementById('dWidth').value), thick = parseFloat(document.getElementById('dThick').value); if(!isNaN(width) && !isNaN(thick) && width > 0 && thick > 0) area = width * thick; } if(!isNaN(area) && area > 0) { areaOut.textContent = area.toFixed(2); if(!isNaN(load) && load >= 0) tsOut.textContent = (load / area).toFixed(2); else tsOut.textContent = '—'; } else { areaOut.textContent = '—'; tsOut.textContent = '—'; } if(!isNaN(elong) && !isNaN(init) && init > 0) elongOut.textContent = (((elong - init) / init) * 100).toFixed(2); else elongOut.textContent = '—'; }
-['tDia','tThick','dWidth','dThick','tLoad','tElong','tInit'].forEach(id => document.getElementById(id).addEventListener('input', calculateTensile));
+['brD', 'brBigD', 'brN', 'brM', 'brL'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    const d = parseFloat(document.getElementById('brD').value);
+    const bigD = parseFloat(document.getElementById('brBigD').value);
+    const n = parseFloat(document.getElementById('brN').value);
+    const m = parseFloat(document.getElementById('brM').value);
+    const l = parseFloat(document.getElementById('brL').value);
+    if (isNaN(d) || isNaN(bigD) || isNaN(n) || isNaN(m) || isNaN(l) || bigD === 0 || l === 0) {
+      document.getElementById('brTotalWiresOut').textContent = '—';
+      document.getElementById('brFOut').textContent = '—';
+      document.getElementById('brCovOut').textContent = '—';
+      return;
+    }
+    const tot = n * m;
+    const angle = Math.atan((2 * Math.PI * (bigD + d)) / l);
+    const cosA = Math.cos(angle);
+    const f = cosA > 0 ? (tot * d) / (Math.PI * (bigD + d) * cosA) : 0;
+    const cov = (2 * f - f * f) * 100;
+    document.getElementById('brTotalWiresOut').textContent = tot;
+    document.getElementById('brFOut').textContent = f.toFixed(3);
+    document.getElementById('brCovOut').textContent = cov.toFixed(2);
+  });
+});
 
-document.getElementById('hotSetShape').addEventListener('change', e => { const isTub = e.target.value === 'tubular'; document.getElementById('tubularHotInputs').style.display = isTub ? 'block' : 'none'; document.getElementById('dumbbellHotInputs').style.display = isTub ? 'none' : 'block'; calculateHotSet(); });
-function calculateHotSet() { const shape = document.getElementById('hotSetShape').value, init = parseFloat(document.getElementById('hInit').value), elong = parseFloat(document.getElementById('hElong').value), cool = parseFloat(document.getElementById('hCool').value), weightOut = document.getElementById('hWeightOut'), hotOut = document.getElementById('hHotOut'), permOut = document.getElementById('hPermOut'); let area = NaN; if(shape === 'tubular') { const core = parseFloat(document.getElementById('hCoreDia').value), cond = parseFloat(document.getElementById('hCondDia').value); if(!isNaN(core) && !isNaN(cond) && core > cond) area = (Math.PI / 4) * (core * core - cond * cond); } else { const thick = parseFloat(document.getElementById('hThick').value), width = parseFloat(document.getElementById('hWidth').value); if(!isNaN(thick) && !isNaN(width)) area = thick * width; } if(!isNaN(area) && area > 0 && !isNaN(init) && init > 0) { const weight = area * init * 0.0012; weightOut.textContent = (weight * 1000).toFixed(2); } else { weightOut.textContent = '—'; } if(!isNaN(elong) && !isNaN(init) && init > 0) hotOut.textContent = (((elong - init) / init) * 100).toFixed(2); else hotOut.textContent = '—'; if(!isNaN(cool) && !isNaN(init) && init > 0) permOut.textContent = (((cool - init) / init) * 100).toFixed(2); else permOut.textContent = '—'; }
-['hCoreDia','hCondDia','hThick','hWidth','hInit','hElong','hCool'].forEach(id => document.getElementById(id).addEventListener('input', calculateHotSet));
+document.getElementById('tensileShape').addEventListener('change', (e) => {
+  document.getElementById('tubularInputs').style.display = e.target.value === 'tubular' ? 'block' : 'none';
+  document.getElementById('dumbbellInputs').style.display = e.target.value === 'dumbbell' ? 'block' : 'none';
+  calculateTensile();
+});
+['tDia', 'tThick', 'dWidth', 'dThick', 'tLoad', 'tElong', 'tInit'].forEach(id => document.getElementById(id).addEventListener('input', calculateTensile));
+function calculateTensile() {
+  const shape = document.getElementById('tensileShape').value;
+  const load = parseFloat(document.getElementById('tLoad').value);
+  const elong = parseFloat(document.getElementById('tElong').value);
+  const init = parseFloat(document.getElementById('tInit').value);
+  let area = NaN;
+  if (shape === 'tubular') {
+    const dia = parseFloat(document.getElementById('tDia').value);
+    const thick = parseFloat(document.getElementById('tThick').value);
+    if (!isNaN(dia) && !isNaN(thick) && dia > thick) { area = Math.PI * (dia - thick) * thick; }
+  } else {
+    const w = parseFloat(document.getElementById('dWidth').value);
+    const t = parseFloat(document.getElementById('dThick').value);
+    if (!isNaN(w) && !isNaN(t)) { area = w * t; }
+  }
+  document.getElementById('tAreaOut').textContent = isNaN(area) ? '—' : area.toFixed(2);
+  if (isNaN(area) || area === 0 || isNaN(load)) { document.getElementById('tTsOut').textContent = '—'; } else { document.getElementById('tTsOut').textContent = (load / area).toFixed(2); }
+  if (isNaN(elong) || isNaN(init) || init === 0) { document.getElementById('tElongOut').textContent = '—'; } else { document.getElementById('tElongOut').textContent = (((elong - init) / init) * 100).toFixed(2); }
+}
 
-window.calculateArmCov = function() {
+document.getElementById('hotSetShape').addEventListener('change', (e) => {
+  document.getElementById('tubularHotInputs').style.display = e.target.value === 'tubular' ? 'block' : 'none';
+  document.getElementById('dumbbellHotInputs').style.display = e.target.value === 'dumbbell' ? 'block' : 'none';
+  calculateHotSet();
+});
+['hCoreDia', 'hCondDia', 'hThick', 'hWidth', 'hInit', 'hElong', 'hCool'].forEach(id => document.getElementById(id).addEventListener('input', calculateHotSet));
+function calculateHotSet() {
+  const shape = document.getElementById('hotSetShape').value;
+  const init = parseFloat(document.getElementById('hInit').value);
+  const elong = parseFloat(document.getElementById('hElong').value);
+  const cool = parseFloat(document.getElementById('hCool').value);
+  let area = NaN;
+  if (shape === 'tubular') {
+    const core = parseFloat(document.getElementById('hCoreDia').value);
+    const cond = parseFloat(document.getElementById('hCondDia').value);
+    if (!isNaN(core) && !isNaN(cond) && core > cond) { area = (Math.PI / 4) * (core * core - cond * cond); }
+  } else {
+    const t = parseFloat(document.getElementById('hThick').value);
+    const w = parseFloat(document.getElementById('hWidth').value);
+    if (!isNaN(t) && !isNaN(w)) { area = t * w; }
+  }
+  document.getElementById('hWeightOut').textContent = isNaN(area) ? '—' : (area * 0.2).toFixed(3);
+  if (isNaN(elong) || isNaN(init) || init === 0) { document.getElementById('hHotOut').textContent = '—'; } else { document.getElementById('hHotOut').textContent = (((elong - init) / init) * 100).toFixed(2); }
+  if (isNaN(cool) || isNaN(init) || init === 0) { document.getElementById('hPermOut').textContent = '—'; } else { document.getElementById('hPermOut').textContent = (((cool - init) / init) * 100).toFixed(2); }
+}
+
+function calculateArmCov() {
   const cableDia = parseFloat(document.getElementById('covCableDia').value);
   const wireDia = parseFloat(document.getElementById('covWireDia').value);
   const lay = parseFloat(document.getElementById('covLay').value);
   const wires = parseFloat(document.getElementById('covWires').value);
-  const out = document.getElementById('outCov');
 
-  if (!isNaN(cableDia) && !isNaN(wireDia) && !isNaN(lay) && !isNaN(wires) && lay > 0 && (cableDia + wireDia) > 0) {
-    const piD = Math.PI * (cableDia + wireDia);
-    const sinAlpha = piD / Math.sqrt(piD * piD + lay * lay);
-    const cov = (wires * wireDia * 100) / (piD * sinAlpha);
-    out.textContent = cov.toFixed(2);
-  } else {
-    out.textContent = '—';
-  }
-};
+  const outCov = document.getElementById('outCov');
 
-/* --- PRINT & GATE PASS LOGIC --- */
-function collectFormInputs() {
-  const activeView = document.querySelector('.view-section.active');
-  if(!activeView) return [];
-  const rows = [];
-  if (activeView.id === 'view-qccalc') {
-    const activeCard = document.querySelector('#view-qccalc .qc-card.active');
-    if (activeCard) {
-      activeCard.querySelectorAll('.input-group').forEach(grp => {
-        const lbl = grp.querySelector('label');
-        const inp = grp.querySelector('input, select');
-        if (!lbl || !inp) return;
-        const labelText = Array.from(lbl.childNodes).filter(n => n.nodeType === 3).map(n => n.textContent.trim()).join(' ').trim() || lbl.textContent.replace(/\(.*?\)/g, '').trim();
-        let val = inp.value;
-        if (inp.tagName === 'SELECT') val = inp.options[inp.selectedIndex]?.text || val;
-        if (val !== '') rows.push(`<tr><td>${esc(labelText)}</td><td>${esc(val)}</td></tr>`);
-      });
-    }
+  if (isNaN(cableDia) || isNaN(wireDia) || isNaN(lay) || isNaN(wires) || cableDia === 0 || lay === 0) {
+    outCov.textContent = '—';
+    return;
   }
-  return rows;
+
+  const pi = Math.PI;
+  const part1 = (wires * wireDia) / (pi * (cableDia + wireDia));
+  const cosVal = lay / Math.sqrt(lay * lay + (pi * pi * (cableDia + wireDia) * (cableDia + wireDia)));
+  const cov = (part1 / cosVal) * 100;
+
+  outCov.textContent = cov.toFixed(2);
 }
 
+/* --- PRINT / PDF GATEWAY --- */
 window.triggerPrint = function(event, mode) {
-  if(event) event.preventDefault();
-  document.body.classList.remove('printing-gatepass');
+  if(event) event.stopPropagation();
+
   if (mode === 'gatepass') {
-    const dateVal = document.getElementById('gpDate').value;
-    const hourVal = document.getElementById('gpHour').value;
-    const minVal = document.getElementById('gpMinute').value;
-    const ampmVal = document.getElementById('gpAmPm').value;
-    const deptVal = document.getElementById('gpDept').value.trim();
+    const dateInput = document.getElementById('gpDate');
+    const hourSel = document.getElementById('gpHour');
+    const minSel = document.getElementById('gpMinute');
+    const ampmSel = document.getElementById('gpAmPm');
+    const deptEl = document.getElementById('gpDept');
+
+    const dateVal = dateInput ? dateInput.value : '';
+    const hourVal = hourSel ? hourSel.value : '';
+    const minVal = minSel ? minSel.value : '';
+    const ampmVal = ampmSel ? ampmSel.value : '';
+    const deptVal = deptEl ? deptEl.value.trim() : '';
+
+    if (dateInput) dateInput.classList.remove('gp-invalid');
 
     if (!dateVal) {
-      alert('Please select a Date for the Gate Pass.');
-      document.getElementById('gpDate').focus();
+      alert("Please select a Date.");
+      if (dateInput) {
+        dateInput.classList.add('gp-invalid');
+        dateInput.focus();
+      }
       return;
     }
+
     if (!hourVal || !minVal || !ampmVal) {
-      alert('Please select an Out Time (Hour, Minute, AM/PM).');
-      document.getElementById('gpHour').focus();
+      alert("Please select Out Time (Hour, Minute, and AM/PM).");
+      if (hourSel) hourSel.focus();
       return;
     }
 
     const formattedDate = formatDateForDisplay(dateVal);
     const formattedTime = `${hourVal}:${minVal} ${ampmVal}`;
-    const companyName = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
-    const deptName = deptVal || localStorage.getItem('tc_dept') || 'PRODUCTION';
-
     const printArea = document.getElementById('gatePassPrintArea');
-    printArea.innerHTML = '';
+    const companyName = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
+    const deptName = deptVal || localStorage.getItem('tc_gp_dept') || localStorage.getItem('tc_dept') || 'PRODUCTION';
+    localStorage.setItem('tc_gp_dept', deptName);
 
-    const count = GP_STANDARD_COUNT;
     const cols = 3;
+    const count = GP_STANDARD_COUNT;
     const rows = Math.ceil(count / cols);
     printArea.style.setProperty('--gp-rows', rows);
-    printArea.classList.remove('gp-dense');
+    printArea.classList.toggle('gp-dense', rows > 10);
 
-    const now = new Date();
-    const yStr = String(now.getFullYear()).slice(-2);
-    const mStr = String(now.getMonth() + 1).padStart(2, '0');
-    const dStr = String(now.getDate()).padStart(2, '0');
-    const prefix = `${yStr}${mStr}${dStr}`;
-
+    let cardsHtml = '';
     for (let i = 1; i <= count; i++) {
-      const serialNum = `${prefix}-${String(i).padStart(2, '0')}`;
-      const card = document.createElement('div');
-      card.className = 'gate-pass-card';
-      card.innerHTML = `
-        <div class="gp-company">${esc(companyName)}</div>
-        <div class="gp-dept">${esc(deptName)}</div>
-        <div class="gp-serial">#${esc(serialNum)}</div>
-        <div class="gp-datetime">
-          <span>${esc(formattedDate)}</span>
-          <span>${esc(formattedTime)}</span>
-        </div>
-        <div class="gp-sig-area">
-          <div class="gp-sig-line"></div>
-          <div class="gp-sig-label">Auth Sign</div>
+      cardsHtml += `
+        <div class="gate-pass-card">
+          <div class="gp-company">${esc(companyName)}</div>
+          <div class="gp-dept">${esc(deptName)}</div>
+          <div class="gp-serial">GATE PASS #${i}</div>
+          <div class="gp-datetime">
+            <span>Date: ${esc(formattedDate)}</span>
+            <span>Out Time: ${esc(formattedTime)}</span>
+          </div>
+          <div class="gp-sig-area">
+            <div class="gp-sig-line"></div>
+            <div class="gp-sig-label">Authorized Signature</div>
+          </div>
         </div>
       `;
-      printArea.appendChild(card);
     }
+    printArea.innerHTML = cardsHtml;
     document.body.classList.add('printing-gatepass');
-    window.print();
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => {
+        document.body.classList.remove('printing-gatepass');
+        printArea.innerHTML = '';
+      }, 500);
+    }, 100);
     return;
-  }
-
-  let typeTitle = '';
-  const activeView = document.querySelector('.view-section.active');
-  if (mode === 'qc' && activeView && activeView.id === 'view-qccalc') {
-    const activeTab = document.querySelector('#view-qccalc .qc-tab-btn.active');
-    if (activeTab) typeTitle = activeTab.textContent.trim();
-  } else if (mode === 'job') {
-    typeTitle = 'JOB CARD';
-  } else if (mode === 'bom') {
-    typeTitle = 'BOM SHEET';
-  } else if (mode === 'drumreq') {
-    typeTitle = 'DRUM REQUIREMENT';
   }
 
   const now = new Date();
   document.getElementById('pDate').textContent = now.toLocaleDateString('en-GB');
-  document.getElementById('pTime').textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  document.getElementById('pTime').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   document.getElementById('pCompany').textContent = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
   document.getElementById('pDept').textContent = localStorage.getItem('tc_dept') || 'QC DEPARTMENT';
-  document.getElementById('pDocTitle').textContent = 'TEST REPORT';
-  document.getElementById('pTestType').textContent = typeTitle;
+  document.getElementById('pPrepBy').textContent = localStorage.getItem('tc_prep') || '—';
+  document.getElementById('pVerBy').textContent = localStorage.getItem('tc_ver') || '—';
 
-  const prep = localStorage.getItem('tc_prep'), ver = localStorage.getItem('tc_ver');
-  document.getElementById('pPrepBy').textContent = prep ? prep.trim() : '—';
-  document.getElementById('pVerBy').textContent = ver ? ver.trim() : '—';
+  let titleText = 'TEST REPORT', typeText = 'GENERAL', inputsHtml = '';
 
-  const inputRows = collectFormInputs();
-  const printInputsDiv = document.getElementById('printInputs');
-  printInputsDiv.innerHTML = (inputRows.length > 0)
-    ? `<table class="print-inputs-table"><thead><tr><th>Parameter</th><th>Value</th></tr></thead><tbody>${inputRows.join('')}</tbody></table>`
-    : '';
-  window.print();
+  if (mode === 'qc') {
+    const activeTabBtn = document.querySelector('.qc-tab-btn.active');
+    const tabName = activeTabBtn ? activeTabBtn.textContent.trim() : 'QC CALC';
+    titleText = `${tabName.toUpperCase()} TEST REPORT`; typeText = tabName;
+    const activeCard = document.querySelector('.qc-card.active');
+    if (activeCard) {
+      let rows = '';
+      activeCard.querySelectorAll('.input-group').forEach(grp => {
+        const lbl = grp.querySelector('label');
+        const inp = grp.querySelector('input, select');
+        if (lbl && inp) {
+          let val = inp.value;
+          if(inp.tagName === 'SELECT') val = inp.options[inp.selectedIndex]?.text || val;
+          rows += `<tr><td style="font-weight:700;">${esc(lbl.innerText.split('\n')[0])}</td><td>${esc(val || '—')}</td></tr>`;
+        }
+      });
+      if(rows) inputsHtml = `<div style="font-weight:700; margin-bottom:6px; font-size:12px;">INPUT PARAMETERS:</div><table class="print-inputs-table"><thead><tr><th>Parameter</th><th>Value</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+  } else if (mode === 'job') {
+    titleText = 'JOB CARD REPORT'; typeText = 'JOB CARD';
+    const job = jobInput.value || '—', op = opSelect.value || '—';
+    inputsHtml = `<div style="font-weight:700; margin-bottom:6px; font-size:12px;">SEARCH CRITERIA:</div><table class="print-inputs-table"><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody><tr><td style="font-weight:700;">Job Number</td><td>${esc(job)}</td></tr><tr><td style="font-weight:700;">Operation</td><td>${esc(op)}</td></tr></tbody></table>`;
+  } else if (mode === 'bom') {
+    titleText = 'BOM REPORT'; typeText = 'BOM';
+    const item = bomInput.value || '—', op = bomOpSelect.value || '—';
+    const planQty = document.getElementById('planQtyInput')?.value || '1';
+    inputsHtml = `<div style="font-weight:700; margin-bottom:6px; font-size:12px;">BOM PARAMETERS:</div><table class="print-inputs-table"><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody><tr><td style="font-weight:700;">SO-ITEM / INDEX</td><td>${esc(item)}</td></tr><tr><td style="font-weight:700;">Operation JDM</td><td>${esc(op)}</td></tr><tr><td style="font-weight:700;">Plan Qty (Meters)</td><td>${esc(planQty)}</td></tr></tbody></table>`;
+  } else if (mode === 'drumreq') {
+    titleText = 'DRUM REQUIREMENT REPORT'; typeText = 'DRUM REQ';
+    const job = drumInput.value || '—';
+    inputsHtml = `<div style="font-weight:700; margin-bottom:6px; font-size:12px;">DRUM REQ PARAMETERS:</div><table class="print-inputs-table"><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody><tr><td style="font-weight:700;">Job No / Item No</td><td>${esc(job)}</td></tr></tbody></table>`;
+  }
+
+  document.getElementById('pDocTitle').textContent = titleText;
+  document.getElementById('pTestType').textContent = typeText;
+  document.getElementById('printInputs').innerHTML = inputsHtml;
+  setTimeout(() => { window.print(); }, 100);
 };
 
-window.addEventListener('afterprint', () => {
-  document.body.classList.remove('printing-gatepass');
-});
-
 initGatePassUI();
-setModuleAccessFormCheckboxes(['home', 'jobcards', 'drumreq', 'gatepass']);
-
+initAppBoot();
 })();
 </script>
+
 </body>
 </html>

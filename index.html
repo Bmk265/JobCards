@@ -97,13 +97,12 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.35s var(--ease-smooth), visibility 0.35s var(--ease-smooth);
+  transition: opacity 0.5s var(--ease-smooth), visibility 0.5s var(--ease-smooth);
 }
 #globalLoader.hidden {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  display: none;
 }
 .loader-wrapper {
   display: flex;
@@ -133,15 +132,15 @@ body {
 }
 .mesh-wire {
   stroke-dasharray: 2500;
-  animation: drawMesh 1.4s ease-in-out forwards;
+  animation: drawMesh 4.5s ease-in-out forwards;
 }
 @keyframes dropCross {
-  0%, 25% { transform: translateY(-120px); opacity: 0; }
-  45% { transform: translateY(0px); opacity: 1; }
+  0%, 35% { transform: translateY(-120px); opacity: 0; }
+  50% { transform: translateY(0px); opacity: 1; }
   100% { transform: translateY(0px); opacity: 1; }
 }
 .red-cross {
-  animation: dropCross 1.4s var(--ease-smooth) forwards;
+  animation: dropCross 4.5s var(--ease-smooth) forwards;
 }
 @keyframes currentPulse {
   0%, 100% { filter: drop-shadow(0 0 0px rgba(227, 24, 24, 0)); }
@@ -149,7 +148,7 @@ body {
 }
 .pulse-glow {
   animation: currentPulse 2s ease-in-out infinite;
-  animation-delay: 1.4s;
+  animation-delay: 4.5s;
 }
 .company-text {
   display: flex;
@@ -167,23 +166,24 @@ body {
 .company-text span {
   display: inline-block;
   opacity: 0;
-  transform: translateX(40px);
-  animation: trainEnter 0.8s var(--ease-smooth) forwards;
+  transform: translateX(100vw);
+  animation: trainEnter 4s var(--ease-smooth) forwards;
 }
-.company-text span:nth-child(1) { animation-delay: 0.10s; }
-.company-text span:nth-child(2) { animation-delay: 0.14s; }
-.company-text span:nth-child(3) { animation-delay: 0.18s; }
-.company-text span:nth-child(4) { animation-delay: 0.22s; }
-.company-text span:nth-child(5) { animation-delay: 0.26s; }
-.company-text span:nth-child(6) { animation-delay: 0.30s; }
-.company-text span:nth-child(7) { animation-delay: 0.34s; }
-.company-text span:nth-child(8) { animation-delay: 0.38s; }
-.company-text span:nth-child(9) { animation-delay: 0.42s; }
-.company-text span:nth-child(10) { animation-delay: 0.46s; }
-.company-text span:nth-child(11) { animation-delay: 0.50s; }
-.company-text span:nth-child(12) { animation-delay: 0.54s; }
+.company-text span:nth-child(1) { animation-delay: 1.5s; }
+.company-text span:nth-child(2) { animation-delay: 1.6s; }
+.company-text span:nth-child(3) { animation-delay: 1.7s; }
+.company-text span:nth-child(4) { animation-delay: 1.8s; }
+.company-text span:nth-child(5) { animation-delay: 1.9s; }
+.company-text span:nth-child(6) { animation-delay: 2.0s; }
+.company-text span:nth-child(7) { animation-delay: 2.1s; }
+.company-text span:nth-child(8) { animation-delay: 2.2s; }
+.company-text span:nth-child(9) { animation-delay: 2.3s; }
+.company-text span:nth-child(10) { animation-delay: 2.4s; }
+.company-text span:nth-child(11) { animation-delay: 2.5s; }
+.company-text span:nth-child(12) { animation-delay: 2.6s; }
 @keyframes trainEnter {
-  0% { opacity: 0; transform: translateX(40px); }
+  0% { opacity: 0; transform: translateX(100vw); }
+  10% { opacity: 1; }
   100% { opacity: 1; transform: translateX(0); }
 }
 .underline-glow {
@@ -195,8 +195,8 @@ body {
   height: 2.5px;
   background: #e31818;
   border-radius: 999px;
-  animation: expandLine 0.7s var(--ease-smooth) forwards;
-  animation-delay: 0.65s;
+  animation: expandLine 1.5s var(--ease-smooth) forwards;
+  animation-delay: 2.8s;
 }
 @keyframes expandLine {
   0% { width: 0%; opacity: 0; }
@@ -840,6 +840,7 @@ body {
   box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
 }
 
+/* Maintenance Block Overlay / Card for Active Modules */
 .maintenance-notice-card {
   background: var(--bg-surface);
   border: 1.5px solid var(--warning-border);
@@ -1941,6 +1942,44 @@ body {
   transform: scale(1.01);
 }
 
+.cr-mode-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  background: var(--bg-app);
+  padding: 5px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  margin-bottom: 16px;
+}
+.cr-mode-btn {
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s var(--ease-smooth);
+}
+.cr-mode-btn:hover {
+  color: var(--text-primary);
+}
+.cr-mode-btn.active {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.24);
+}
+.cr-subpanel {
+  display: none;
+}
+.cr-subpanel.active {
+  display: block;
+}
+
 .qc-card {
   background: var(--bg-surface);
   border-radius: var(--radius-lg);
@@ -2429,6 +2468,111 @@ body {
   max-width: 100%;
 }
 
+
+
+/* ============ DRUM REQ CARD LAYOUT (v7 + v4) ============ */
+.drum-req-card { padding: 4px 0 8px; }
+.drum-card-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 12px; }
+.drum-field-box {
+  background: var(--bg-app);
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
+  padding: 13px 16px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.025);
+}
+.drum-field-box.highlight {
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+}
+.drum-field-label {
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.drum-field-val {
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.35;
+  word-break: break-word;
+}
+.drum-field-box.highlight .drum-field-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.15rem;
+  color: var(--accent-primary);
+}
+.drum-matrix-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.drum-matrix-head {
+  display: grid;
+  grid-template-columns: 1fr 90px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  background: var(--bg-subtle);
+}
+.drum-matrix-head > div:last-child { text-align: right; }
+.drum-matrix-row {
+  display: grid;
+  grid-template-columns: 1fr 90px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.drum-matrix-row:last-child { border-bottom: none; }
+.drum-matrix-row > div:last-child {
+  text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent-primary);
+}
+.drum-total-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-top: 2px;
+}
+.drum-total-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--success-text);
+  text-transform: uppercase;
+}
+.drum-total-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: var(--success-text);
+}
+@media print {
+  .drum-field-box { border: 1px solid #000 !important; background: #fff !important; box-shadow: none !important; }
+  .drum-field-box * { color: #000 !important; }
+  .drum-matrix-card { border: 1px solid #000 !important; }
+  .drum-matrix-head { border-bottom: 1px solid #000 !important; background: #fff !important; }
+  .drum-matrix-head > div, .drum-matrix-row > div { color: #000 !important; border-right: 1px solid #000 !important; }
+  .drum-matrix-head > div:last-child, .drum-matrix-row > div:last-child { border-right: none !important; background: #fff !important; }
+  .drum-matrix-row { border-bottom: 1px solid #000 !important; }
+  .drum-total-bar { border: 1.5px solid #000 !important; background: #fff !important; color: #000 !important; }
+  .drum-total-label, .drum-total-val { color: #000 !important; }
+}
+
 /* --- DRUM REQ MODULE --- */
 .drum-summary-boxes {
   display: grid;
@@ -2873,11 +3017,13 @@ body.has-offline-banner .app { padding-top: 48px; }
   </div>
   <div class="print-inputs-section" id="printInputs"></div>
 
+  <!-- Global Whole-App Maintenance Block (Shown for non-admin users when app is in maintenance) -->
   <div id="globalAppMaintenanceView" style="display: none;"></div>
 
   <div class="view-section active" id="view-home">
     <div id="homeMaintenanceNotice"></div>
     <div id="homeContentWrap">
+      <!-- Promotional Banner -->
       <div id="promoBanner" class="promo-banner" style="display: none;" onclick="handleBannerClick(event)"></div>
 
       <div class="dashboard-hero">
@@ -2974,7 +3120,7 @@ body.has-offline-banner .app { padding-top: 48px; }
       <div class="search-panel">
         <div class="field" id="drumField" style="grid-column: 1 / -1;">
           <label>Job No / Item No</label>
-          <input type="text" id="drumInput" placeholder="Type Job No / Item No (e.g. 338371-26)..." autocomplete="off" inputmode="text">
+          <input type="text" id="drumInput" placeholder="Type Job No or Job No / Item No (e.g. 338371 or 338371-26)..." autocomplete="off" inputmode="text">
           <div class="suggest" id="drumSuggestBox"></div>
         </div>
         <div class="search-buttons">
@@ -2992,6 +3138,7 @@ body.has-offline-banner .app { padding-top: 48px; }
       <button class="btn-print no-print" onclick="triggerPrint(event, 'drumreq')">Save as PDF</button>
     </div>
   </div>
+
 
   <div class="view-section" id="view-qccalc">
     <div id="qccalcMaintenanceNotice"></div>
@@ -3021,26 +3168,62 @@ body.has-offline-banner .app { padding-top: 48px; }
         </div>
       </div>
 
+      <!-- 1. CR CALC & UNBALANCE (IPQC & fQC Toggle) -->
       <div class="qc-card active" id="qc-card-cr">
         <div class="qc-card-body">
-          <div class="result-title-bar">CR UNBALANCE</div>
-          <div class="input-group"><label>Spec CR</label><input type="number" id="specCR" step="any" placeholder="" oninput="calculateCRCombined()"></div>
-          <div class="input-group"><label>Max CR</label><input type="number" id="maxCR" step="any" placeholder="" oninput="calculateCRCombined()"></div>
-          <div class="input-group"><label>Min CR</label><input type="number" id="minCR" step="any" placeholder="" oninput="calculateCRCombined()"></div>
-
-          <div class="result-section">
-            <div class="result-card primary"><span class="label">CR Unbalance</span><div class="value-wrapper"><span class="value" id="outUnbalance">—</span><span class="unit">%</span></div></div>
-            <div class="result-card warning"><span class="label">CR High</span><div class="value-wrapper"><span class="value" id="outHigh">—</span><span class="unit">%</span></div></div>
-            <div class="result-card success"><span class="label">CR Low</span><div class="value-wrapper"><span class="value" id="outLow">—</span><span class="unit">%</span></div></div>
+          <div class="cr-mode-toggle no-print" role="tablist" aria-label="CR Mode">
+            <button type="button" class="cr-mode-btn active" id="btnCrModeIpqc" onclick="switchCrMode('ipqc', event)">IPQC</button>
+            <button type="button" class="cr-mode-btn" id="btnCrModeFqc" onclick="switchCrMode('fqc', event)">fQC</button>
           </div>
 
-          <div class="result-title-bar" style="margin-top:16px;">CAL CR</div>
-          <div class="input-group"><label>CR Obs</label><input type="number" id="obsCR" step="any" placeholder="" oninput="calculateCRCombined()"></div>
-          <div class="input-group"><label>Length (m)</label><input type="number" id="lenCR" step="any" placeholder="" oninput="calculateCRCombined()"></div>
-          <div class="input-group"><label>Temp (°C)</label><input type="number" id="tempCR" step="any" placeholder="" oninput="calculateCRCombined()"></div>
+          <!-- IPQC (Original CR Unbalance + Cal CR) -->
+          <div class="cr-subpanel active" id="cr-panel-ipqc">
+            <div class="result-title-bar">IPQC — CR UNBALANCE</div>
+            <div class="input-group"><label>Spec CR</label><input type="number" id="ipqcSpecCR" step="any" placeholder="" oninput="calculateCRIpqc()"></div>
+            <div class="input-group"><label>Max CR</label><input type="number" id="ipqcMaxCR" step="any" placeholder="" oninput="calculateCRIpqc()"></div>
+            <div class="input-group"><label>Min CR</label><input type="number" id="ipqcMinCR" step="any" placeholder="" oninput="calculateCRIpqc()"></div>
 
-          <div class="result-section">
-            <div class="result-card primary"><span class="label">Cal CR</span><div class="value-wrapper"><span class="value" id="outCalCR">—</span></div></div>
+            <div class="result-section">
+              <div class="result-card primary"><span class="label">CR Unbalance</span><div class="value-wrapper"><span class="value" id="ipqcOutUnbalance">—</span><span class="unit">%</span></div></div>
+              <div class="result-card warning"><span class="label">CR High</span><div class="value-wrapper"><span class="value" id="ipqcOutHigh">—</span><span class="unit">%</span></div></div>
+              <div class="result-card success"><span class="label">CR Low</span><div class="value-wrapper"><span class="value" id="ipqcOutLow">—</span><span class="unit">%</span></div></div>
+            </div>
+
+            <div class="result-title-bar" style="margin-top:16px;">IPQC — CAL CR</div>
+            <div class="input-group"><label>CR Obs</label><input type="number" id="ipqcObsCR" step="any" placeholder="" oninput="calculateCRIpqc()"></div>
+            <div class="input-group"><label>Length (m)</label><input type="number" id="ipqcLenCR" step="any" placeholder="" oninput="calculateCRIpqc()"></div>
+            <div class="input-group"><label>Temp (°C)</label><input type="number" id="ipqcTempCR" step="any" placeholder="" oninput="calculateCRIpqc()"></div>
+
+            <div class="result-section">
+              <div class="result-card primary"><span class="label">Cal CR</span><div class="value-wrapper"><span class="value" id="ipqcOutCalCR">—</span></div></div>
+            </div>
+          </div>
+
+          <!-- fQC (Testing Register CR Calc & Unbalance) -->
+          <div class="cr-subpanel" id="cr-panel-fqc">
+            <div class="result-title-bar">fQC — CR CALC &amp; TESTING REGISTER</div>
+            <div class="input-group">
+              <label>Conductor Material <span class="unit-hint">(Temp Factor α)</span></label>
+              <select id="crMaterial" onchange="calculateCRCombined()">
+                <option value="0.004" selected>Copper — Testing Register (α = 0.004 /°C)</option>
+                <option value="0.00393">Copper — IEC 60228 Std (α = 0.00393 /°C)</option>
+                <option value="0.00403">Aluminium — IEC 60228 Std (α = 0.00403 /°C)</option>
+              </select>
+            </div>
+            <div class="input-group"><label>Specified CR <span class="unit-hint">(Ω/km)</span></label><input type="number" id="specCR" step="any" placeholder="e.g. 12.444" oninput="calculateCRCombined()"></div>
+            <div class="input-group"><label>Actual Length <span class="unit-hint">(Meters)</span></label><input type="number" id="lenCR" step="any" placeholder="e.g. 1084" oninput="calculateCRCombined()"></div>
+            <div class="input-group"><label>Min CR Obs <span class="unit-hint">(Ω)</span></label><input type="number" id="minCR" step="any" placeholder="e.g. 13.7" oninput="calculateCRCombined()"></div>
+            <div class="input-group"><label>Max CR Obs <span class="unit-hint">(Ω)</span></label><input type="number" id="maxCR" step="any" placeholder="e.g. 13.86" oninput="calculateCRCombined()"></div>
+            <div class="input-group"><label>Temperature <span class="unit-hint">(°C)</span></label><input type="number" id="tempCR" step="any" placeholder="e.g. 34" oninput="calculateCRCombined()"></div>
+
+            <div class="result-section">
+              <div class="result-title-bar">Results</div>
+              <div class="result-card primary"><span class="label">Calculated CR (Max)</span><div class="value-wrapper"><span class="value" id="outCalCR">—</span><span class="unit">Ω/km</span></div></div>
+              <div class="result-card"><span class="label">Calculated CR (Min)</span><div class="value-wrapper"><span class="value" id="outCalCRMin">—</span><span class="unit">Ω/km</span></div></div>
+              <div class="result-card" id="cardCrStatus"><span class="label">CR Status</span><div class="value-wrapper"><span class="value" id="outCrStatus">—</span></div></div>
+              <div class="result-card" id="cardCrHighLow"><span class="label">% of CR High/Low</span><div class="value-wrapper"><span class="value" id="outHighLow">—</span></div></div>
+              <div class="result-card purple"><span class="label">CR Unbalance</span><div class="value-wrapper"><span class="value" id="outUnbalance">—</span><span class="unit">%</span></div></div>
+            </div>
           </div>
         </div>
       </div>
@@ -3163,6 +3346,7 @@ body.has-offline-banner .app { padding-top: 48px; }
         </div>
       </div>
 
+      <!-- 2. ARMOUR COVERAGE (New) -->
       <div class="qc-card" id="qc-card-armcov">
         <div class="qc-card-body">
           <div class="input-group"><label>Cable Dia (mm)</label><input type="number" id="covCableDia" step="any" placeholder="" oninput="calculateArmCov()"></div>
@@ -3251,6 +3435,7 @@ body.has-offline-banner .app { padding-top: 48px; }
       </div>
     </div>
 
+    <!-- User Profile Contact & Account Management -->
     <div class="maint-card" id="userContactCard">
       <div class="maint-header">
         <h3>👤 My Profile &amp; Contact</h3>
@@ -3323,6 +3508,7 @@ body.has-offline-banner .app { padding-top: 48px; }
       </button>
     </div>
 
+    <!-- Admin User Management (Create / Edit / Delete + Module Access) -->
     <div class="maint-card" id="adminUserMgmtCard" style="display: none;">
       <div class="maint-header">
         <h3>👥 Manage Users &amp; Module Access</h3>
@@ -3403,6 +3589,7 @@ body.has-offline-banner .app { padding-top: 48px; }
       <div id="adminUserList"></div>
     </div>
 
+    <!-- Maintenance Mode Manager (Shows only active maintenance items; Admin can enable/disable) -->
     <div class="maint-card" id="maintenanceSection">
       <div class="maint-header">
         <h3>🛠️ Maintenance Mode</h3>
@@ -3481,6 +3668,7 @@ body.has-offline-banner .app { padding-top: 48px; }
   </div>
 </div>
 
+<!-- QR MODAL -->
 <div class="modal-overlay" id="qrModal" onclick="closeQrModal(event)">
   <div class="modal-content" onclick="event.stopPropagation()" style="text-align: center;">
     <button class="modal-close" onclick="closeQrModal(event)">✕</button>
@@ -3495,6 +3683,7 @@ body.has-offline-banner .app { padding-top: 48px; }
   </div>
 </div>
 
+<!-- BANNER MANAGEMENT MODAL -->
 <div class="modal-overlay" id="bannerModal" onclick="closeBannerModal(event)">
   <div class="modal-content" onclick="event.stopPropagation()">
     <button class="modal-close" onclick="closeBannerModal(event)">✕</button>
@@ -3522,6 +3711,7 @@ body.has-offline-banner .app { padding-top: 48px; }
   </div>
 </div>
 
+<!-- REPORT ISSUE / SUGGEST IMPROVEMENT MODAL -->
 <div class="modal-overlay" id="feedbackModal" onclick="closeFeedbackModal(event)">
   <div class="modal-content" onclick="event.stopPropagation()">
     <button class="modal-close" onclick="closeFeedbackModal(event)">✕</button>
@@ -3567,17 +3757,16 @@ function hideGlobalLoader() {
   if (loader) {
     loader.classList.add('hidden');
     loader.style.display = 'none';
-    loader.style.opacity = '0';
-    loader.style.visibility = 'hidden';
   }
 }
 
-/* Guarantee the splash loader never stays stuck */
-setTimeout(hideGlobalLoader, 1300);
-window.addEventListener('DOMContentLoaded', () => setTimeout(hideGlobalLoader, 400));
+/* --- SAFETY: Force hide loader quickly on DOMContentLoaded and load --- */
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(hideGlobalLoader, 1500);
+});
+
 window.addEventListener('load', () => {
-  hideGlobalLoader();
-  initAppBoot();
+  setTimeout(hideGlobalLoader, 1500);
 });
 
 /* --- SERVICE WORKER REGISTRATION (OFFLINE SUPPORT) --- */
@@ -3587,6 +3776,7 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
     try {
       SW_REGISTRATION = await navigator.serviceWorker.register('sw.js', { scope: './' });
+      console.log('[SW] Registered, scope:', SW_REGISTRATION.scope);
       SW_REGISTRATION.update().catch(() => {});
     } catch (err) {
       console.warn('[SW] Registration failed:', err);
@@ -3603,9 +3793,11 @@ let CURRENT_USER = '', CURRENT_ROLE = '', ALLOWED_VIEWS = [];
 let JOB_DATA = [], BOM_DATA = [], DRUM_DATA = [], USER_PLAN_QTY = null;
 let loginStep = 1;
 
+/* --- STANDARD GATE PASS COUNT: 3 x 9 = 27 --- */
 const GP_STANDARD_COUNT = 27;
 const ALL_MODULE_KEYS = ['home', 'jobcards', 'bom', 'drumreq', 'qccalc', 'gatepass'];
 
+/* --- DEFAULT & PERSISTED USERS STORE --- */
 const DEFAULT_USERS = {
   'admin':      { name: 'Administrator', dept: 'Administration', plant: 'Main Plant', phone: '', email: '', pass: 'Admin@Tcl',     role: 'Admin',      views: ['home', 'jobcards', 'bom', 'drumreq', 'qccalc', 'gatepass'] },
   'rakesh':     { name: 'Rakesh',        dept: 'Operations',     plant: 'Main Plant', phone: '', email: '', pass: 'Rakesh@Tcl',    role: 'Manager',    views: ['home', 'jobcards', 'bom', 'drumreq', 'gatepass'] },
@@ -3716,8 +3908,12 @@ function renderMaintenanceUI() {
   if (!listEl) return;
 
   const canEdit = isAdminUser();
-  if (badgeEl) badgeEl.textContent = canEdit ? 'Admin Editable' : 'Active Notices';
-  if (saveBtn) saveBtn.style.display = canEdit ? 'block' : 'none';
+  if (badgeEl) {
+    badgeEl.textContent = canEdit ? 'Admin Editable' : 'Active Notices';
+  }
+  if (saveBtn) {
+    saveBtn.style.display = canEdit ? 'block' : 'none';
+  }
 
   const activeScopes = MAINT_SCOPES.filter(({ key }) => Boolean(MAINTENANCE_STATE[key] && MAINTENANCE_STATE[key].active));
   const inactiveScopes = MAINT_SCOPES.filter(({ key }) => !(MAINTENANCE_STATE[key] && MAINTENANCE_STATE[key].active));
@@ -3791,7 +3987,9 @@ window.toggleMaintenanceScope = function(key) {
   MAINTENANCE_STATE[key].active = !MAINTENANCE_STATE[key].active;
 
   const remarkInput = document.getElementById(`maint-remark-${key}`);
-  if (remarkInput) MAINTENANCE_STATE[key].remark = remarkInput.value;
+  if (remarkInput) {
+    MAINTENANCE_STATE[key].remark = remarkInput.value;
+  }
   localStorage.setItem('tc_maintenance', JSON.stringify(MAINTENANCE_STATE));
   renderMaintenanceUI();
 };
@@ -3804,7 +4002,9 @@ window.saveMaintenanceSettings = function() {
   MAINT_SCOPES.forEach(({ key }) => {
     const input = document.getElementById(`maint-remark-${key}`);
     if (!MAINTENANCE_STATE[key]) MAINTENANCE_STATE[key] = { active: false, remark: '' };
-    if (input) MAINTENANCE_STATE[key].remark = input.value.trim();
+    if (input) {
+      MAINTENANCE_STATE[key].remark = input.value.trim();
+    }
   });
   localStorage.setItem('tc_maintenance', JSON.stringify(MAINTENANCE_STATE));
   renderMaintenanceUI();
@@ -4076,8 +4276,12 @@ window.saveAdminUser = function() {
     applyAllowedNavigation();
     renderProfileContactCard();
   }
-  if (finalViews.includes('bom')) loadBomDataFromCSV();
-  if (finalViews.includes('drumreq')) loadDrumDataFromFile();
+  if (finalViews.includes('bom')) {
+    loadBomDataFromCSV();
+  }
+  if (finalViews.includes('drumreq')) {
+    loadDrumDataFromFile();
+  }
   renderAdminUserList();
   resetAdminUserForm();
   alert(origKey ? `User "@${targetKey}" updated.` : `User "@${targetKey}" created.`);
@@ -4133,12 +4337,14 @@ let BANNERS = JSON.parse(localStorage.getItem('tc_banners')) || [];
 let CURRENT_BANNER_IDX = 0;
 let BANNER_INTERVAL = null;
 
+/* ---- Date/time formatting helpers ---- */
 function formatDateForDisplay(isoDate) {
   if (!isoDate) return '';
   const [y, m, d] = isoDate.split('-');
   return `${d}/${m}/${y}`;
 }
 
+/* ---- Gate Pass UI: populate dropdowns, defaults, live preview ---- */
 function initGatePassUI() {
   const hourSel = document.getElementById('gpHour');
   const minSel = document.getElementById('gpMinute');
@@ -4337,66 +4543,60 @@ window.handleRegister = function() {
 
   ok.textContent = `Registration successful for @${username}. Signing you in...`;
   ok.style.display = 'block';
-  setTimeout(() => completeLogin(username), 300);
+  setTimeout(() => completeLogin(username), 450);
 };
 
 function completeLogin(u) {
   CURRENT_USER = u;
   hideGlobalLoader();
 
-  try {
-    const userRec = USERS[u] || { role: '', views: ['home', 'jobcards', 'gatepass'] };
-    CURRENT_ROLE = userRec.role || '';
-    ALLOWED_VIEWS = Array.isArray(userRec.views) ? sanitizeViews(userRec.views) : ['home', 'jobcards', 'gatepass'];
-    localStorage.setItem('tc_user', u);
+  const userRec = USERS[u] || { role: '', views: ['home', 'jobcards', 'gatepass'] };
+  CURRENT_ROLE = userRec.role || '';
+  ALLOWED_VIEWS = Array.isArray(userRec.views) ? sanitizeViews(userRec.views) : ['home', 'jobcards', 'gatepass'];
+  localStorage.setItem('tc_user', u);
 
-    const loginScreen = document.getElementById('loginScreen');
-    const appContainer = document.getElementById('appContainer');
-    if (loginScreen) loginScreen.style.display = 'none';
-    if (appContainer) appContainer.style.display = 'block';
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appContainer').style.display = 'block';
 
-    renderProfileContactCard();
-    applyAllowedNavigation();
+  renderProfileContactCard();
+  applyAllowedNavigation();
 
-    if (isAdminUser()) {
-      document.getElementById('adminPanel').style.display = 'block';
-      document.getElementById('profileBannerTile').style.display = 'flex';
-      loadAdminSettings();
-      renderAdminUserList();
-    } else {
-      document.getElementById('adminPanel').style.display = 'none';
-      document.getElementById('profileBannerTile').style.display = 'none';
-      document.getElementById('adminUserMgmtCard').style.display = 'none';
-    }
-
-    MAINTENANCE_STATE = loadMaintenanceState();
-    renderMaintenanceUI();
-
-    document.getElementById('welcomeName').textContent = userRec.name || CURRENT_ROLE || CURRENT_USER;
-    document.getElementById('headerTitle').textContent = 'Thermocables';
-
-    const now = new Date();
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    document.getElementById('dashDate').textContent = now.toLocaleDateString('en-US', options);
-
-    const hr = now.getHours();
-    let greeting = 'Good Evening';
-    if (hr < 12) greeting = 'Good Morning';
-    else if (hr < 17) greeting = 'Good Afternoon';
-    document.getElementById('dashGreeting').textContent = greeting;
-
-    loadJobDataFromCSV().catch(() => {});
-    if (ALLOWED_VIEWS.includes('bom')) loadBomDataFromCSV().catch(() => {});
-    if (ALLOWED_VIEWS.includes('drumreq')) loadDrumDataFromFile().catch(() => {});
-
-    loadBanners();
-    const initialView = ALLOWED_VIEWS.includes('home') ? 'home' : (ALLOWED_VIEWS[0] || 'profile');
-    switchMainView(initialView);
-
-    if (!navigator.onLine) setSyncState('offline');
-  } finally {
-    hideGlobalLoader();
+  if (isAdminUser()) {
+    document.getElementById('adminPanel').style.display = 'block';
+    document.getElementById('profileBannerTile').style.display = 'flex';
+    loadAdminSettings();
+    renderAdminUserList();
+  } else {
+    document.getElementById('adminPanel').style.display = 'none';
+    document.getElementById('profileBannerTile').style.display = 'none';
+    document.getElementById('adminUserMgmtCard').style.display = 'none';
   }
+
+  MAINTENANCE_STATE = loadMaintenanceState();
+  renderMaintenanceUI();
+
+  document.getElementById('welcomeName').textContent = userRec.name || CURRENT_ROLE || CURRENT_USER;
+  document.getElementById('headerTitle').textContent = 'Thermocables';
+
+  const now = new Date();
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  document.getElementById('dashDate').textContent = now.toLocaleDateString('en-US', options);
+
+  const hr = now.getHours();
+  let greeting = 'Good Evening';
+  if(hr < 12) greeting = 'Good Morning';
+  else if(hr < 17) greeting = 'Good Afternoon';
+  document.getElementById('dashGreeting').textContent = greeting;
+
+  loadJobDataFromCSV();
+  if (ALLOWED_VIEWS.includes('bom')) loadBomDataFromCSV();
+  if (ALLOWED_VIEWS.includes('drumreq')) loadDrumDataFromFile();
+
+  loadBanners();
+  const initialView = ALLOWED_VIEWS.includes('home') ? 'home' : (ALLOWED_VIEWS[0] || 'profile');
+  switchMainView(initialView);
+
+  if (!navigator.onLine) setSyncState('offline');
 }
 
 /* --- OFFLINE / ONLINE SYNC ORCHESTRATION --- */
@@ -4475,20 +4675,18 @@ async function refreshData() {
 window.refreshData = refreshData;
 
 window.addEventListener('online', () => {
+  console.log('[sync] Back online — refreshing data');
   refreshData();
 });
 
 window.addEventListener('offline', () => {
+  console.log('[sync] Gone offline');
   setSyncState('offline');
 });
 
 window.handleLogout = function() { localStorage.removeItem('tc_user'); location.reload(); };
 
-let bootInitialized = false;
-function initAppBoot() {
-  if (bootInitialized) return;
-  bootInitialized = true;
-
+window.addEventListener('load', () => {
   document.getElementById('loginUser').addEventListener('input', () => {
     if (loginStep === 2) resetLoginStep();
   });
@@ -4506,8 +4704,7 @@ function initAppBoot() {
     }
     completeLogin(savedUser);
   }
-  hideGlobalLoader();
-}
+});
 
 window.saveAdminSettings = function() {
   localStorage.setItem('tc_company', document.getElementById('setCompany').value);
@@ -4873,6 +5070,7 @@ async function loadJobDataFromCSV() {
       });
     });
   } catch (e) {
+    console.warn('[offline] data.csv unavailable — using cached version if present');
     return false;
   }
 }
@@ -5078,6 +5276,7 @@ async function loadBomDataFromCSV() {
       });
     });
   } catch (e) {
+    console.warn('[offline] bom.csv unavailable — using cached version if present');
     return false;
   }
 }
@@ -5093,478 +5292,442 @@ function processBomCSVData(rows) {
   const materialCodeKey = findHeader(headers, 'MATERIAL CODE', 'MATERIALCODE');
   const materialDiscKey = findHeader(headers, 'MATERIAL DISC', 'MATERIALDISC', 'MATERIAL');
   const bomPerKmKey = findHeader(headers, 'BOM/KM - JDM', 'BOMKMJDM', 'BOM/KM', 'BOM/KM-JDM');
-  const customerKey = findHeader(headers, 'CUSTOMER JDM', 'CUSTOMERJDM', 'CUSTOMER');
-  const sizeKey = findHeader(headers, 'SIZE JDM', 'SIZEJDM', 'SIZE');
+  const customerKey = findHeader(headers, 'CUSTOMER JDM', 'CUSTOMERJDM');
+  const sizeKey = findHeader(headers, 'SIZE');
+  const colourKey = findHeader(headers, 'COLOUR', 'COLOR');
+  const planQtyKey = findHeader(headers, 'PLAN/PRD QTY', 'PLANPRDQTY');
 
-  let lastSoItem = '';
-  let lastOperation = '';
-  let lastCustomer = '';
-  let lastSize = '';
-  let lastGroup = '';
+  if (!soItemKey) { console.warn('BOM CSV missing SO/ITEM NO header'); return; }
 
-  BOM_DATA = [];
-  rows.forEach((row, idx) => {
-    let soItem = soItemKey ? String(row[soItemKey] || '').trim() : '';
-    let operation = operationKey ? String(row[operationKey] || '').trim() : '';
-    let group = groupKey ? String(row[groupKey] || '').trim() : '';
-    let customer = customerKey ? String(row[customerKey] || '').trim() : '';
-    let size = sizeKey ? String(row[sizeKey] || '').trim() : '';
+  const grouped = new Map();
 
-    if (soItem) {
-      lastSoItem = soItem;
-      lastOperation = '';
-      lastCustomer = customer;
-      lastSize = size;
-      lastGroup = '';
-    } else if (lastSoItem) {
-      soItem = lastSoItem;
-      if (!customer && lastCustomer) customer = lastCustomer;
-      if (!size && lastSize) size = lastSize;
+  rows.forEach(row => {
+    const rawSoItem = String(row[soItemKey] || '').trim();
+    const soItemRaw = cleanSoItem(rawSoItem);
+    if(!soItemRaw) return;
+
+    if(!grouped.has(soItemRaw)){
+      grouped.set(soItemRaw, {
+        soItem: soItemRaw,
+        customer: String(row[customerKey] || '').trim(),
+        size: String(row[sizeKey] || '').trim(),
+        defaultPlanQty: parseFloat(row[planQtyKey]) || 0,
+        colour: String(row[colourKey] || '').trim(),
+        lines: [],
+        operationJDMToOpnCode: new Map()
+      });
     }
 
-    if (operation) {
-      lastOperation = operation;
-      lastGroup = '';
-    } else if (lastOperation) {
-      operation = lastOperation;
+    const rec = grouped.get(soItemRaw);
+    const matCode = String(row[materialCodeKey] || '').trim();
+    const matDisc = String(row[materialDiscKey] || '').trim();
+    const rowGroup = String(row[groupKey] || '').trim() || 'OTHER';
+    const opnCode = String(row[opnKey] || '').trim();
+    const opJDM = String(row[operationKey] || '').trim();
+    const bomPerKm = parseFloat(row[bomPerKmKey]) || 0;
+
+    if(opJDM && opnCode && !rec.operationJDMToOpnCode.has(opJDM)){
+      rec.operationJDMToOpnCode.set(opJDM, opnCode);
     }
 
-    if (group) {
-      lastGroup = group;
-    } else if (lastGroup) {
-      group = lastGroup;
-    }
+    if(!matCode && !matDisc) return;
 
-    if (!soItem || !operation) return;
-
-    const bomPerKmRaw = bomPerKmKey ? row[bomPerKmKey] : '';
-    const bomPerKm = (bomPerKmRaw === '' || bomPerKmRaw === null || bomPerKmRaw === undefined) ? null : parseFloat(String(bomPerKmRaw).replace(/,/g, ''));
-
-    BOM_DATA.push({
-      order: idx,
-      soItem,
-      operation,
-      group: group || 'Other',
-      opnCode: opnKey ? String(row[opnKey] || '').trim() : '',
-      materialCode: materialCodeKey ? String(row[materialCodeKey] || '').trim() : '',
-      materialDisc: materialDiscKey ? String(row[materialDiscKey] || '').trim() : '',
-      bomPerKm: (bomPerKm !== null && !isNaN(bomPerKm)) ? bomPerKm : null,
-      customer,
-      size
+    rec.lines.push({
+      group: rowGroup,
+      opnCode,
+      operationJDM: opJDM,
+      matCode,
+      matDisc: matDisc || matCode,
+      bomPerKm
     });
   });
+
+  BOM_DATA = Array.from(grouped.values());
 }
 
-function allBomSoItems() {
-  const s = new Set();
-  BOM_DATA.forEach(r => { if(r.soItem) s.add(r.soItem); });
-  return Array.from(s).sort();
-}
+function cleanSoItem(str){ return String(str||'').replace(/#/g, '').trim(); }
+function getAllBomKeys(){ return BOM_DATA.map(b => b.soItem).sort(); }
+function filterBomKeys(term){ const q = cleanSoItem(term).toLowerCase(); return q ? getAllBomKeys().filter(k => k.toLowerCase().includes(q)) : getAllBomKeys(); }
+function bomOpsForItem(soItem){ if(!soItem) return []; const item = BOM_DATA.find(b => b.soItem === soItem); if(!item) return []; const list = []; item.operationJDMToOpnCode.forEach((code, name) => list.push({ name, code })); list.sort(); return list; }
 
-function buildBomSoIndex() {
-  const map = new Map();
-  BOM_DATA.forEach(r => {
-    if (!r.soItem) return;
-    if (!map.has(r.soItem)) map.set(r.soItem, new Set());
-    if (r.operation) map.get(r.soItem).add(r.operation);
-  });
-  return map;
+function refreshBomOpSelect(){
+  const soItem = document.getElementById('bomInput').value.trim();
+  const bomOpSelect = document.getElementById('bomOpSelect');
+  bomOpSelect.innerHTML = '';
+  if(!soItem){ bomOpSelect.innerHTML = '<option value="">— Select SO-ITEM First —</option>'; bomOpSelect.disabled = true; return; }
+  const ops = bomOpsForItem(soItem);
+  if(ops.length === 0){ bomOpSelect.innerHTML = '<option value="">— No Operations —</option>'; bomOpSelect.disabled = true; return; }
+  const ph = document.createElement('option'); ph.value = ''; ph.textContent = '— All Operations —'; bomOpSelect.appendChild(ph);
+  ops.forEach(o => { const opt = document.createElement('option'); opt.value = o.name; opt.textContent = o.name; bomOpSelect.appendChild(opt); });
+  bomOpSelect.disabled = false;
 }
 
 /* --- BOM CONTROLLER (AUTO-SHOW) --- */
-const bomInput = document.getElementById('bomInput'), bomOpSelect = document.getElementById('bomOpSelect'), bomGrid = document.getElementById('bomGrid'), bomSuggestBox = document.getElementById('bomSuggestBox');
+const bomInput = document.getElementById('bomInput');
+const bomSuggestBox = document.getElementById('bomSuggestBox');
+let BOM_SUGGEST_INDEX = -1, BOM_SUGGEST_ITEMS = [];
 
-function renderBomSuggestions(term) {
-  const idx = buildBomSoIndex();
-  const matches = allBomSoItems().filter(s => s.toLowerCase().includes(term.toLowerCase()));
-  if (matches.length === 0) {
-    bomSuggestBox.innerHTML = `<div class="suggest-empty">No SO-ITEMs match</div>`;
-    bomSuggestBox.classList.add('open');
-    return;
-  }
-  let html = `<div class="suggest-hint">${matches.length} SO-ITEMs found</div>`;
-  matches.forEach(s => {
-    const opCount = idx.get(s) ? idx.get(s).size : 0;
-    html += `<div class="suggest-item" data-soitem="${esc(s)}"><span>${esc(s)}</span><span class="meta">${opCount} ops</span></div>`;
+function renderBomSuggestions(term){
+  const matches = filterBomKeys(term); BOM_SUGGEST_INDEX = -1;
+  if(matches.length === 0){ BOM_SUGGEST_ITEMS = []; bomSuggestBox.innerHTML = `<div class="suggest-empty">No items match <b>“${esc(term)}”</b></div>`; bomSuggestBox.classList.add('open'); return; }
+  BOM_SUGGEST_ITEMS = matches; let html = `<div class="suggest-hint">${matches.length} items found</div>`;
+  matches.slice(0, 50).forEach((k, i) => {
+    const item = BOM_DATA.find(b => b.soItem === k);
+    const lineCount = item ? item.lines.length : 0;
+    html += `<div class="suggest-item" data-bom="${esc(k)}" data-idx="${i}"><span>${esc(k)}</span><span class="meta">${lineCount} lines</span></div>`;
   });
-  bomSuggestBox.innerHTML = html;
-  bomSuggestBox.classList.add('open');
+  bomSuggestBox.innerHTML = html; bomSuggestBox.classList.add('open');
+}
+function closeBomSuggestions(){ bomSuggestBox.classList.remove('open'); BOM_SUGGEST_INDEX = -1; }
+
+function findExactBomItem(term){
+  const t = cleanSoItem(term);
+  if(!t) return null;
+  const hit = BOM_DATA.find(b => b.soItem.toLowerCase() === t.toLowerCase());
+  return hit ? hit.soItem : null;
 }
 
-function closeBomSuggestions() { bomSuggestBox.classList.remove('open'); }
-
-function findExactBomSoItem(term) {
-  const t = String(term || '').trim().toLowerCase();
-  if (!t) return null;
-  for (const s of allBomSoItems()) {
-    if (s.toLowerCase() === t) return s;
-  }
-  return null;
-}
-
-function refreshBomOpSelect(soItemArg, autoSelectFirst) {
-  const item = (soItemArg === undefined ? bomInput.value : soItemArg).trim();
-  bomOpSelect.innerHTML = '';
-  if (!item) {
-    bomOpSelect.innerHTML = '<option value="">— Select SO-ITEM First —</option>';
-    bomOpSelect.disabled = true;
-    return;
-  }
-  const seen = new Set();
-  const list = [];
-  BOM_DATA.forEach(r => {
-    if (r.soItem.toLowerCase() === item.toLowerCase() && r.operation && !seen.has(r.operation)) {
-      seen.add(r.operation);
-      list.push(r.operation);
-    }
-  });
-  if (list.length === 0) {
-    bomOpSelect.innerHTML = '<option value="">— No Operations —</option>';
-    bomOpSelect.disabled = true;
-    return;
-  }
-  const ph = document.createElement('option');
-  ph.value = '';
-  ph.textContent = '— Select Op JDM —';
-  bomOpSelect.appendChild(ph);
-  list.forEach(op => {
-    const o = document.createElement('option');
-    o.value = op;
-    o.textContent = op;
-    bomOpSelect.appendChild(o);
-  });
-  bomOpSelect.disabled = false;
-  if (list.length === 1 || autoSelectFirst) bomOpSelect.value = list[0];
-}
-
-function pickBomSuggestion(soItem) {
+function pickBomSuggestion(soItem){
   bomInput.value = soItem;
   closeBomSuggestions();
-  refreshBomOpSelect(soItem, true);
-  if (bomOpSelect.value) renderBomResults();
+  refreshBomOpSelect();
+  renderBomResults();
 }
 
 bomInput.addEventListener('input', () => {
   const term = bomInput.value.trim();
-  const exact = findExactBomSoItem(term);
-  if (exact) {
+  const exact = findExactBomItem(term);
+  if(exact){
     closeBomSuggestions();
-    refreshBomOpSelect(exact, true);
-    if (bomOpSelect.value) renderBomResults();
+    refreshBomOpSelect();
+    renderBomResults();
   } else {
     renderBomSuggestions(term);
-    refreshBomOpSelect(term, false);
+    refreshBomOpSelect();
     document.getElementById('bomResultTitle').textContent = 'Enter details above';
     document.getElementById('bomResultCount').textContent = '0 records';
-    bomGrid.innerHTML = '<div class="empty"><div class="icon">📦</div><p>Start typing a <b>SO-ITEM</b> above.</p></div>';
+    document.getElementById('bomGrid').innerHTML = '<div class="empty"><div class="icon">📦</div><p>Start typing a <b>SO-ITEM</b> above.</p></div>';
   }
 });
 bomInput.addEventListener('focus', () => { renderBomSuggestions(bomInput.value.trim()); });
-bomInput.addEventListener('keydown', e => {
-  if (e.key !== 'Enter') return;
+bomInput.addEventListener('keydown', (e) => {
+  if(e.key !== 'Enter') return;
   e.preventDefault();
   const first = bomSuggestBox.querySelector('.suggest-item');
-  if (bomSuggestBox.classList.contains('open') && first) pickBomSuggestion(first.dataset.soitem);
-  else if (bomOpSelect.value) renderBomResults();
+  if(bomSuggestBox.classList.contains('open') && first) pickBomSuggestion(first.dataset.bom);
+  else renderBomResults();
   closeBomSuggestions();
 });
-bomSuggestBox.addEventListener('mousedown', e => { const item = e.target.closest('.suggest-item'); if(item) pickBomSuggestion(item.dataset.soitem); });
-bomOpSelect.addEventListener('change', () => { if (bomOpSelect.value) renderBomResults(); });
-document.addEventListener('click', e => { if (!document.getElementById('bomField').contains(e.target)) closeBomSuggestions(); });
+bomSuggestBox.addEventListener('mousedown', e => { const item = e.target.closest('.suggest-item'); if(item) pickBomSuggestion(item.dataset.bom); });
+document.addEventListener('click', e => { if(!document.getElementById('bomField').contains(e.target)) closeBomSuggestions(); });
 
-function renderBomResults() {
-  const item = bomInput.value.trim();
-  const op = bomOpSelect.value;
-  if(!item || !op) return;
-
-  const matches = BOM_DATA.filter(r => r.soItem.toLowerCase() === item.toLowerCase() && r.operation === op);
-  document.getElementById('bomResultTitle').textContent = `${item} • ${op}`;
-  document.getElementById('bomResultCount').textContent = `${matches.length} records`;
-
-  if (matches.length === 0) {
-    bomGrid.innerHTML = `<div class="empty"><div class="icon">📭</div><p>No records for <b>${esc(item)}</b> / <b>${esc(op)}</b></p></div>`;
+function renderBomResults(){
+  const soItem = bomInput.value.trim(), selectedOpName = document.getElementById('bomOpSelect').value;
+  const item = BOM_DATA.find(b => b.soItem === soItem);
+  if(!item){
+    document.getElementById('bomResultTitle').textContent = 'Enter details above';
+    document.getElementById('bomResultCount').textContent = '0 records';
+    document.getElementById('bomGrid').innerHTML = `<div class="empty"><div class="icon">📦</div><p>No BOM found for <b>${esc(soItem)}</b></p></div>`;
     return;
   }
 
-  CURRENT_BOM_LINES = matches;
-  LAST_BOM_ITEM = { soItem: item, operation: op, customer: matches[0].customer, size: matches[0].size };
+  if(LAST_BOM_ITEM !== soItem){ USER_PLAN_QTY = null; LAST_BOM_ITEM = soItem; }
 
-  let grouped = new Map();
-  matches.forEach(m => {
-    const g = m.group || 'Other';
-    if (!grouped.has(g)) grouped.set(g, []);
-    grouped.get(g).push(m);
-  });
+  const effectivePlanQty = (USER_PLAN_QTY !== null && !isNaN(USER_PLAN_QTY)) ? USER_PLAN_QTY : item.defaultPlanQty;
+  let lines = item.lines;
+  if(selectedOpName) lines = lines.filter(l => l.operationJDM === selectedOpName);
 
-  let rowsHtml = '';
-  grouped.forEach((lines, grp) => {
-    rowsHtml += `<div class="bom-group-header">${esc(grp)}</div>`;
-    lines.forEach((line, i) => {
-      rowsHtml += `<div class="bom-row">
-        <div>${esc(line.materialCode || '—')}</div>
-        <div>${esc(line.materialDisc || '—')}</div>
-        <div id="bom-req-${i}">—</div>
+  document.getElementById('bomResultTitle').textContent = soItem + (selectedOpName ? ` • ${selectedOpName}` : '');
+  document.getElementById('bomResultCount').textContent = `${lines.length} records`;
+
+  if(lines.length === 0){
+    document.getElementById('bomGrid').innerHTML = `<div class="empty"><div class="icon">📦</div><p>No BOM lines for this operation.</p></div>`;
+    CURRENT_BOM_LINES = [];
+    return;
+  }
+
+  const groupMap = new Map();
+  lines.forEach(l => { const g = l.group || 'OTHER'; if(!groupMap.has(g)) groupMap.set(g, []); groupMap.get(g).push(l); });
+
+  let html = `<div class="card printable-card">
+    <div class="card-head"><h3>${esc(item.soItem)}</h3><span class="op-tag">BOM</span></div>
+    <div class="qc-card-body">
+      <div class="result-section">
+        <div class="result-title-bar">PLAN/PRD QTY</div>
+        <div class="result-card primary" style="justify-content:center; padding:8px 12px;">
+          <input type="number" id="planQtyInput" class="plan-input" value="${esc(effectivePlanQty)}" step="any" placeholder="0">
+        </div>
+      </div>
+      <div class="bom-table">
+        <div class="bom-table-head"><div>Material Code</div><div>Material Description</div><div>Req Qty</div></div>`;
+
+  CURRENT_BOM_LINES = [];
+
+  groupMap.forEach((groupLines, groupName) => {
+    html += `<div class="bom-group-header">${esc(groupName)}</div>`;
+    groupLines.forEach((l, idx) => {
+      const calculatedQty = l.bomPerKm * (effectivePlanQty / 1000);
+      const rowId = `bom-qty-${groupName.replace(/\W/g, '')}-${idx}`;
+      CURRENT_BOM_LINES.push({ id: rowId, bomPerKm: l.bomPerKm });
+      html += `<div class="bom-row">
+        <div>${esc(l.matCode)}</div>
+        <div>${esc(l.matDisc)}</div>
+        <div id="${rowId}">${formatQty(calculatedQty)}</div>
       </div>`;
     });
   });
 
-  const planVal = (USER_PLAN_QTY !== null && USER_PLAN_QTY !== '' && !isNaN(USER_PLAN_QTY)) ? USER_PLAN_QTY : 1;
-
-  const html = `<div class="card printable-card" style="grid-column: 1 / -1;">
-    <div class="card-head"><h3><span class="bullet"></span>${esc(LAST_BOM_ITEM.soItem)}</h3><span class="op-tag">${esc(LAST_BOM_ITEM.operation)}</span></div>
-    <div class="specs">
-      <div class="spec accent"><div class="k">PLAN QTY (M)</div><div class="v"><input type="number" id="planQtyInput" class="plan-input" placeholder="1" step="any" value="${esc(planVal)}"></div></div>
-      <div class="spec"><div class="k">CUSTOMER</div><div class="v">${esc(LAST_BOM_ITEM.customer || '—')}</div></div>
-      <div class="spec"><div class="k">SIZE</div><div class="v">${esc(LAST_BOM_ITEM.size || '—')}</div></div>
-    </div>
-    <div style="padding: 12px 14px 16px;">
-      <div class="bom-table">
-        <div class="bom-table-head"><div>MAT CODE</div><div>MATERIAL</div><div>REQ QTY</div></div>
-        ${rowsHtml}
-      </div>
-    </div>
+  html += `</div></div>
+    <div class="card-foot"><span>${esc(item.customer || '—')}</span><span class="drum">${esc(item.size || '—')}</span></div>
   </div>`;
 
-  bomGrid.innerHTML = html;
+  document.getElementById('bomGrid').innerHTML = html;
 
   const planInput = document.getElementById('planQtyInput');
-  if (planInput) {
+  if(planInput){
     planInput.addEventListener('input', () => {
-      USER_PLAN_QTY = planInput.value;
-      updateBomPlanQuantities();
+      const val = parseFloat(planInput.value);
+      USER_PLAN_QTY = isNaN(val) ? 0 : val;
+      CURRENT_BOM_LINES.forEach(itemLine => {
+        const el = document.getElementById(itemLine.id);
+        if(el) el.textContent = formatQty(itemLine.bomPerKm * (USER_PLAN_QTY / 1000));
+      });
     });
   }
-  updateBomPlanQuantities();
 }
 
-function updateBomPlanQuantities() {
-  const planInput = document.getElementById('planQtyInput');
-  if (!planInput) return;
-  let planQty = parseFloat(planInput.value);
-  if (isNaN(planQty) || planQty <= 0) planQty = 1;
-  CURRENT_BOM_LINES.forEach((line, i) => {
-    const el = document.getElementById(`bom-req-${i}`);
-    if (!el) return;
-    if (line.bomPerKm === null) {
-      el.textContent = '—';
-    } else {
-      el.textContent = formatQty((line.bomPerKm / 1000) * planQty);
-    }
-  });
-}
-
+document.getElementById('bomOpSelect').addEventListener('change', renderBomResults);
 document.getElementById('bomSearchBtn').addEventListener('click', renderBomResults);
 document.getElementById('bomResetBtn').addEventListener('click', () => {
-  bomInput.value = '';
-  bomOpSelect.innerHTML = '<option value="">— Select SO-ITEM First —</option>';
-  bomOpSelect.disabled = true;
-  bomGrid.innerHTML = '<div class="empty"><div class="icon">📦</div><p>Start typing a <b>SO-ITEM</b> above.</p></div>';
+  USER_PLAN_QTY = null; LAST_BOM_ITEM = null; bomInput.value = '';
+  document.getElementById('bomOpSelect').innerHTML = '<option value="">— Select SO-ITEM First —</option>';
+  document.getElementById('bomOpSelect').disabled = true;
+  document.getElementById('bomGrid').innerHTML = '<div class="empty"><div class="icon">📦</div><p>Start typing a <b>SO-ITEM</b> above.</p></div>';
   document.getElementById('bomResultTitle').textContent = 'Enter details above';
   document.getElementById('bomResultCount').textContent = '0 records';
 });
 
-/* --- DRUM REQ DATA & CONTROLLER --- */
-async function loadDrumDataFromFile() {
-  const sources = [
-    { url: 'drums.csv',     type: 'csv' },
-    { url: 'drumreq.csv',  type: 'csv' },
-    { url: 'drumreq.xlsx', type: 'xlsx' }
-  ];
+/* --- DRUM REQ DATA & CONTROLLER (ref.csv + drums.csv / XLSX fallback) --- */
+function parseDrumRows(allRows) {
+  if (!allRows || allRows.length < 2) return false;
 
-  for (const src of sources) {
-    try {
-      const response = await fetch(src.url, { cache: 'no-store' });
-      if (!response.ok) continue;
-      if (src.type === 'xlsx') {
-        const buffer = await response.arrayBuffer();
-        const wb = XLSX.read(buffer, { type: 'array' });
-        const firstSheet = wb.SheetNames[0];
-        if (!firstSheet) continue;
-        const rawRows = XLSX.utils.sheet_to_json(wb.Sheets[firstSheet], { header: 1, defval: '' });
-        const objects = rowsFromMatrix(rawRows);
-        if (objects && objects.length) {
-          processDrumRows(objects);
-          return true;
-        }
-      } else {
-        const text = await response.text();
-        const ok = await new Promise((resolve) => {
-          Papa.parse(text, {
-            header: false,
-            skipEmptyLines: false,
-            complete: (res) => {
-              const objects = rowsFromMatrix(res.data || []);
-              if (objects && objects.length) {
-                processDrumRows(objects);
-                resolve(true);
-              } else {
-                resolve(false);
-              }
-            }
-          });
-        });
-        if (ok) return true;
-      }
-    } catch (e) {
-      // Try next source
+  // Locate header row (handles optional title/banner rows above header row)
+  let headerIdx = -1;
+  for (let i = 0; i < Math.min(15, allRows.length); i++) {
+    const row = allRows[i] || [];
+    if (row.some(c => {
+      const n = normalizeHeader(c);
+      return n === 'jobno' || n === 'jobnoitemno' || n === 'jobitemno' || n === 'soitem' || n === 'soitemno';
+    })) {
+      headerIdx = i;
+      break;
     }
   }
-  return false;
-}
+  if (headerIdx === -1) return false;
 
-function rowsFromMatrix(matrix) {
-  if (!Array.isArray(matrix) || matrix.length === 0) return [];
-  const headerCandidates = ['jobnoitemno', 'jobno', 'jobnumber', 'job', 'soitem'];
-  let headerIdx = matrix.findIndex(row =>
-    Array.isArray(row) && row.some(cell => headerCandidates.includes(normalizeHeader(cell)))
-  );
-  if (headerIdx === -1) {
-    headerIdx = matrix.findIndex(row => Array.isArray(row) && row.some(cell => String(cell || '').trim() !== ''));
+  const rawHeaders = (allRows[headerIdx] || []).map(h => String(h || '').trim());
+  const dataRows = allRows.slice(headerIdx + 1).filter(r => r.some(c => String(c || '').trim() !== ''));
+
+  const findIdx = (...candidates) => {
+    for (const c of candidates) {
+      const target = normalizeHeader(c);
+      const idx = rawHeaders.findIndex(h => normalizeHeader(h) === target);
+      if (idx !== -1) return idx;
+    }
+    return -1;
+  };
+
+  const jobIdx = findIdx('Job No / Item No', 'Job No', 'JobNo', 'Job Item No', 'SO-ITEM', 'SO/ITEM NO');
+  const custIdx = findIdx('Customer Name', 'Customer', 'CustomerName');
+  const itemDescIdx = findIdx('Item Description', 'Description', 'Size', 'Cable Description', 'Item');
+  const soQtyIdx = findIdx('Sale Order QTY', 'Sale Order Qty', 'SO QTY', 'Order Qty', 'QTY', 'Quantity');
+  const totalDrumIdx = findIdx('Total Drum Req', 'Total Drums', 'Total Drum', 'Total Req', 'Total');
+
+  if (jobIdx === -1) return false;
+
+  // Identify Drum Size columns (either paired Drum Size-Category / Qty columns OR matrix drum size columns)
+  const drumSizeCols = [];
+  const pairedGroups = [];
+
+  for (let c = 0; c < rawHeaders.length; c++) {
+    if (c === jobIdx || c === custIdx || c === itemDescIdx || c === soQtyIdx || c === totalDrumIdx) continue;
+    const h = rawHeaders[c];
+    if (!h) continue;
+    const nh = normalizeHeader(h);
+    if (nh === 'sno' || nh === 'slno' || nh === 'srno' || nh === 'remarks' || nh === 'status') continue;
+
+    if (nh.includes('drumsize') || nh === 'drumcategory') {
+      let qtyIdx = -1;
+      for (let offset = 1; offset <= 3; offset++) {
+        const nextH = normalizeHeader(rawHeaders[c + offset] || '');
+        if (nextH.startsWith('qty') || nextH === 'count' || nextH === 'nos') {
+          qtyIdx = c + offset;
+          break;
+        }
+      }
+      if (qtyIdx !== -1) {
+        pairedGroups.push({ sizeIdx: c, qtyIdx });
+        c = qtyIdx;
+      }
+    } else if (!nh.startsWith('qty') && !nh.startsWith('material')) {
+      drumSizeCols.push({ idx: c, label: h });
+    }
   }
-  if (headerIdx === -1) return [];
 
-  const rawHeaders = matrix[headerIdx].map((h, i) => {
-    const clean = String(h || '').trim();
-    return clean || `__col_${i}`;
-  });
-  const seenCount = new Map();
-  const uniqueHeaders = rawHeaders.map(h => {
-    const count = seenCount.get(h) || 0;
-    seenCount.set(h, count + 1);
-    return count === 0 ? h : `${h}.${count}`;
-  });
+  const parsed = [];
+  dataRows.forEach((r, rowIndex) => {
+    const rawJob = String(r[jobIdx] || '').trim();
+    if (!rawJob) return;
+    const normJob = normalizeHeader(rawJob);
+    if (normJob === 'total' || normJob === 'grandtotal') return;
 
-  return matrix
-    .slice(headerIdx + 1)
-    .filter(row => Array.isArray(row) && row.some(cell => String(cell || '').trim() !== ''))
-    .map(row => {
-      const obj = {};
-      uniqueHeaders.forEach((colName, idx) => {
-        obj[colName] = row[idx] !== undefined ? row[idx] : '';
+    const jobBase = rawJob.split('#')[0].split('-')[0].trim();
+    const customer = custIdx !== -1 ? String(r[custIdx] || '').trim() : '';
+    const itemDesc = itemDescIdx !== -1 ? String(r[itemDescIdx] || '').trim() : '';
+    const saleOrderQty = soQtyIdx !== -1 ? String(r[soQtyIdx] || '').trim() : '';
+    let totalDrums = totalDrumIdx !== -1 ? String(r[totalDrumIdx] || '').trim() : '';
+
+    const breakdown = [];
+    let computedSum = 0;
+
+    if (pairedGroups.length > 0) {
+      pairedGroups.forEach(pg => {
+        const dType = String(r[pg.sizeIdx] || '').trim();
+        const dQtyRaw = String(r[pg.qtyIdx] || '').trim();
+        const dQtyNum = parseFloat(dQtyRaw.replace(/,/g, ''));
+        if (dType && dQtyRaw && (!isNaN(dQtyNum) ? dQtyNum > 0 : (dQtyRaw !== '0' && dQtyRaw !== '-'))) {
+          breakdown.push({ size: dType, qty: dQtyRaw });
+          if (!isNaN(dQtyNum)) computedSum += dQtyNum;
+        }
       });
-      return obj;
+    } else {
+      drumSizeCols.forEach(col => {
+        const valRaw = String(r[col.idx] || '').trim();
+        const valNum = parseFloat(valRaw.replace(/,/g, ''));
+        if (valRaw && (!isNaN(valNum) ? valNum > 0 : (valRaw !== '0' && valRaw !== '-'))) {
+          breakdown.push({ size: col.label, qty: valRaw });
+          if (!isNaN(valNum)) computedSum += valNum;
+        }
+      });
+    }
+
+    if (!totalDrums && computedSum > 0) {
+      totalDrums = String(computedSum);
+    }
+
+    parsed.push({
+      order: rowIndex,
+      jobFull: rawJob,
+      jobNo: jobBase || rawJob,
+      customer,
+      itemDesc,
+      saleOrderQty,
+      totalDrums: totalDrums || '0',
+      breakdown
     });
-}
-
-function processDrumRows(rows) {
-  if (!rows || !rows.length) return;
-  const headers = Object.keys(rows[0] || {});
-
-  const jobKey = findHeader(headers, 'JOB NO / ITEM NO', 'JOBNOITEMNO', 'JOB NO', 'JOBNO', 'JOB NUMBER', 'JOB', 'SO-ITEM', 'SOITEM');
-  const customerKey = findHeader(headers, 'CUSTOMER NAME', 'CUSTOMERNAME', 'CUSTOMER');
-  const itemDescKey = findHeader(headers, 'DESCRIPTION', 'ITEM DESCRIPTION', 'ITEMDESC', 'ITEM', 'MATERIAL DISC', 'MATERIAL');
-  const totalDrumReqKey = findHeader(headers, 'TOTAL DRUM REQ', 'TOTALDRUMREQ', 'TOTAL DRUMS');
-  const drumSizeKey = findHeader(headers, 'DRUM SIZE-CATEGORY', 'DRUM SIZECATEGORY', 'DRUM SIZE', 'DRUMSIZE', 'SIZE', 'DRUM');
-  const qtyKey = findHeader(headers, 'QTY', 'QUANTITY', 'DRUM QTY', 'NO OF DRUMS', 'COUNT', 'REQ QTY');
-
-  const drumPairCols = [];
-  headers.forEach((h, idx) => {
-    if (normalizeHeader(h).startsWith('drumsizecategory')) {
-      const suffix = h.includes('.') ? h.slice(h.indexOf('.')) : '';
-      const pairedQty = headers.find(qh => normalizeHeader(qh) === ('qty' + suffix.replace('.', '')))
-        || (suffix === '' ? headers.find(qh => normalizeHeader(qh) === 'qty') : null)
-        || headers[idx + 2];
-      drumPairCols.push({ sizeCol: h, qtyCol: pairedQty });
-    }
   });
 
-  if (!jobKey) return;
+  DRUM_DATA = parsed;
+  return true;
+}
 
-  const grouped = new Map();
-
-  rows.forEach((row, idx) => {
-    const jobNo = String(row[jobKey] || '').trim();
-    if (!jobNo) return;
-
-    const customer = customerKey ? String(row[customerKey] || '').trim() : '';
-    const itemDesc = itemDescKey ? String(row[itemDescKey] || '').trim() : '';
-
-    if (!grouped.has(jobNo)) {
-      grouped.set(jobNo, {
-        order: idx,
-        jobNo,
-        customer: customer || '',
-        itemDesc: itemDesc || '',
-        drumCounts: new Map(),
-        totalDrums: 0
+async function loadDrumDataFromFile() {
+  // 1. Primary source: ref.csv (v7 D.xlsx export schema)
+  try {
+    const resRef = await fetch('ref.csv?v=' + Date.now(), { cache: 'no-store' });
+    if (resRef.ok) {
+      const text = await resRef.text();
+      const ok = await new Promise((resolve) => {
+        Papa.parse(text, {
+          header: false,
+          skipEmptyLines: false,
+          complete: (results) => resolve(parseDrumRows(results.data))
+        });
       });
+      if (ok) return true;
     }
+  } catch (e) {
+    console.warn('[drumreq] ref.csv unavailable, trying drums.csv', e);
+  }
 
-    const entry = grouped.get(jobNo);
-    if (!entry.customer && customer) entry.customer = customer;
-    if (!entry.itemDesc && itemDesc) entry.itemDesc = itemDesc;
-
-    let addedFromPairs = 0;
-    if (drumPairCols.length > 0) {
-      drumPairCols.forEach(({ sizeCol, qtyCol }) => {
-        const sizeLabel = String(row[sizeCol] || '').trim();
-        if (!sizeLabel || sizeLabel === '-' || sizeLabel.toUpperCase() === '#ERROR!') return;
-        const rawQty = qtyCol ? row[qtyCol] : '';
-        const numQty = parseFloat(String(rawQty || '').replace(/,/g, '').trim());
-        if (!isNaN(numQty) && numQty > 0) {
-          entry.drumCounts.set(sizeLabel, (entry.drumCounts.get(sizeLabel) || 0) + numQty);
-          entry.totalDrums += numQty;
-          addedFromPairs += numQty;
-        }
+  // 2. Secondary fallback: drums.csv
+  try {
+    const resCsv = await fetch('drums.csv?v=' + Date.now(), { cache: 'no-store' });
+    if (resCsv.ok) {
+      const text = await resCsv.text();
+      const ok = await new Promise((resolve) => {
+        Papa.parse(text, {
+          header: false,
+          skipEmptyLines: false,
+          complete: (results) => resolve(parseDrumRows(results.data))
+        });
       });
+      if (ok) return true;
     }
+  } catch (e) {
+    console.warn('[drumreq] drums.csv unavailable, trying Drums Requirement.xlsx', e);
+  }
 
-    if (addedFromPairs === 0) {
-      const fallbackSize = drumSizeKey ? String(row[drumSizeKey] || '').trim() : '';
-      const rawFallbackQty = totalDrumReqKey ? row[totalDrumReqKey] : (qtyKey ? row[qtyKey] : '');
-      const numFallbackQty = parseFloat(String(rawFallbackQty || '').replace(/,/g, '').trim());
-      if (fallbackSize && fallbackSize !== '-' && fallbackSize.toUpperCase() !== '#ERROR!' && !isNaN(numFallbackQty) && numFallbackQty > 0) {
-        entry.drumCounts.set(fallbackSize, (entry.drumCounts.get(fallbackSize) || 0) + numFallbackQty);
-        entry.totalDrums += numFallbackQty;
-      } else if (!isNaN(numFallbackQty) && numFallbackQty > 0) {
-        entry.totalDrums += numFallbackQty;
-      }
-    }
+  // 3. Final fallback: Drums Requirement.xlsx via SheetJS
+  try {
+    const resXlsx = await fetch('Drums Requirement.xlsx?v=' + Date.now(), { cache: 'no-store' });
+    if (!resXlsx.ok) throw new Error('HTTP ' + resXlsx.status);
+    const buf = await resXlsx.arrayBuffer();
+    const wb = XLSX.read(buf, { type: 'array' });
+    const sheetName = wb.SheetNames.includes('Drums') ? 'Drums' : wb.SheetNames[0];
+    const sheet = wb.Sheets[sheetName];
+    const matrix = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+    return parseDrumRows(matrix);
+  } catch (e) {
+    console.warn('[offline] Drum data unavailable', e);
+    return false;
+  }
+}
+
+function buildDrumJobIndex() {
+  const map = new Map();
+  DRUM_DATA.forEach(r => {
+    const key = r.jobNo || r.jobFull;
+    if (!key) return;
+    if (!map.has(key)) map.set(key, { count: 0, totalDrums: 0 });
+    const rec = map.get(key);
+    rec.count += 1;
+    const t = parseFloat(String(r.totalDrums || '0').replace(/,/g, ''));
+    if (!isNaN(t)) rec.totalDrums += t;
   });
-
-  DRUM_DATA = Array.from(grouped.values()).map(g => ({
-    order: g.order,
-    jobNo: g.jobNo,
-    customer: g.customer || '—',
-    itemDesc: g.itemDesc || '—',
-    drums: Array.from(g.drumCounts.entries()).map(([size, count]) => ({ size, count })),
-    totalDrums: g.totalDrums
-  }));
+  return map;
 }
 
-function allDrumJobNos() {
-  return DRUM_DATA.map(r => r.jobNo).sort();
-}
-
-function findExactDrumJob(term) {
-  const t = String(term || '').trim().toLowerCase();
-  if (!t) return null;
-  const found = DRUM_DATA.find(r => r.jobNo.toLowerCase() === t);
-  return found ? found.jobNo : null;
+function allDrumJobNumbers() {
+  return Array.from(buildDrumJobIndex().keys()).sort();
 }
 
 const drumInput = document.getElementById('drumInput');
-const drumGrid = document.getElementById('drumGrid');
 const drumSuggestBox = document.getElementById('drumSuggestBox');
 
 function renderDrumSuggestions(term) {
-  const matches = DRUM_DATA.filter(r =>
-    r.jobNo.toLowerCase().includes(term.toLowerCase()) ||
-    r.itemDesc.toLowerCase().includes(term.toLowerCase())
+  const q = String(term || '').trim().toLowerCase();
+  const idx = buildDrumJobIndex();
+  const matches = allDrumJobNumbers().filter(j =>
+    !q ||
+    j.toLowerCase().includes(q) ||
+    DRUM_DATA.some(r =>
+      (r.jobNo === j || r.jobFull === j) &&
+      (r.jobFull.toLowerCase().includes(q) || r.customer.toLowerCase().includes(q) || r.itemDesc.toLowerCase().includes(q))
+    )
   );
 
   if (matches.length === 0) {
-    drumSuggestBox.innerHTML = `<div class="suggest-empty">No matching Job No / Item No</div>`;
+    drumSuggestBox.innerHTML = `<div class="suggest-empty">No matching Job No in drum data</div>`;
     drumSuggestBox.classList.add('open');
     return;
   }
 
   let html = `<div class="suggest-hint">${matches.length} jobs found</div>`;
-  matches.slice(0, 40).forEach(r => {
-    html += `<div class="suggest-item" data-job="${esc(r.jobNo)}">
-      <span>${esc(r.jobNo)}${r.itemDesc && r.itemDesc !== '—' ? ` — <small style="color:var(--text-muted);font-weight:500;">${esc(r.itemDesc)}</small>` : ''}</span>
-      <span class="meta">${formatQty(r.totalDrums)} drums</span>
-    </div>`;
+  matches.slice(0, 50).forEach((j, i) => {
+    const rec = idx.get(j) || { count: 0, totalDrums: 0 };
+    const metaLabel = rec.totalDrums > 0 ? `${formatDrumNumber(rec.totalDrums)} drums` : `${rec.count} items`;
+    html += `<div class="suggest-item" data-drumjob="${esc(j)}" data-idx="${i}"><span>${esc(j)}</span><span class="meta">${metaLabel}</span></div>`;
   });
   drumSuggestBox.innerHTML = html;
   drumSuggestBox.classList.add('open');
@@ -5572,6 +5735,16 @@ function renderDrumSuggestions(term) {
 
 function closeDrumSuggestions() {
   drumSuggestBox.classList.remove('open');
+}
+
+function findExactDrumJob(term) {
+  const t = String(term || '').trim().toLowerCase();
+  if (!t) return null;
+  for (const k of buildDrumJobIndex().keys()) {
+    if (k.toLowerCase() === t) return k;
+  }
+  const fullMatch = DRUM_DATA.find(r => r.jobFull.toLowerCase() === t);
+  return fullMatch ? fullMatch.jobNo : null;
 }
 
 function pickDrumSuggestion(jobNo) {
@@ -5586,13 +5759,11 @@ drumInput.addEventListener('input', () => {
   if (exact) {
     closeDrumSuggestions();
     renderDrumResults();
-  } else if (term.length > 0) {
-    renderDrumSuggestions(term);
   } else {
-    closeDrumSuggestions();
+    renderDrumSuggestions(term);
     document.getElementById('drumResultTitle').textContent = 'Enter Job No / Item No above';
     document.getElementById('drumResultCount').textContent = '0 records';
-    drumGrid.innerHTML = '<div class="empty"><div class="icon">🥁</div><p>Start typing a <b>Job No / Item No</b> above.</p></div>';
+    document.getElementById('drumGrid').innerHTML = '<div class="empty"><div class="icon">🥁</div><p>Start typing a <b>Job No / Item No</b> above.</p></div>';
   }
 });
 
@@ -5604,106 +5775,130 @@ drumInput.addEventListener('keydown', (e) => {
   if (e.key !== 'Enter') return;
   e.preventDefault();
   const first = drumSuggestBox.querySelector('.suggest-item');
-  if (drumSuggestBox.classList.contains('open') && first) {
-    pickDrumSuggestion(first.dataset.job);
-  } else {
-    renderDrumResults();
-  }
+  if (drumSuggestBox.classList.contains('open') && first) pickDrumSuggestion(first.dataset.drumjob);
+  else renderDrumResults();
   closeDrumSuggestions();
 });
 
-drumSuggestBox.addEventListener('mousedown', (e) => {
+drumSuggestBox.addEventListener('mousedown', e => {
   const item = e.target.closest('.suggest-item');
-  if (item) pickDrumSuggestion(item.dataset.job);
+  if (item) pickDrumSuggestion(item.dataset.drumjob);
 });
 
-document.addEventListener('click', (e) => {
-  if (!document.getElementById('drumField').contains(e.target)) {
-    closeDrumSuggestions();
-  }
+document.addEventListener('click', e => {
+  const field = document.getElementById('drumField');
+  if (field && !field.contains(e.target)) closeDrumSuggestions();
 });
+
+function formatDrumNumber(val) {
+  if (val === '' || val === null || val === undefined) return '—';
+  const num = Number(String(val).replace(/,/g, '').trim());
+  if (isNaN(num)) return esc(String(val));
+  return num.toLocaleString('en-US');
+}
 
 function renderDrumResults() {
-  const term = drumInput.value.trim();
-  if (!term) return;
+  const query = drumInput.value.trim();
+  const drumGrid = document.getElementById('drumGrid');
+  if (!query) return;
 
-  const exact = findExactDrumJob(term);
-  const matches = exact
-    ? DRUM_DATA.filter(r => r.jobNo === exact)
-    : DRUM_DATA.filter(r => r.jobNo.toLowerCase().includes(term.toLowerCase()));
+  const qLower = query.toLowerCase();
+  let matches = DRUM_DATA.filter(r =>
+    r.jobNo.toLowerCase() === qLower ||
+    r.jobFull.toLowerCase() === qLower
+  );
+  if (matches.length === 0) {
+    matches = DRUM_DATA.filter(r =>
+      r.jobNo.toLowerCase().includes(qLower) ||
+      r.jobFull.toLowerCase().includes(qLower) ||
+      r.customer.toLowerCase().includes(qLower)
+    );
+  }
 
-  document.getElementById('drumResultTitle').textContent = exact ? `Drum Req • ${exact}` : `Drum Req • "${term}"`;
-  document.getElementById('drumResultCount').textContent = `${matches.length} ${matches.length === 1 ? 'job' : 'jobs'}`;
+  document.getElementById('drumResultTitle').textContent = query;
+  document.getElementById('drumResultCount').textContent = `${matches.length} record${matches.length === 1 ? '' : 's'}`;
 
   if (matches.length === 0) {
-    drumGrid.innerHTML = `<div class="empty"><div class="icon">📭</div><p>No drum requirement found for <b>${esc(term)}</b></p></div>`;
+    drumGrid.innerHTML = `<div class="empty"><div class="icon">📭</div><p>No drum requirement found for <b>${esc(query)}</b></p></div>`;
     return;
   }
 
-  drumGrid.innerHTML = matches.map(rec => {
-    const rowsHtml = rec.drums.length > 0
-      ? rec.drums.map(d => `<div class="drum-req-row"><div>${esc(d.size)}</div><div>${esc(formatQty(d.count))}</div></div>`).join('')
-      : `<div class="drum-req-row"><div style="color:var(--text-muted);">No drum sizes specified</div><div>${esc(formatQty(rec.totalDrums))}</div></div>`;
+  let html = '';
+  matches.forEach(row => {
+    let specs = '';
+    if (row.customer) {
+      specs += `<div class="drum-field-box"><div class="drum-field-label">CUSTOMER NAME</div><div class="drum-field-val">${esc(row.customer)}</div></div>`;
+    }
+    if (row.itemDesc) {
+      specs += `<div class="drum-field-box"><div class="drum-field-label">DESCRIPTION</div><div class="drum-field-val">${esc(row.itemDesc)}</div></div>`;
+    }
+    if (row.saleOrderQty) {
+      specs += `<div class="drum-field-box highlight"><div class="drum-field-label">SALE ORDER QTY</div><div class="drum-field-val mono">${formatDrumNumber(row.saleOrderQty)}</div></div>`;
+    }
 
-    return `
-      <div class="card printable-card" style="grid-column: 1 / -1;">
+    const breakdownHtml = (row.breakdown && row.breakdown.length > 0)
+      ? `<div class="drum-matrix-card">
+          <div class="drum-matrix-head"><div>DRUM SIZE - CATEGORY</div><div>QTY</div></div>
+          ${row.breakdown.map(b => `<div class="drum-matrix-row"><div>${esc(b.size)}</div><div>${formatDrumNumber(b.qty)}</div></div>`).join('')}
+        </div>`
+      : `<div class="drum-matrix-card">
+          <div class="drum-matrix-head"><div>DRUM SIZE - CATEGORY</div><div>QTY</div></div>
+          <div class="drum-matrix-row"><div>No drums assigned</div><div>0</div></div>
+        </div>`;
+
+    html += `
+      <div class="card printable-card drum-req-card">
         <div class="card-head">
-          <h3><span class="bullet"></span>${esc(rec.jobNo)}</h3>
+          <h3><span class="bullet"></span>${esc(row.jobFull)}</h3>
           <span class="op-tag">DRUM REQ</span>
         </div>
-        <div style="padding: 16px;">
-          <div class="drum-summary-boxes">
-            <div class="drum-info-box">
-              <div class="lbl">Customer Name</div>
-              <div class="val">${esc(rec.customer || '—')}</div>
-            </div>
-            <div class="drum-info-box">
-              <div class="lbl">Item Description</div>
-              <div class="val">${esc(rec.itemDesc || '—')}</div>
-            </div>
-            <div class="drum-info-box highlight">
-              <div class="lbl">Total Drums</div>
-              <div class="val">${esc(formatQty(rec.totalDrums))}</div>
-            </div>
-          </div>
-
-          <div class="drum-req-table">
-            <div class="drum-req-head">
-              <div>Drum Size</div>
-              <div>No. of Drums</div>
-            </div>
-            ${rowsHtml}
-            <div class="drum-total-foot">
-              <span>Total Drums Required</span>
-              <span class="total-val">${esc(formatQty(rec.totalDrums))}</span>
-            </div>
+        <div class="drum-card-body">
+          ${specs}
+          ${breakdownHtml}
+          <div class="drum-total-bar">
+            <span class="drum-total-label">TOTAL NO. OF DRUMS</span>
+            <span class="drum-total-val">${formatDrumNumber(row.totalDrums)}</span>
           </div>
         </div>
       </div>
     `;
-  }).join('');
+  });
+
+  drumGrid.innerHTML = html;
 }
 
 document.getElementById('drumSearchBtn').addEventListener('click', renderDrumResults);
 document.getElementById('drumResetBtn').addEventListener('click', () => {
   drumInput.value = '';
-  closeDrumSuggestions();
-  drumGrid.innerHTML = '<div class="empty"><div class="icon">🥁</div><p>Start typing a <b>Job No / Item No</b> above.</p></div>';
+  document.getElementById('drumGrid').innerHTML = '<div class="empty"><div class="icon">🥁</div><p>Start typing a <b>Job No / Item No</b> above.</p></div>';
   document.getElementById('drumResultTitle').textContent = 'Enter Job No / Item No above';
   document.getElementById('drumResultCount').textContent = '0 records';
 });
 
-/* --- QC CALCULATOR LOGIC --- */
-function calculateCRCombined() {
-  const specCR = parseFloat(document.getElementById('specCR').value);
-  const maxCR = parseFloat(document.getElementById('maxCR').value);
-  const minCR = parseFloat(document.getElementById('minCR').value);
+/* --- QC CALCULATORS (1. CR CALC & UNBALANCE [IPQC / fQC], 2. ARMOUR COVERAGE, ETC.) --- */
+window.switchCrMode = function(mode, event) {
+  if (event) event.preventDefault();
+  const isIpqc = mode === 'ipqc';
+  const btnIpqc = document.getElementById('btnCrModeIpqc');
+  const btnFqc = document.getElementById('btnCrModeFqc');
+  const panelIpqc = document.getElementById('cr-panel-ipqc');
+  const panelFqc = document.getElementById('cr-panel-fqc');
+  if (btnIpqc) btnIpqc.classList.toggle('active', isIpqc);
+  if (btnFqc) btnFqc.classList.toggle('active', !isIpqc);
+  if (panelIpqc) panelIpqc.classList.toggle('active', isIpqc);
+  if (panelFqc) panelFqc.classList.toggle('active', !isIpqc);
+};
 
-  const outUnb = document.getElementById('outUnbalance');
-  const outHigh = document.getElementById('outHigh');
-  const outLow = document.getElementById('outLow');
+window.calculateCRIpqc = function() {
+  const specCR = parseFloat(document.getElementById('ipqcSpecCR')?.value);
+  const maxCR = parseFloat(document.getElementById('ipqcMaxCR')?.value);
+  const minCR = parseFloat(document.getElementById('ipqcMinCR')?.value);
 
-  if (isNaN(specCR) || isNaN(maxCR) || isNaN(minCR) || specCR === 0) {
+  const outUnb = document.getElementById('ipqcOutUnbalance');
+  const outHigh = document.getElementById('ipqcOutHigh');
+  const outLow = document.getElementById('ipqcOutLow');
+
+  if (isNaN(specCR) || isNaN(maxCR) || isNaN(minCR) || specCR === 0 || maxCR === 0) {
     outUnb.textContent = '—';
     outHigh.textContent = '—';
     outLow.textContent = '—';
@@ -5717,10 +5912,10 @@ function calculateCRCombined() {
     outLow.textContent = low.toFixed(2);
   }
 
-  const obs = parseFloat(document.getElementById('obsCR').value);
-  const len = parseFloat(document.getElementById('lenCR').value);
-  const temp = parseFloat(document.getElementById('tempCR').value);
-  const outCalCR = document.getElementById('outCalCR');
+  const obs = parseFloat(document.getElementById('ipqcObsCR')?.value);
+  const len = parseFloat(document.getElementById('ipqcLenCR')?.value);
+  const temp = parseFloat(document.getElementById('ipqcTempCR')?.value);
+  const outCalCR = document.getElementById('ipqcOutCalCR');
 
   if (isNaN(obs) || isNaN(len) || isNaN(temp) || len === 0) {
     outCalCR.textContent = '—';
@@ -5728,301 +5923,361 @@ function calculateCRCombined() {
     const calCR = (obs / len) * (1 / (1 + 0.00393 * (temp - 20)));
     outCalCR.textContent = calCR.toFixed(4);
   }
-}
+};
 
-['irReading', 'irLength', 'irCoreDia', 'irCondDia'].forEach(id => {
-  document.getElementById(id).addEventListener('input', () => {
-    const r = parseFloat(document.getElementById('irReading').value);
-    const l = parseFloat(document.getElementById('irLength').value);
-    const d = parseFloat(document.getElementById('irCoreDia').value);
-    const cond = parseFloat(document.getElementById('irCondDia').value);
-    if (isNaN(r) || isNaN(l) || isNaN(d) || isNaN(cond) || l === 0 || cond === 0 || d <= cond) {
-      document.getElementById('irResultOut').innerHTML = '—';
-      document.getElementById('irConstOut').innerHTML = '—';
-      document.getElementById('vrConstOut').innerHTML = '—';
-      return;
-    }
-    const ir = r * 1e6;
-    const k = Math.log10(d / cond) / (2 * Math.PI);
-    const irConst = r * l / k;
-    const vrConst = ir * l / k;
-    document.getElementById('irResultOut').innerHTML = formatScientific(ir);
-    document.getElementById('irConstOut').innerHTML = formatScientific(irConst);
-    document.getElementById('vrConstOut').innerHTML = formatScientific(vrConst);
-  });
-});
+function calculateCRCombined() {
+  const alpha = parseFloat(document.getElementById('crMaterial')?.value) || 0.004;
+  const specCR = parseFloat(document.getElementById('specCR')?.value);
+  const len = parseFloat(document.getElementById('lenCR')?.value);
+  const minCR = parseFloat(document.getElementById('minCR')?.value);
+  const maxCR = parseFloat(document.getElementById('maxCR')?.value);
+  const temp = parseFloat(document.getElementById('tempCR')?.value);
 
-['capReading', 'capLength'].forEach(id => {
-  document.getElementById(id).addEventListener('input', () => {
-    const c = parseFloat(document.getElementById('capReading').value);
-    const l = parseFloat(document.getElementById('capLength').value);
-    if (isNaN(c) || isNaN(l) || l === 0) {
-      document.getElementById('capResultOut').textContent = '—';
-      return;
-    }
-    document.getElementById('capResultOut').textContent = (c / l).toFixed(2);
-  });
-});
+  const outCalCR = document.getElementById('outCalCR');
+  const outCalCRMin = document.getElementById('outCalCRMin');
+  const outCrStatus = document.getElementById('outCrStatus');
+  const outHighLow = document.getElementById('outHighLow');
+  const outUnb = document.getElementById('outUnbalance');
+  const cardStatus = document.getElementById('cardCrStatus');
+  const cardHighLow = document.getElementById('cardCrHighLow');
 
-['hvLength', 'hvTopCr', 'hvBottomCr'].forEach(id => {
-  document.getElementById(id).addEventListener('input', () => {
-    const l = parseFloat(document.getElementById('hvLength').value);
-    const t = parseFloat(document.getElementById('hvTopCr').value);
-    const b = parseFloat(document.getElementById('hvBottomCr').value);
-    if (isNaN(l) || isNaN(t) || isNaN(b) || (t + b) === 0) {
-      document.getElementById('hvTotalCrOut').textContent = '—';
-      document.getElementById('hvTopSideOut').textContent = '—';
-      document.getElementById('hvBottomSideOut').textContent = '—';
-      return;
-    }
-    const tot = t + b;
-    document.getElementById('hvTotalCrOut').textContent = tot.toFixed(4);
-    document.getElementById('hvTopSideOut').textContent = ((t / tot) * l).toFixed(2);
-    document.getElementById('hvBottomSideOut').textContent = ((b / tot) * l).toFixed(2);
-  });
-});
+  const validLenTemp = !isNaN(len) && len > 0 && !isNaN(temp);
+  const tempFactor = validLenTemp ? (1 + alpha * (temp - 20)) : NaN;
+  const lenKm = validLenTemp ? (len / 1000) : NaN;
 
-['thickMin', 'thickMax'].forEach(id => {
-  document.getElementById(id).addEventListener('input', () => {
-    const min = parseFloat(document.getElementById('thickMin').value);
-    const max = parseFloat(document.getElementById('thickMax').value);
-    if (isNaN(min) || isNaN(max) || max === 0) {
-      document.getElementById('thickAvgOut').textContent = '—';
-      document.getElementById('thickConcOut').textContent = '—';
-      return;
-    }
-    document.getElementById('thickAvgOut').textContent = ((min + max) / 2).toFixed(3);
-    document.getElementById('thickConcOut').textContent = (((max - min) / max) * 100).toFixed(2);
-  });
-});
-
-['brD', 'brBigD', 'brN', 'brM', 'brL'].forEach(id => {
-  document.getElementById(id).addEventListener('input', () => {
-    const d = parseFloat(document.getElementById('brD').value);
-    const bigD = parseFloat(document.getElementById('brBigD').value);
-    const n = parseFloat(document.getElementById('brN').value);
-    const m = parseFloat(document.getElementById('brM').value);
-    const l = parseFloat(document.getElementById('brL').value);
-    if (isNaN(d) || isNaN(bigD) || isNaN(n) || isNaN(m) || isNaN(l) || bigD === 0 || l === 0) {
-      document.getElementById('brTotalWiresOut').textContent = '—';
-      document.getElementById('brFOut').textContent = '—';
-      document.getElementById('brCovOut').textContent = '—';
-      return;
-    }
-    const tot = n * m;
-    const angle = Math.atan((2 * Math.PI * (bigD + d)) / l);
-    const cosA = Math.cos(angle);
-    const f = cosA > 0 ? (tot * d) / (Math.PI * (bigD + d) * cosA) : 0;
-    const cov = (2 * f - f * f) * 100;
-    document.getElementById('brTotalWiresOut').textContent = tot;
-    document.getElementById('brFOut').textContent = f.toFixed(3);
-    document.getElementById('brCovOut').textContent = cov.toFixed(2);
-  });
-});
-
-document.getElementById('tensileShape').addEventListener('change', (e) => {
-  document.getElementById('tubularInputs').style.display = e.target.value === 'tubular' ? 'block' : 'none';
-  document.getElementById('dumbbellInputs').style.display = e.target.value === 'dumbbell' ? 'block' : 'none';
-  calculateTensile();
-});
-['tDia', 'tThick', 'dWidth', 'dThick', 'tLoad', 'tElong', 'tInit'].forEach(id => document.getElementById(id).addEventListener('input', calculateTensile));
-function calculateTensile() {
-  const shape = document.getElementById('tensileShape').value;
-  const load = parseFloat(document.getElementById('tLoad').value);
-  const elong = parseFloat(document.getElementById('tElong').value);
-  const init = parseFloat(document.getElementById('tInit').value);
-  let area = NaN;
-  if (shape === 'tubular') {
-    const dia = parseFloat(document.getElementById('tDia').value);
-    const thick = parseFloat(document.getElementById('tThick').value);
-    if (!isNaN(dia) && !isNaN(thick) && dia > thick) { area = Math.PI * (dia - thick) * thick; }
+  let calcCrMax = NaN;
+  if (validLenTemp && !isNaN(maxCR) && tempFactor > 0) {
+    calcCrMax = (maxCR / lenKm) / tempFactor;
+    outCalCR.textContent = calcCrMax.toFixed(4);
   } else {
-    const w = parseFloat(document.getElementById('dWidth').value);
-    const t = parseFloat(document.getElementById('dThick').value);
-    if (!isNaN(w) && !isNaN(t)) { area = w * t; }
+    outCalCR.textContent = '—';
   }
-  document.getElementById('tAreaOut').textContent = isNaN(area) ? '—' : area.toFixed(2);
-  if (isNaN(area) || area === 0 || isNaN(load)) { document.getElementById('tTsOut').textContent = '—'; } else { document.getElementById('tTsOut').textContent = (load / area).toFixed(2); }
-  if (isNaN(elong) || isNaN(init) || init === 0) { document.getElementById('tElongOut').textContent = '—'; } else { document.getElementById('tElongOut').textContent = (((elong - init) / init) * 100).toFixed(2); }
-}
 
-document.getElementById('hotSetShape').addEventListener('change', (e) => {
-  document.getElementById('tubularHotInputs').style.display = e.target.value === 'tubular' ? 'block' : 'none';
-  document.getElementById('dumbbellHotInputs').style.display = e.target.value === 'dumbbell' ? 'block' : 'none';
-  calculateHotSet();
-});
-['hCoreDia', 'hCondDia', 'hThick', 'hWidth', 'hInit', 'hElong', 'hCool'].forEach(id => document.getElementById(id).addEventListener('input', calculateHotSet));
-function calculateHotSet() {
-  const shape = document.getElementById('hotSetShape').value;
-  const init = parseFloat(document.getElementById('hInit').value);
-  const elong = parseFloat(document.getElementById('hElong').value);
-  const cool = parseFloat(document.getElementById('hCool').value);
-  let area = NaN;
-  if (shape === 'tubular') {
-    const core = parseFloat(document.getElementById('hCoreDia').value);
-    const cond = parseFloat(document.getElementById('hCondDia').value);
-    if (!isNaN(core) && !isNaN(cond) && core > cond) { area = (Math.PI / 4) * (core * core - cond * cond); }
+  let calcCrMin = NaN;
+  if (validLenTemp && !isNaN(minCR) && tempFactor > 0) {
+    calcCrMin = (minCR / lenKm) / tempFactor;
+    outCalCRMin.textContent = calcCrMin.toFixed(4);
   } else {
-    const t = parseFloat(document.getElementById('hThick').value);
-    const w = parseFloat(document.getElementById('hWidth').value);
-    if (!isNaN(t) && !isNaN(w)) { area = t * w; }
+    outCalCRMin.textContent = '—';
   }
-  document.getElementById('hWeightOut').textContent = isNaN(area) ? '—' : (area * 0.2).toFixed(3);
-  if (isNaN(elong) || isNaN(init) || init === 0) { document.getElementById('hHotOut').textContent = '—'; } else { document.getElementById('hHotOut').textContent = (((elong - init) / init) * 100).toFixed(2); }
-  if (isNaN(cool) || isNaN(init) || init === 0) { document.getElementById('hPermOut').textContent = '—'; } else { document.getElementById('hPermOut').textContent = (((cool - init) / init) * 100).toFixed(2); }
+
+  if (cardStatus) cardStatus.classList.remove('warning', 'success');
+  if (cardHighLow) cardHighLow.classList.remove('warning', 'success');
+
+  if (!isNaN(calcCrMax) && !isNaN(specCR) && specCR > 0) {
+    const isHigh = calcCrMax > specCR;
+    const pctDiff = Math.abs(((calcCrMax - specCR) / specCR) * 100);
+    const pctRounded = Number(pctDiff.toFixed(1));
+
+    if (isHigh) {
+      outCrStatus.textContent = 'HIGH CR';
+      outHighLow.textContent = `${pctRounded} % HIGH`;
+      if (cardStatus) cardStatus.classList.add('warning');
+      if (cardHighLow) cardHighLow.classList.add('warning');
+    } else {
+      outCrStatus.textContent = 'LOW CR';
+      outHighLow.textContent = `${pctRounded} %LOW`;
+      if (cardStatus) cardStatus.classList.add('success');
+      if (cardHighLow) cardHighLow.classList.add('success');
+    }
+  } else {
+    outCrStatus.textContent = '—';
+    outHighLow.textContent = '—';
+  }
+
+  if (!isNaN(maxCR) && !isNaN(minCR) && maxCR > 0) {
+    const unbalance = ((maxCR - minCR) / maxCR) * 100;
+    outUnb.textContent = unbalance.toFixed(2);
+  } else {
+    outUnb.textContent = '—';
+  }
 }
 
 function calculateArmCov() {
-  const cableDia = parseFloat(document.getElementById('covCableDia').value);
-  const wireDia = parseFloat(document.getElementById('covWireDia').value);
-  const lay = parseFloat(document.getElementById('covLay').value);
-  const wires = parseFloat(document.getElementById('covWires').value);
-
+  const cableDia = parseFloat(document.getElementById('covCableDia')?.value);
+  const wireDia = parseFloat(document.getElementById('covWireDia')?.value);
+  const lay = parseFloat(document.getElementById('covLay')?.value);
+  const wires = parseFloat(document.getElementById('covWires')?.value);
   const outCov = document.getElementById('outCov');
 
-  if (isNaN(cableDia) || isNaN(wireDia) || isNaN(lay) || isNaN(wires) || cableDia === 0 || lay === 0) {
+  if (!isNaN(cableDia) && !isNaN(wireDia) && !isNaN(lay) && !isNaN(wires) && lay !== 0) {
+    const dMean = cableDia + wireDia;
+    const alpha = Math.atan((Math.PI * dMean) / lay);
+    const cov = ((wires * wireDia) / (Math.PI * dMean * Math.cos(alpha))) * 100;
+    outCov.textContent = isFinite(cov) ? cov.toFixed(2) : '—';
+  } else {
     outCov.textContent = '—';
-    return;
   }
-
-  const pi = Math.PI;
-  const part1 = (wires * wireDia) / (pi * (cableDia + wireDia));
-  const cosVal = lay / Math.sqrt(lay * lay + (pi * pi * (cableDia + wireDia) * (cableDia + wireDia)));
-  const cov = (part1 / cosVal) * 100;
-
-  outCov.textContent = cov.toFixed(2);
 }
 
-/* --- PRINT / PDF GATEWAY --- */
-window.triggerPrint = function(event, mode) {
-  if(event) event.stopPropagation();
+window.calculateCRCombined = calculateCRCombined;
+window.calculateArmCov = calculateArmCov;
 
-  if (mode === 'gatepass') {
-    const dateInput = document.getElementById('gpDate');
-    const hourSel = document.getElementById('gpHour');
-    const minSel = document.getElementById('gpMinute');
-    const ampmSel = document.getElementById('gpAmPm');
-    const deptEl = document.getElementById('gpDept');
+['crMaterial', 'specCR', 'maxCR', 'minCR', 'lenCR', 'tempCR'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', calculateCRCombined);
+});
+['covCableDia', 'covWireDia', 'covLay', 'covWires'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', calculateArmCov);
+});
 
-    const dateVal = dateInput ? dateInput.value : '';
-    const hourVal = hourSel ? hourSel.value : '';
-    const minVal = minSel ? minSel.value : '';
-    const ampmVal = ampmSel ? ampmSel.value : '';
-    const deptVal = deptEl ? deptEl.value.trim() : '';
+const irR = document.getElementById('irReading'), irL = document.getElementById('irLength'), irD = document.getElementById('irCoreDia'), irCond = document.getElementById('irCondDia');
+function calcIR(){
+  const r = parseFloat(irR.value), l = parseFloat(irL.value), D = parseFloat(irD.value), d = parseFloat(irCond.value);
+  if(isNaN(r) || isNaN(l) || r <= 0 || l <= 0){ document.getElementById('irResultOut').textContent = '—'; document.getElementById('irConstOut').textContent = '—'; document.getElementById('vrConstOut').textContent = '—'; return; }
+  const totalIR = r * 1e6;
+  document.getElementById('irResultOut').innerHTML = formatScientific(totalIR);
+  const irConst = r * l;
+  document.getElementById('irConstOut').textContent = irConst.toFixed(2);
+  if(!isNaN(D) && !isNaN(d) && D > d && d > 0){
+    const vrConst = (totalIR * l) / (2 * Math.PI * Math.log(D / d));
+    document.getElementById('vrConstOut').innerHTML = formatScientific(vrConst);
+  } else { document.getElementById('vrConstOut').textContent = '—'; }
+}
+[irR, irL, irD, irCond].forEach(el => el.addEventListener('input', calcIR));
 
-    if (dateInput) dateInput.classList.remove('gp-invalid');
+const capR = document.getElementById('capReading'), capL = document.getElementById('capLength');
+function calcCap(){
+  const r = parseFloat(capR.value), l = parseFloat(capL.value);
+  if(isNaN(r) || isNaN(l) || l <= 0){ document.getElementById('capResultOut').textContent = '—'; return; }
+  document.getElementById('capResultOut').textContent = (r / l).toFixed(2);
+}
+[capR, capL].forEach(el => el.addEventListener('input', calcCap));
 
-    if (!dateVal) {
-      alert("Please select a Date.");
-      if (dateInput) {
-        dateInput.classList.add('gp-invalid');
-        dateInput.focus();
-      }
-      return;
-    }
+const hvL = document.getElementById('hvLength'), hvT = document.getElementById('hvTopCr'), hvB = document.getElementById('hvBottomCr');
+function calcHV(){
+  const l = parseFloat(hvL.value), t = parseFloat(hvT.value), b = parseFloat(hvB.value);
+  if(isNaN(l) || isNaN(t) || isNaN(b) || (t + b) === 0){ document.getElementById('hvTotalCrOut').textContent = '—'; document.getElementById('hvTopSideOut').textContent = '—'; document.getElementById('hvBottomSideOut').textContent = '—'; return; }
+  const total = t + b;
+  document.getElementById('hvTotalCrOut').textContent = total.toFixed(6);
+  const topDist = l * (t / total);
+  document.getElementById('hvTopSideOut').textContent = topDist.toFixed(2);
+  document.getElementById('hvBottomSideOut').textContent = (l - topDist).toFixed(2);
+}
+[hvL, hvT, hvB].forEach(el => el.addEventListener('input', calcHV));
 
-    if (!hourVal || !minVal || !ampmVal) {
-      alert("Please select Out Time (Hour, Minute, and AM/PM).");
-      if (hourSel) hourSel.focus();
-      return;
-    }
+const thMin = document.getElementById('thickMin'), thMax = document.getElementById('thickMax');
+function calcThick(){
+  const min = parseFloat(thMin.value), max = parseFloat(thMax.value);
+  if(isNaN(min) || isNaN(max) || max === 0){ document.getElementById('thickAvgOut').textContent = '—'; document.getElementById('thickConcOut').textContent = '—'; return; }
+  document.getElementById('thickAvgOut').textContent = ((min + max) / 2).toFixed(3);
+  document.getElementById('thickConcOut').textContent = (((max - min) / max) * 100).toFixed(2);
+}
+[thMin, thMax].forEach(el => el.addEventListener('input', calcThick));
 
-    const formattedDate = formatDateForDisplay(dateVal);
-    const formattedTime = `${hourVal}:${minVal} ${ampmVal}`;
-    const printArea = document.getElementById('gatePassPrintArea');
-    const companyName = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
-    const deptName = deptVal || localStorage.getItem('tc_gp_dept') || localStorage.getItem('tc_dept') || 'PRODUCTION';
-    localStorage.setItem('tc_gp_dept', deptName);
+const brD = document.getElementById('brD'), brBigD = document.getElementById('brBigD'), brN = document.getElementById('brN'), brM = document.getElementById('brM'), brL = document.getElementById('brL');
+function calcBraid(){
+  const d = parseFloat(brD.value), bigD = parseFloat(brBigD.value), N = parseFloat(brN.value), M = parseFloat(brM.value), L = parseFloat(brL.value);
+  if(isNaN(d) || isNaN(bigD) || isNaN(N) || isNaN(M) || isNaN(L) || bigD <= 0 || L <= 0){ document.getElementById('brTotalWiresOut').textContent = '—'; document.getElementById('brFOut').textContent = '—'; document.getElementById('brCovOut').textContent = '—'; return; }
+  const totalWires = N * M;
+  document.getElementById('brTotalWiresOut').textContent = totalWires;
+  const tanTheta = (Math.PI * bigD) / L;
+  const cosTheta = L / Math.hypot(L, Math.PI * bigD);
+  const F = ((M / 2) * N * d) / (Math.PI * bigD * cosTheta);
+  document.getElementById('brFOut').textContent = F.toFixed(4);
+  document.getElementById('brCovOut').textContent = ((2 * F - F * F) * 100).toFixed(2);
+}
+[brD, brBigD, brN, brM, brL].forEach(el => el.addEventListener('input', calcBraid));
 
-    const cols = 3;
-    const count = GP_STANDARD_COUNT;
-    const rows = Math.ceil(count / cols);
-    printArea.style.setProperty('--gp-rows', rows);
-    printArea.classList.toggle('gp-dense', rows > 10);
-
-    let cardsHtml = '';
-    for (let i = 1; i <= count; i++) {
-      cardsHtml += `
-        <div class="gate-pass-card">
-          <div class="gp-company">${esc(companyName)}</div>
-          <div class="gp-dept">${esc(deptName)}</div>
-          <div class="gp-serial">GATE PASS #${i}</div>
-          <div class="gp-datetime">
-            <span>Date: ${esc(formattedDate)}</span>
-            <span>Out Time: ${esc(formattedTime)}</span>
-          </div>
-          <div class="gp-sig-area">
-            <div class="gp-sig-line"></div>
-            <div class="gp-sig-label">Authorized Signature</div>
-          </div>
-        </div>
-      `;
-    }
-    printArea.innerHTML = cardsHtml;
-    document.body.classList.add('printing-gatepass');
-    setTimeout(() => {
-      window.print();
-      setTimeout(() => {
-        document.body.classList.remove('printing-gatepass');
-        printArea.innerHTML = '';
-      }, 500);
-    }, 100);
-    return;
+const tShape = document.getElementById('tensileShape'), tDia = document.getElementById('tDia'), tThick = document.getElementById('tThick'), dWidth = document.getElementById('dWidth'), dThick = document.getElementById('dThick'), tLoad = document.getElementById('tLoad'), tElong = document.getElementById('tElong'), tInit = document.getElementById('tInit');
+function toggleTensileShape(){
+  const isTubular = tShape.value === 'tubular';
+  document.getElementById('tubularInputs').style.display = isTubular ? 'block' : 'none';
+  document.getElementById('dumbbellInputs').style.display = isTubular ? 'none' : 'block';
+  calcTensile();
+}
+function calcTensile(){
+  let area = NaN;
+  if(tShape.value === 'tubular'){
+    const dia = parseFloat(tDia.value), th = parseFloat(tThick.value);
+    if(!isNaN(dia) && !isNaN(th)) area = (Math.PI / 4) * (dia * dia - (dia - 2 * th) * (dia - 2 * th));
+  } else {
+    const w = parseFloat(dWidth.value), th = parseFloat(dThick.value);
+    if(!isNaN(w) && !isNaN(th)) area = w * th;
   }
+  const load = parseFloat(tLoad.value), elong = parseFloat(tElong.value), init = parseFloat(tInit.value);
+  if(!isNaN(area) && area > 0){
+    document.getElementById('tAreaOut').textContent = area.toFixed(2);
+    if(!isNaN(load)) document.getElementById('tTsOut').textContent = (load / area).toFixed(2);
+    else document.getElementById('tTsOut').textContent = '—';
+  } else { document.getElementById('tAreaOut').textContent = '—'; document.getElementById('tTsOut').textContent = '—'; }
+  if(!isNaN(elong) && !isNaN(init) && init > 0) document.getElementById('tElongOut').textContent = (((elong - init) / init) * 100).toFixed(1);
+  else document.getElementById('tElongOut').textContent = '—';
+}
+tShape.addEventListener('change', toggleTensileShape);
+[tDia, tThick, dWidth, dThick, tLoad, tElong, tInit].forEach(el => el.addEventListener('input', calcTensile));
 
-  const now = new Date();
-  document.getElementById('pDate').textContent = now.toLocaleDateString('en-GB');
-  document.getElementById('pTime').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+const hShape = document.getElementById('hotSetShape'), hCore = document.getElementById('hCoreDia'), hCond = document.getElementById('hCondDia'), hThick = document.getElementById('hThick'), hWidth = document.getElementById('hWidth'), hInit = document.getElementById('hInit'), hElong = document.getElementById('hElong'), hCool = document.getElementById('hCool');
+function toggleHotSetShape(){
+  const isTubular = hShape.value === 'tubular';
+  document.getElementById('tubularHotInputs').style.display = isTubular ? 'block' : 'none';
+  document.getElementById('dumbbellHotInputs').style.display = isTubular ? 'none' : 'block';
+  calcHotSet();
+}
+function calcHotSet(){
+  let area = NaN;
+  if(hShape.value === 'tubular'){
+    const d1 = parseFloat(hCore.value), d2 = parseFloat(hCond.value);
+    if(!isNaN(d1) && !isNaN(d2)) area = (Math.PI / 4) * (d1 * d1 - d2 * d2);
+  } else {
+    const th = parseFloat(hThick.value), w = parseFloat(hWidth.value);
+    if(!isNaN(th) && !isNaN(w)) area = th * w;
+  }
+  if(!isNaN(area) && area > 0) document.getElementById('hWeightOut').textContent = (area * 0.2).toFixed(2);
+  else document.getElementById('hWeightOut').textContent = '—';
+  const init = parseFloat(hInit.value), elong = parseFloat(hElong.value), cool = parseFloat(hCool.value);
+  if(!isNaN(init) && !isNaN(elong) && init > 0) document.getElementById('hHotOut').textContent = (((elong - init) / init) * 100).toFixed(1);
+  else document.getElementById('hHotOut').textContent = '—';
+  if(!isNaN(init) && !isNaN(cool) && init > 0) document.getElementById('hPermOut').textContent = (((cool - init) / init) * 100).toFixed(1);
+  else document.getElementById('hPermOut').textContent = '—';
+}
+hShape.addEventListener('change', toggleHotSetShape);
+[hCore, hCond, hThick, hWidth, hInit, hElong, hCool].forEach(el => el.addEventListener('input', calcHotSet));
+
+/* --- PRINT ENGINE --- */
+window.triggerPrint = function(event, mode){
+  if (event) event.preventDefault();
   document.getElementById('pCompany').textContent = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
   document.getElementById('pDept').textContent = localStorage.getItem('tc_dept') || 'QC DEPARTMENT';
   document.getElementById('pPrepBy').textContent = localStorage.getItem('tc_prep') || '—';
   document.getElementById('pVerBy').textContent = localStorage.getItem('tc_ver') || '—';
 
-  let titleText = 'TEST REPORT', typeText = 'GENERAL', inputsHtml = '';
+  const now = new Date();
+  document.getElementById('pDate').textContent = now.toLocaleDateString('en-GB');
+  document.getElementById('pTime').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-  if (mode === 'qc') {
-    const activeTabBtn = document.querySelector('.qc-tab-btn.active');
-    const tabName = activeTabBtn ? activeTabBtn.textContent.trim() : 'QC CALC';
-    titleText = `${tabName.toUpperCase()} TEST REPORT`; typeText = tabName;
-    const activeCard = document.querySelector('.qc-card.active');
-    if (activeCard) {
-      let rows = '';
-      activeCard.querySelectorAll('.input-group').forEach(grp => {
-        const lbl = grp.querySelector('label');
-        const inp = grp.querySelector('input, select');
-        if (lbl && inp) {
-          let val = inp.value;
-          if(inp.tagName === 'SELECT') val = inp.options[inp.selectedIndex]?.text || val;
-          rows += `<tr><td style="font-weight:700;">${esc(lbl.innerText.split('\n')[0])}</td><td>${esc(val || '—')}</td></tr>`;
-        }
-      });
-      if(rows) inputsHtml = `<div style="font-weight:700; margin-bottom:6px; font-size:12px;">INPUT PARAMETERS:</div><table class="print-inputs-table"><thead><tr><th>Parameter</th><th>Value</th></tr></thead><tbody>${rows}</tbody></table>`;
+  const printInputsDiv = document.getElementById('printInputs');
+  printInputsDiv.innerHTML = '';
+
+  if (mode === 'gatepass') {
+    const deptEl = document.getElementById('gpDept');
+    const dateEl = document.getElementById('gpDate');
+    const hourEl = document.getElementById('gpHour');
+    const minEl = document.getElementById('gpMinute');
+    const apEl = document.getElementById('gpAmPm');
+
+    const dateVal = dateEl.value;
+    const hourVal = hourEl.value;
+    const minVal = minEl.value;
+    const amPmVal = apEl.value;
+
+    dateEl.classList.remove('gp-invalid');
+    if (!dateVal) {
+      dateEl.classList.add('gp-invalid');
+      alert('Please select a Date for the gate pass.');
+      dateEl.focus();
+      return;
     }
-  } else if (mode === 'job') {
-    titleText = 'JOB CARD REPORT'; typeText = 'JOB CARD';
-    const job = jobInput.value || '—', op = opSelect.value || '—';
-    inputsHtml = `<div style="font-weight:700; margin-bottom:6px; font-size:12px;">SEARCH CRITERIA:</div><table class="print-inputs-table"><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody><tr><td style="font-weight:700;">Job Number</td><td>${esc(job)}</td></tr><tr><td style="font-weight:700;">Operation</td><td>${esc(op)}</td></tr></tbody></table>`;
-  } else if (mode === 'bom') {
-    titleText = 'BOM REPORT'; typeText = 'BOM';
-    const item = bomInput.value || '—', op = bomOpSelect.value || '—';
-    const planQty = document.getElementById('planQtyInput')?.value || '1';
-    inputsHtml = `<div style="font-weight:700; margin-bottom:6px; font-size:12px;">BOM PARAMETERS:</div><table class="print-inputs-table"><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody><tr><td style="font-weight:700;">SO-ITEM / INDEX</td><td>${esc(item)}</td></tr><tr><td style="font-weight:700;">Operation JDM</td><td>${esc(op)}</td></tr><tr><td style="font-weight:700;">Plan Qty (Meters)</td><td>${esc(planQty)}</td></tr></tbody></table>`;
-  } else if (mode === 'drumreq') {
-    titleText = 'DRUM REQUIREMENT REPORT'; typeText = 'DRUM REQ';
-    const job = drumInput.value || '—';
-    inputsHtml = `<div style="font-weight:700; margin-bottom:6px; font-size:12px;">DRUM REQ PARAMETERS:</div><table class="print-inputs-table"><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody><tr><td style="font-weight:700;">Job No / Item No</td><td>${esc(job)}</td></tr></tbody></table>`;
+
+    const totalCount = GP_STANDARD_COUNT;
+    const cols = 3;
+    const rows = Math.ceil(totalCount / cols);
+
+    const companyName = localStorage.getItem('tc_company') || 'THERMOCABLES LTD.';
+    const deptName = (deptEl.value || '').trim() || (localStorage.getItem('tc_gp_dept') || localStorage.getItem('tc_dept') || 'PRODUCTION').trim();
+    const displayDate = formatDateForDisplay(dateVal);
+    const displayTime = `${hourVal}:${minVal} ${amPmVal}`;
+
+    const gpArea = document.getElementById('gatePassPrintArea');
+    gpArea.style.setProperty('--gp-rows', rows);
+    gpArea.classList.toggle('gp-dense', rows > 9);
+
+    const cardsHtml = [];
+    for (let i = 1; i <= totalCount; i++) {
+      const serial = `TC-GP-${String(i).padStart(2, '0')}`;
+      cardsHtml.push(`
+        <div class="gate-pass-card">
+          <div class="gp-company">${esc(companyName)}</div>
+          ${deptName ? `<div class="gp-dept">${esc(deptName)}</div>` : ''}
+          <div class="gp-serial">${serial}</div>
+          <div class="gp-datetime">
+            <span>Date: ${esc(displayDate)}</span>
+            <span>Out: ${esc(displayTime)}</span>
+          </div>
+          <div class="gp-sig-area">
+            <div class="gp-sig-line"></div>
+            <div class="gp-sig-label">Sign</div>
+          </div>
+        </div>
+      `);
+    }
+
+    gpArea.innerHTML = cardsHtml.join('');
+
+    document.body.classList.add('printing-gatepass');
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => {
+        document.body.classList.remove('printing-gatepass');
+        gpArea.innerHTML = '';
+        gpArea.style.removeProperty('--gp-rows');
+        gpArea.classList.remove('gp-dense');
+      }, 300);
+    }, 100);
+    return;
   }
 
-  document.getElementById('pDocTitle').textContent = titleText;
-  document.getElementById('pTestType').textContent = typeText;
-  document.getElementById('printInputs').innerHTML = inputsHtml;
-  setTimeout(() => { window.print(); }, 100);
+  let rowsHtml = '';
+
+  if (mode === 'job') {
+    document.getElementById('pDocTitle').textContent = 'JOB CARD';
+    document.getElementById('pTestType').textContent = 'JOB CARD DETAILS';
+    rowsHtml += `<tr><th>Job No</th><td>${esc(jobInput.value || '—')}</td></tr>`;
+    rowsHtml += `<tr><th>Operation</th><td>${esc(opSelect.value || '—')}</td></tr>`;
+  } else if (mode === 'bom') {
+    document.getElementById('pDocTitle').textContent = 'BILL OF MATERIALS (BOM)';
+    document.getElementById('pTestType').textContent = 'BOM CALCULATION';
+    rowsHtml += `<tr><th>SO-ITEM</th><td>${esc(bomInput.value || '—')}</td></tr>`;
+    rowsHtml += `<tr><th>Operation JDM</th><td>${esc(document.getElementById('bomOpSelect').value || 'All Operations')}</td></tr>`;
+    const planQtyVal = document.getElementById('planQtyInput');
+    if (planQtyVal) rowsHtml += `<tr><th>Plan / PRD Qty</th><td>${esc(planQtyVal.value || '0')}</td></tr>`;
+  } else if (mode === 'drumreq') {
+    document.getElementById('pDocTitle').textContent = 'DRUM REQUIREMENT';
+    document.getElementById('pTestType').textContent = 'DRUM ALLOCATION DETAILS';
+    rowsHtml += `<tr><th>Job No / Item No</th><td>${esc(drumInput.value || '—')}</td></tr>`;
+  } else if (mode === 'qc') {
+    const activeTab = document.querySelector('.qc-tab-btn.active');
+    let testName = activeTab ? activeTab.textContent.trim().toUpperCase() : 'QC CALCULATION';
+    const activeCard = document.querySelector('.qc-card.active');
+    let printScope = activeCard;
+    if (activeCard && activeCard.id === 'qc-card-cr') {
+      const activeSub = activeCard.querySelector('.cr-subpanel.active');
+      if (activeSub) {
+        printScope = activeSub;
+        const modeLabel = activeSub.id === 'cr-panel-fqc' ? 'fQC' : 'IPQC';
+        testName = `${testName} (${modeLabel})`;
+      }
+    }
+    document.getElementById('pDocTitle').textContent = 'QUALITY CONTROL REPORT';
+    document.getElementById('pTestType').textContent = testName;
+    if (printScope) {
+      printScope.querySelectorAll('.input-group').forEach(grp => {
+        const lblEl = grp.querySelector('label');
+        const inputEl = grp.querySelector('input, select');
+        if (lblEl && inputEl) {
+          const cloneLbl = lblEl.cloneNode(true);
+          const hint = cloneLbl.querySelector('.unit-hint');
+          if (hint) hint.remove();
+          let valText = inputEl.value;
+          if (inputEl.tagName === 'SELECT') valText = inputEl.options[inputEl.selectedIndex]?.text || valText;
+          if (valText !== '' && valText !== null) {
+            rowsHtml += `<tr><th>${esc(cloneLbl.textContent.trim())}</th><td>${esc(valText)}</td></tr>`;
+          }
+        }
+      });
+    }
+  }
+
+  if (rowsHtml) {
+    printInputsDiv.innerHTML = `<table class="print-inputs-table">${rowsHtml}</table>`;
+  }
+
+  window.print();
 };
 
 initGatePassUI();
-initAppBoot();
 })();
 </script>
-
 </body>
 </html>

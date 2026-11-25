@@ -5687,13 +5687,16 @@ async function loadDrumDataFromFile() {
 function buildDrumJobIndex() {
   const map = new Map();
   DRUM_DATA.forEach(r => {
-    const key = r.jobNo || r.jobFull;
-    if (!key) return;
-    if (!map.has(key)) map.set(key, { count: 0, totalDrums: 0 });
-    const rec = map.get(key);
-    rec.count += 1;
+    const fullKey = String(r.jobFull || '').trim();
+    const baseKey = String(r.jobNo || '').trim();
+    const keys = new Set([fullKey, baseKey].filter(Boolean));
     const t = parseFloat(String(r.totalDrums || '0').replace(/,/g, ''));
-    if (!isNaN(t)) rec.totalDrums += t;
+    keys.forEach(key => {
+      if (!map.has(key)) map.set(key, { count: 0, totalDrums: 0 });
+      const rec = map.get(key);
+      rec.count += 1;
+      if (!isNaN(t)) rec.totalDrums += t;
+    });
   });
   return map;
 }
@@ -5718,12 +5721,12 @@ function renderDrumSuggestions(term) {
   );
 
   if (matches.length === 0) {
-    drumSuggestBox.innerHTML = `<div class="suggest-empty">No matching Job No in drum data</div>`;
+    drumSuggestBox.innerHTML = `<div class="suggest-empty">No matching Job No / Item No in drum data</div>`;
     drumSuggestBox.classList.add('open');
     return;
   }
 
-  let html = `<div class="suggest-hint">${matches.length} jobs found</div>`;
+  let html = `<div class="suggest-hint">${matches.length} matches found</div>`;
   matches.slice(0, 50).forEach((j, i) => {
     const rec = idx.get(j) || { count: 0, totalDrums: 0 };
     const metaLabel = rec.totalDrums > 0 ? `${formatDrumNumber(rec.totalDrums)} drums` : `${rec.count} items`;
@@ -5740,15 +5743,15 @@ function closeDrumSuggestions() {
 function findExactDrumJob(term) {
   const t = String(term || '').trim().toLowerCase();
   if (!t) return null;
-  for (const k of buildDrumJobIndex().keys()) {
-    if (k.toLowerCase() === t) return k;
-  }
   const fullMatch = DRUM_DATA.find(r => r.jobFull.toLowerCase() === t);
-  return fullMatch ? fullMatch.jobNo : null;
+  if (fullMatch) return fullMatch.jobFull;
+  const baseMatch = DRUM_DATA.find(r => r.jobNo.toLowerCase() === t);
+  if (baseMatch) return baseMatch.jobNo;
+  return null;
 }
 
-function pickDrumSuggestion(jobNo) {
-  drumInput.value = jobNo;
+function pickDrumSuggestion(jobVal) {
+  drumInput.value = jobVal;
   closeDrumSuggestions();
   renderDrumResults();
 }
